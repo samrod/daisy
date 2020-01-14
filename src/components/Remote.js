@@ -18,6 +18,9 @@ export default class Remote extends Component {
             <div className="swatch" data-color="blue" />
             <div className="swatch" data-color="magenta" />
           </div>
+          <div className="slider">
+            <input type="range" id="opacity" min=".1" max="1" step=".05" defaultValue={1} />
+          </div>
         </div>
 
         <div className="sliders">
@@ -35,8 +38,8 @@ export default class Remote extends Component {
               <input type="range" id="wave" min="0" max="25" defaultValue={0} />
             </div>
             <div className="slider">
-              opacity
-              <input type="range" id="opacity" min=".1" max="1" step=".05" defaultValue={1} />
+              background
+              <input type="range" id="background" min="0" max="1" step=".01" defaultValue={1} />
             </div>
           </div>
           <div className="row">

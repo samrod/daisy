@@ -1,0 +1,84 @@
+a {
+  transition: transform .15s ease-in-out;
+  cursor: pointer;
+}
+
+a:hover {
+  transform: scale(1.25);
+}
+
+.swatches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+}
+
+.row {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  margin: 5px 0px;
+}
+
+.shapes {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.shape {
+  height: 50px;
+  display: block;
+  line-height: 1ex;
+  overflow: hidden;
+  font-size: 50px;
+  color: #333;
+  margin: 0px 0;
+}
+
+.shape.diamond {
+  font-size: 40px;
+}
+
+.sliders {
+  display: flex;
+  flex: 5;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 2em;
+}
+
+.slider {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 15px;
+  flex: 1;
+}
+
+.slider input {
+  width: 100%;
+  min-width: 150px;
+}
+
+.swatch {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin: 0 10px;
+}
+
+.swatch {
+  &[data-color=black] { background-color: black; }
+  &[data-color=white] { background-color: white; }
+  &[data-color=red] { background-color: #F00; }
+  &[data-color=orange] { background-color: #F90; }
+  &[data-color=yellow] { background-color: #FF0; }
+  &[data-color=green] { background-color: #0F0; }
+  &[data-color=cyan] { background-color: #0FF; }
+  &[data-color=blue] { background-color: #00F; }
+  &[data-color=magenta] { background-color: #F0F; }
+}

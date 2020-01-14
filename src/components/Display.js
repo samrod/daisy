@@ -8,13 +8,16 @@ export default class Display extends Component {
   volume = 25;
   wave = 0;
   length = 50;
+  background = 1;
   opacity = 1;
+  color = 'white'
   bindings = [
     { selector: '#target', handler: 'ping', event: 'animationiteration' },
     { selector: '#target', handler: 'updateMainAnimation' },
     { selector: 'body', handler: 'toggleToolbar', event: 'mousemove' },
     { selector: '.swatch', handler: 'setColor' },
     { selector: '.shape', handler: 'setShape' },
+    { selector: '#background', handler: 'setBackground', event: 'input' },
     { selector: '#size', handler: 'setSize', event: 'input' },
     { selector: '#pitch', handler: 'setPitch', event: 'input' },
     { selector: '#volume', handler: 'setVolume', event: 'input' },
@@ -26,7 +29,7 @@ export default class Display extends Component {
     { selector: '#angle', handler: 'flashAngle', event: 'mousedown' },
     { selector: '#angle', handler: 'hideAngle', event: 'mouseup' },
   ];
-  selectors = [ '.toolbar', '#container', '#target', '#dynamicStyles' ];
+  selectors = [ '.toolbar', '#container', '#target', '#dynamicStyles', '#root' ];
 
   get targetStyle() {
     const { size, speed, opacity } = this;
@@ -68,7 +71,7 @@ export default class Display extends Component {
     Object.assign(this.target.style, targetStyle);
     Object.assign(this.container.style, containerStyle);
   };
-  
+
   updateMainAnimation = () => {
     const { length, size, dynamicStyles } = this;
     const distance = length - (size / 2);
@@ -116,6 +119,7 @@ export default class Display extends Component {
     const newClass = `color-${newColor}`;
     const newClasses = this.target.className.replace(/ *color-[a-z]+/gi, newClass);
     this.target.className = newClasses;
+    this.color = newColor;
   };
 
   setShape = ({target}) => {
@@ -129,6 +133,17 @@ export default class Display extends Component {
     this.size = value;
     this.updateDynamicStyles();
     this.updateMainAnimation();
+  };
+
+  setBackground = ({ target: { value } }) => {
+    this.root.style.backgroundColor = `rgba(0,0,0,${value})`;
+
+    if (this.color === 'white' && value <= .5) {
+      this.setColor({ target: { dataset: { color: 'black' }}});
+    }
+    if (this.color === 'black' && value > .5) {
+      this.setColor({ target: { dataset: { color: 'white' }}});
+    }
   };
 
   setPitch = ({target: { value }}) => {
@@ -186,7 +201,7 @@ export default class Display extends Component {
     if (toolbarNeeded) {
       if (hidden) {
         this.toolbar.className = 'toolbar';
-      } 
+      }
     } else if (!hidden) {
       this.toolbar.className = 'toolbar hidden';
     }
@@ -209,20 +224,20 @@ export default class Display extends Component {
     panner.coneOuterAngle = 0;
     panner.coneOuterGain = 0;
     panner.setPosition(panX,0,0);
-  
+
     const duration = this.speed / 2500;
     volume.gain.value = this.volume;
     reverb.buffer = this.impulseResponse(duration, 3);
     source.frequency.value = this.pitch;
     source.type = 'sine';
-  
+
     source.connect(panner);
     panner.connect(reverb);
     reverb.connect(volume);
     volume.connect(audioCtx.destination);
-  
+
     source.start();
-  
+
     setTimeout( () => source.stop(), 50 );
   };
 
