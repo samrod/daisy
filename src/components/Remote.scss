@@ -1,11 +1,27 @@
-a {
-  transition: transform .15s ease-in-out;
-  cursor: pointer;
+#remote {
+  color: white;
+  width: 100vw;
+  height: 100vh;
+  padding: 15px;
+  box-sizing: border-box;
+  display: flex;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  &.popup {
+    background-color: #111;
+  }
 }
 
-a:hover {
-  transform: scale(1.25);
+.swatch, .shape {
+  transition: transform .15s ease-in-out;
+  cursor: pointer;
+  &:hover {
+    transform: scale(1.25);
+  }
 }
+
 
 .swatches {
   display: flex;
@@ -25,6 +41,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  font-family: Helvetica;
 }
 
 .shape {
@@ -47,7 +64,6 @@ a:hover {
   align-items: center;
   flex-wrap: wrap;
   justify-content: space-between;
-  margin-bottom: 2em;
 }
 
 .slider {
@@ -72,13 +88,13 @@ a:hover {
 }
 
 .swatch {
-  &[data-color=black] { background-color: black; }
-  &[data-color=white] { background-color: white; }
-  &[data-color=red] { background-color: #F00; }
-  &[data-color=orange] { background-color: #F90; }
-  &[data-color=yellow] { background-color: #FF0; }
-  &[data-color=green] { background-color: #0F0; }
-  &[data-color=cyan] { background-color: #0FF; }
-  &[data-color=blue] { background-color: #00F; }
-  &[data-color=magenta] { background-color: #F0F; }
+  &[data-option=black] { background-color: black; }
+  &[data-option=white] { background-color: white; }
+  &[data-option=red] { background-color: #F00; }
+  &[data-option=orange] { background-color: #F90; }
+  &[data-option=yellow] { background-color: #FF0; }
+  &[data-option=green] { background-color: #0F0; }
+  &[data-option=cyan] { background-color: #0FF; }
+  &[data-option=blue] { background-color: #00F; }
+  &[data-option=magenta] { background-color: #F0F; }
 }

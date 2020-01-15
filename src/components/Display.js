@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
+import './Display.scss';
 
 export default class Display extends Component {
+  state = {
+    remote: false,
+  };
   size = 7.5;
   speed = 2000;
   angle = 0;
@@ -15,21 +19,8 @@ export default class Display extends Component {
     { selector: '#target', handler: 'ping', event: 'animationiteration' },
     { selector: '#target', handler: 'updateMainAnimation' },
     { selector: 'body', handler: 'toggleToolbar', event: 'mousemove' },
-    { selector: '.swatch', handler: 'setColor' },
-    { selector: '.shape', handler: 'setShape' },
-    { selector: '#background', handler: 'setBackground', event: 'input' },
-    { selector: '#size', handler: 'setSize', event: 'input' },
-    { selector: '#pitch', handler: 'setPitch', event: 'input' },
-    { selector: '#volume', handler: 'setVolume', event: 'input' },
-    { selector: '#speed', handler: 'setSpeed', event: 'change' },
-    { selector: '#opacity', handler: 'setOpacity', event: 'input' },
-    { selector: '#wave', handler: 'setWave', event: 'input' },
-    { selector: '#length', handler: 'setLength', event: 'input' },
-    { selector: '#angle', handler: 'setAngle', event: 'input' },
-    { selector: '#angle', handler: 'flashAngle', event: 'mousedown' },
-    { selector: '#angle', handler: 'hideAngle', event: 'mouseup' },
   ];
-  selectors = [ '.toolbar', '#container', '#target', '#dynamicStyles', '#root' ];
+  selectors = [ '.toolbar', '#container', '#target', '#dynamicStyles', '#display' ];
 
   get targetStyle() {
     const { size, speed, opacity } = this;
@@ -54,7 +45,6 @@ export default class Display extends Component {
   }
 
   init() {
-    // window.open('remote.html', 'reemote', 'width=500,height=200,toolbar=0,status=0,scrollbars=0,menbar=0,titlebar=0');
     const styleElement = document.createElement('style');
     styleElement.setAttribute('id', 'dynamicStyles');
     document.head.append(styleElement);
@@ -62,14 +52,25 @@ export default class Display extends Component {
     this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
     this.selectors.forEach(this.setElement);
     this.bindings.forEach(this.bindEvent);
+    window.addEventListener('message', this.receiveMessage);
     this.target.className = 'color-white shape-circle';
     this.updateDynamicStyles();
   }
+
+  receiveMessage = ({ data }) => {
+    const { action, params } = JSON.parse(data);
+    if (this[action]) {
+      this[action](params);
+    } else {
+      console.warn(`${action} is not a display method.`);
+    }
+  };
 
   updateDynamicStyles = () => {
     const { targetStyle, containerStyle } = this;
     Object.assign(this.target.style, targetStyle);
     Object.assign(this.container.style, containerStyle);
+    this.display.style.backgroundColor = `rgba(0,0,0,${this.background})`;
   };
 
   updateMainAnimation = () => {
@@ -105,7 +106,7 @@ export default class Display extends Component {
     this.dynamicStyles.sheet.insertRule(body, index);
   };
 
-  setElement = (selector) => {
+  setElement = selector => {
     const name = selector.replace(/^\.|#/, '');
     this[name] = document.querySelector(selector)
   };
@@ -114,62 +115,63 @@ export default class Display extends Component {
     document.querySelectorAll(selector).forEach(item => item.addEventListener(event, this[handler]));
   };
 
-  setColor = ({target}) => {
-    const newColor = target.dataset.color;
-    const newClass = `color-${newColor}`;
+  setColor = newColor => {
+    const switchToblack = newColor === 'white' && this.background <= .5;
+    const newClass = !switchToblack ? `color-${newColor}` : 'color-black';
     const newClasses = this.target.className.replace(/ *color-[a-z]+/gi, newClass);
     this.target.className = newClasses;
     this.color = newColor;
   };
 
-  setShape = ({target}) => {
-    const newShape = target.dataset.shape;
+  setShape = newShape => {
     const newClass = ` shape-${newShape}`;
     const newClasses = this.target.className.replace(/ *shape-[a-z]+/gi, newClass);
     this.target.className = newClasses;
   };
 
-  setSize = ({target: { value }}) => {
+  setSize = value => {
     this.size = value;
     this.updateDynamicStyles();
     this.updateMainAnimation();
   };
 
-  setBackground = ({ target: { value } }) => {
-    this.root.style.backgroundColor = `rgba(0,0,0,${value})`;
+  setBackground = value => {
+    this.background = value;
 
     if (this.color === 'white' && value <= .5) {
-      this.setColor({ target: { dataset: { color: 'black' }}});
+      this.setColor('black');
     }
     if (this.color === 'black' && value > .5) {
-      this.setColor({ target: { dataset: { color: 'white' }}});
+      this.setColor('white');
     }
+
+    this.updateDynamicStyles()
   };
 
-  setPitch = ({target: { value }}) => {
+  setPitch = value => {
     this.pitch = value;
   };
 
-  setWave = ({target: { value }}) => {
+  setWave = value => {
     this.wave = value;
     this.updateWaveAnimation();
   };
 
-  setLength = ({target: { value }}) => {
+  setLength = value => {
     this.length = value;
     this.updateMainAnimation();
   };
 
-  setVolume = ({target: { value }}) => {
+  setVolume = value => {
     this.volume = value;
   };
 
-  setSpeed = ({target: { value }}) => {
+  setSpeed = value => {
     this.speed = value;
     this.updateDynamicStyles();
   };
 
-  setAngle = ({target: { value }}) => {
+  setAngle = value => {
     this.angle = Number(value);
     const { container, angle } = this;
     const hasLevel = container.className.indexOf('containerLevel') > -1;
@@ -181,7 +183,7 @@ export default class Display extends Component {
     this.updateDynamicStyles();
   };
 
-  setOpacity = ({target: { value }}) => {
+  setOpacity = value => {
     this.opacity = value;
     this.updateDynamicStyles();
   };
@@ -193,6 +195,16 @@ export default class Display extends Component {
   hideAngle = () => {
     this.container.className = '';
   };
+
+  popRemote() {
+    const top = window.screen.availHeight - 150;
+    window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0`);
+    this.setState({ remote: true });
+  }
+
+  killRemote() {
+    this.setState({ remote: false });
+  }
 
   toggleToolbar = ({clientY}) => {
     const hidden = this.toolbar.className.includes('hidden');
@@ -259,10 +271,13 @@ export default class Display extends Component {
 
   render() {
     return (
-      <div id="container">
-        <div id="target">
-          <div id="icon"></div>
+      <div id="display">
+        <div id="container">
+          <div id="target">
+            <div id="icon"></div>
+          </div>
         </div>
+        <iframe title="remote" className={`toolbar ${this.state.remote ? 'kill' : ''}`} src="/remote" />
       </div>
     );
   }

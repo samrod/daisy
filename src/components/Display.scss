@@ -1,20 +1,10 @@
-html {
-  height: 100%;
-}
-
-body, #root {
-  width: 100%;
+#display {
+  background-color: black;
+  width: 100vw;
   height: 100vh;
-  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-#root {
-  background-color: black;
 }
 
 #container {
@@ -92,27 +82,28 @@ a:hover {
 .toolbar {
   width: 100%;
   height: 120px;
-  background-color: rgba(16,16,16,.95);
+  background-color: rgba(16,16,16,.9);
+  border: none;
   border-top: 1px solid #444;
-  border-bottom: none;
   position: absolute;
-  display: flex;
   bottom: 0px;
-  padding: 15px;
-  justify-content: space-between;
-  align-items: stretch;
-  font: 14px system, Helvetica, sans-serif;
-  color: #666;
   box-sizing: border-box;
   transition:
     transform .25s ease-out,
     opacity .25s ease-out;
-}
 
-.hidden {
-  transition-delay: 2s;
-  transition-duration: .75s;
-  transform: translateY(100%);
-  opacity: 0;
+  &.hidden {
+    transition-delay: 2s;
+    transition-duration: .75s;
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  &.kill {
+    transition-delay: 0s;
+    transition-duration: .25s;
+    transform: translateY(100%);
+    opacity: 0;
+  }
 }
 

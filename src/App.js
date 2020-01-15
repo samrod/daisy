@@ -1,13 +1,9 @@
 import React from 'react';
-import Display from './components/Display';
-import Remote from './components/Remote';
+import Main from './components/Main';
 
 function App() {
   return (
-    <>
-      <Display />
-      <Remote />
-    </>
+    <Main />
   );
 }
 
