@@ -1,13 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Route } from 'react-router-dom';
 import './components/global.scss'
-import App from './App';
+import Display from './components/Display';
+import Remote from './components/Remote';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render((
   <BrowserRouter>
-    <App />
+      <Route exact path="/" component={Display} />
+      <Route path="/remote" component={Remote} />
   </BrowserRouter>
 ), document.getElementById('root')
 );

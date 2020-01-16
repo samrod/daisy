@@ -1,20 +1,15 @@
 import React, { Component } from 'react';
+import { bindEvent, receiveMessage } from '../common/utils';
+import { defaults, limits } from '../common/constants';
 import './Display.scss';
 
 export default class Display extends Component {
   state = {
-    remote: false,
+    remoteMode: '',
+    hidden: '',
   };
-  size = 7.5;
-  speed = 2000;
-  angle = 0;
-  pitch = 150;
-  volume = 25;
-  wave = 0;
-  length = 50;
-  background = 1;
-  opacity = 1;
-  color = 'white'
+  minSpeed = limits.minSpeed;
+  maxSpeed = limits.maxSpeed;
   bindings = [
     { selector: '#target', handler: 'ping', event: 'animationiteration' },
     { selector: '#target', handler: 'updateMainAnimation' },
@@ -45,26 +40,18 @@ export default class Display extends Component {
   }
 
   init() {
+    Object.assign(this, defaults);
     const styleElement = document.createElement('style');
     styleElement.setAttribute('id', 'dynamicStyles');
     document.head.append(styleElement);
 
     this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
     this.selectors.forEach(this.setElement);
-    this.bindings.forEach(this.bindEvent);
-    window.addEventListener('message', this.receiveMessage);
+    this.bindings.forEach(bindEvent.bind(this));
+    window.addEventListener('message', receiveMessage.bind(this));
     this.target.className = 'color-white shape-circle';
     this.updateDynamicStyles();
   }
-
-  receiveMessage = ({ data }) => {
-    const { action, params } = JSON.parse(data);
-    if (this[action]) {
-      this[action](params);
-    } else {
-      console.warn(`${action} is not a display method.`);
-    }
-  };
 
   updateDynamicStyles = () => {
     const { targetStyle, containerStyle } = this;
@@ -109,10 +96,6 @@ export default class Display extends Component {
   setElement = selector => {
     const name = selector.replace(/^\.|#/, '');
     this[name] = document.querySelector(selector)
-  };
-
-  bindEvent = ({selector, event = 'click', handler}) => {
-    document.querySelectorAll(selector).forEach(item => item.addEventListener(event, this[handler]));
   };
 
   setColor = newColor => {
@@ -167,7 +150,7 @@ export default class Display extends Component {
   };
 
   setSpeed = value => {
-    this.speed = value;
+    this.speed = value ? this.maxSpeed - value + this.minSpeed : 0;
     this.updateDynamicStyles();
   };
 
@@ -198,29 +181,36 @@ export default class Display extends Component {
 
   popRemote() {
     const top = window.screen.availHeight - 150;
-    window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0`);
-    this.setState({ remote: true });
+    window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
+    this.setState({ remoteMode: 'remoteMode' });
   }
 
   killRemote() {
-    this.setState({ remote: false });
+    this.setState({
+      remoteMode: '',
+      hidden: '',
+    });
   }
 
   toggleToolbar = ({clientY}) => {
-    const hidden = this.toolbar.className.includes('hidden');
-    const toolbarZone = window.innerHeight - this.toolbar.clientHeight;
+    const { remoteMode, hidden } = this.state;
+    if ( remoteMode ) {
+      return;
+    }
+    const toolbarZone = window.innerHeight - this.toolbar.clientHeight - 30;
     const toolbarNeeded = clientY >= toolbarZone;
+
     if (toolbarNeeded) {
-      if (hidden) {
-        this.toolbar.className = 'toolbar';
+      if (hidden.length) {
+        this.setState({ hidden: '' });
       }
     } else if (!hidden) {
-      this.toolbar.className = 'toolbar hidden';
+      this.setState({ hidden: 'hidden' });
     }
   };
 
   ping = ({target: { offsetLeft }}) => {
-    const panX = (offsetLeft - (window.innerWidth / 2)) * .01;
+    const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
     const { audioCtx } = this;
     const source = audioCtx.createOscillator();
     const volume = audioCtx.createGain();
@@ -230,7 +220,7 @@ export default class Display extends Component {
     panner.panningModel = 'HRTF';
     panner.distanceModel = 'inverse';
     panner.refDistance = 1;
-    panner.maxDistance = 10000;
+    panner.maxDistance = 1;
     panner.rolloffFactor = 1;
     panner.coneInnerAngle = 360;
     panner.coneOuterAngle = 0;
@@ -239,18 +229,17 @@ export default class Display extends Component {
 
     const duration = this.speed / 2500;
     volume.gain.value = this.volume;
-    reverb.buffer = this.impulseResponse(duration, 3);
+    reverb.buffer = this.impulseResponse(duration, 4.5);
     source.frequency.value = this.pitch;
     source.type = 'sine';
 
-    source.connect(panner);
-    panner.connect(reverb);
-    reverb.connect(volume);
-    volume.connect(audioCtx.destination);
+    source.connect(volume);
+    volume.connect(panner);
+    panner.connect(audioCtx.destination);
 
     source.start();
 
-    setTimeout( () => source.stop(), 50 );
+    setTimeout( () => source.stop(), 70 );
   };
 
   impulseResponse = ( duration, decay = 2.0, reverse = false ) => {
@@ -277,7 +266,7 @@ export default class Display extends Component {
             <div id="icon"></div>
           </div>
         </div>
-        <iframe title="remote" className={`toolbar ${this.state.remote ? 'kill' : ''}`} src="/remote" />
+        <iframe title="remote" className={`toolbar ${this.state.hidden} ${this.state.remoteMode}`} src="./remote" />
       </div>
     );
   }

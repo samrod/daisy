@@ -99,7 +99,7 @@ a:hover {
     opacity: 0;
   }
 
-  &.kill {
+  &.remoteMode {
     transition-delay: 0s;
     transition-duration: .25s;
     transform: translateY(100%);

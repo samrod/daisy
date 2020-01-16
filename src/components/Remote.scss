@@ -2,6 +2,7 @@
   color: white;
   width: 100vw;
   height: 100vh;
+  max-height: 150px;
   padding: 15px;
   box-sizing: border-box;
   display: flex;
@@ -22,6 +23,15 @@
   }
 }
 
+.popButton {
+  cursor: pointer;
+  padding: 5px;
+  font-size: 20px;
+  margin: -5px;
+  &:hover {
+    color: #999;
+  }
+}
 
 .swatches {
   display: flex;

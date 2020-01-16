@@ -1,13 +1,23 @@
 import React, { Component } from 'react';
 import { camelCase } from 'lodash';
+import Slider from './Slider';
+import { bindEvent, sendMessage } from '../common/utils';
+import { defaults, limits } from '../common/constants';
 import './Remote.scss';
 
 export default class Remote extends Component {
+  state = defaults;
+  minSpeed = limits.minSpeed;
+  maxSpeed = limits.maxSpeed;
+  minVolume = limits.minVolume;
+  maxVolume = limits.maxVolume;
+  speedAdjustIncrement = limits.speedAdjustIncrement;
+  volumeAdjustIncrement = limits.volumeAdjustIncrement;
+
   popup = window.parent === window.self;
   bindings = [
+    { selector: 'body', handler: 'keys', event: 'keypress' },
     { selector: '.swatch, .shape', handler: 'setRange' },
-    { selector: '.valueSlider', handler: 'setRange', event: 'input' },
-    { selector: '[data-action=speed]', handler: 'setRange', event: 'change' },
     { selector: '[data-action=angle]', handler: 'flashAngle', event: 'mousedown' },
     { selector: '[data-action=angle]', handler: 'hideAngle', event: 'mouseup' },
   ];
@@ -17,52 +27,73 @@ export default class Remote extends Component {
   }
 
   init() {
-    this.bindings.forEach(this.bindEvent);
+    this.bindings.forEach(bindEvent.bind(this));
+    (window.parent || window.opener).addEventListener('keydown', this.keys);
     window.addEventListener('unload', this.killRemote);
   }
 
-  sendMessage(data) {
-    const message = JSON.stringify(data);
-    const display = window.opener || window.parent;
-    display.postMessage(message, window.location.href);
-  }
-
-  setElement = (selector) => {
-    const name = selector.replace(/^\.|#/, '');
-    this[name] = document.querySelector(selector)
-  };
-
-  bindEvent = ({ selector, event = 'click', handler }) => {
-    document.querySelectorAll(selector).forEach(item => item.addEventListener(event, this[handler]));
-  };
-
-  setRange = ({ target: { value, dataset: { action: rawAction, option }}}) => {
+  setRange = ({ target: { value, dataset: { action: rawAction, option }}}, execute = true) => {
     const params = value || option;
     const action = camelCase(`set ${rawAction}`);
-    this.sendMessage({ action, params });
+    this.setState({ [rawAction]: value });
+    if (execute) {
+      sendMessage({ action, params });
+      // console.log(action, params);
+    }
   };
 
   popRemote = () => {
-    this.sendMessage({ action: 'popRemote' });
+    sendMessage({ action: 'popRemote' });
   };
 
   flashAngle = () => {
-    this.sendMessage({ action: 'flashAngle' });
+    sendMessage({ action: 'flashAngle' });
   };
 
   hideAngle = () => {
-    this.sendMessage({ action: 'hideAngle' });
+    sendMessage({ action: 'hideAngle' });
   };
 
   killRemote = () => {
-    this.sendMessage({ action: 'killRemote' });
+    sendMessage({ action: 'killRemote' });
+  };
+
+  keys = ({ keyCode, key }) => {
+    let speed, volume;
+
+    switch (keyCode) {
+      case 39:
+        speed = Math.min(this.state.speed + this.speedAdjustIncrement, this.maxSpeed);
+        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: this.state.speed }));
+        break;
+      case 37:
+        speed = Math.max(this.state.speed - this.speedAdjustIncrement, this.minSpeed);
+        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: this.state.speed }));
+        break;
+      case 38:
+        volume = Math.min(this.state.volume + this.volumeAdjustIncrement, this.maxVolume);
+        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: this.state.volume }));
+        break;
+      case 40:
+        volume = Math.max(this.state.volume - this.volumeAdjustIncrement, this.minVolume);
+        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: this.state.volume }));
+        break;
+      case 32:
+        speed = this.state.speed ? 0 : this.previousSpeed;
+        this.previousSpeed = this.state.speed;
+        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: this.state.speed }));
+        break;
+      default:
+        break;
+    }
+    // console.log({ keyCode, key });
   };
 
   render() {
     return (
       <div id="remote" className={this.popup ? 'popup' : ''}>
         {!this.popup &&
-          <div onClick={this.popRemote} id="pop">Pop Remote</div>
+          <div className="popButton" title="Pop Remote" onClick={this.popRemote} id="pop">&#10696;</div>
         }
         <div className="swatches">
           <div className="row">
@@ -77,47 +108,21 @@ export default class Remote extends Component {
             <div className="swatch" data-action="color" data-option="blue" />
             <div className="swatch" data-action="color" data-option="magenta" />
           </div>
-          <div className="slider">
-            <input type="range" className="valueSlider" data-action="opacity" min=".1" max="1" step=".05" defaultValue={1} />
-          </div>
+          <Slider name="opacity" label={false} min={.1} max={1} step={.05} value={this.state.opacity} onChange={this.setRange} />
         </div>
 
         <div className="sliders">
           <div className="row">
-            <div className="slider">
-              size
-              <input type="range" className="valueSlider" data-action="size" min="1" max="15" step=".25" defaultValue={7.5} />
-            </div>
-            <div className="slider">
-              angle
-              <input type="range" className="valueSlider" data-action="angle" min="-45" max="45" defaultValue={0} />
-            </div>
-            <div className="slider">
-              wave
-              <input type="range" className="valueSlider" data-action="wave" min="0" max="25" defaultValue={0} />
-            </div>
-            <div className="slider">
-              background
-              <input type="range" className="valueSlider" data-action="background" min="0" max="1" step=".01" defaultValue={1} />
-            </div>
+            <Slider name="size" min={1} max={15} step={.25} value={this.state.size} onChange={this.setRange} />
+            <Slider name="angle" min={-45} max={45} value={this.state.angle} onChange={this.setRange} />
+            <Slider name="wave" min={0} max={25} value={this.state.wave} onChange={this.setRange} />
+            <Slider name="background" min={0} max={1} step={.01} value={this.state.background} onChange={this.setRange} />
           </div>
           <div className="row">
-          <div className="slider">
-              length
-              <input type="range" className="valueSlider" data-action="length" min="10" max="50" defaultValue={50} />
-            </div>
-            <div className="slider">
-              pitch
-              <input type="range" className="valueSlider" data-action="pitch" min="100" max="1500" defaultValue={650} />
-            </div>
-            <div className="slider">
-              speed
-              <input type="range" data-action="speed" min="250" max="3000" defaultValue={1000} />
-            </div>
-            <div className="slider">
-              volume
-              <input type="range" className="valueSlider" data-action="volume" min="0" max="50" defaultValue={25} />
-            </div>
+            <Slider name="length" min={10} max={50} value={this.state.length} onChange={this.setRange} />
+            <Slider name="pitch" min={50} max={2000} value={this.state.pitch} onChange={this.setRange} />
+            <Slider name="speed" min={this.minSpeed} max={this.maxSpeed} value={this.state.speed} onChange={e => this.setRange(e, false)} onMouseUp={this.setRange} />
+            <Slider name="volume" min={this.minVolume} max={this.maxVolume} value={this.state.volume} onChange={this.setRange} />
           </div>
         </div>
 
