@@ -19,21 +19,26 @@ export default class Display extends Component {
   selectors = [ '.toolbar', '#container', '#target', '#dynamicStyles', '#display' ];
 
   get targetStyle() {
-    const { size, speed, opacity } = this.settings;
+    const { settings: { size, opacity }, velocity } = this;
     return {
       width: `${size}vw`,
       height: `${size}vw`,
       opacity: opacity,
-      animationDuration: `${speed}ms`,
+      animationDuration: `${velocity}ms`,
     };
   }
 
   get containerStyle() {
-    const { angle, speed } = this.settings;
+    const { angle, settings: { velocity } } = this;
     return {
       transform: `rotateZ(${angle}deg)`,
-      'animationDuration': `${speed/3}ms`,
+      'animationDuration': `${velocity/3}ms`,
     };
+  }
+
+  get velocity() {
+    const { settings: { speed }, maxSpeed, minSpeed } = this;
+    return speed ? maxSpeed - speed + minSpeed : 0;
   }
 
   componentDidMount() {
@@ -151,7 +156,7 @@ export default class Display extends Component {
   };
 
   setSpeed = value => {
-    this.settings.speed = value ? this.maxSpeed - value + this.minSpeed : 0;
+    this.settings.speed = value;
     this.updateDynamicStyles();
   };
 

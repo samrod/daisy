@@ -48,7 +48,6 @@ export default class Remote extends Component {
     this.setState({ [rawAction]: value });
     if (execute) {
       sendMessage({ action, params });
-      // console.log(action, params);
     }
   };
 
