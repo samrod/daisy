@@ -9,19 +9,13 @@ export default class Remote extends Component {
   state = defaults;
   limits = limits;
   popup = window.parent === window.self;
-  bindings = [
-    { selector: 'body', handler: 'keys', event: 'keypress' },
-    { selector: '.swatch, .shape', handler: 'setRange' },
-    { selector: '[data-action=angle]', handler: 'flashAngle', event: 'mousedown' },
-    { selector: '[data-action=angle]', handler: 'hideAngle', event: 'mouseup' },
-  ];
 
   componentDidMount() {
     this.init();
   }
 
   init() {
-    this.bindings.forEach(bindEvent.bind(this));
+    bindEvent('body', 'keypress', this.keys);
     (window.parent || window.opener).addEventListener('keydown', this.keys);
     window.addEventListener('unload', this.killRemote);
     window.addEventListener('message', receiveMessage.bind(this));
@@ -49,12 +43,12 @@ export default class Remote extends Component {
     sendMessage({ action: 'popRemote' });
   };
 
-  flashAngle = () => {
-    sendMessage({ action: 'flashAngle' });
+  flashBar = () => {
+    sendMessage({ action: 'flashBar' });
   };
 
-  hideAngle = () => {
-    sendMessage({ action: 'hideAngle' });
+  hideBar = () => {
+    sendMessage({ action: 'hideBar' });
   };
 
   killRemote = () => {
@@ -95,7 +89,7 @@ export default class Remote extends Component {
   };
 
   render() {
-    const { state, limits, popup, popRemote, setRange } = this;
+    const { state, limits, popup, popRemote, setRange, flashBar, hideBar } = this;
     return (
       <div id="remote" className={popup ? 'popup' : ''}>
         {!popup &&
@@ -103,17 +97,17 @@ export default class Remote extends Component {
         }
         <div className="swatches">
           <div className="row">
-            <div className="swatch" data-action="color" data-option="white" />
-            <div className="swatch" data-action="color" data-option="red" />
-            <div className="swatch" data-action="color" data-option="yellow" />
-            <div className="swatch" data-action="color" data-option="orange" />
+            <div className="swatch" data-action="color" data-option="white" onClick={setRange} />
+            <div className="swatch" data-action="color" data-option="red" onClick={setRange} />
+            <div className="swatch" data-action="color" data-option="yellow" onClick={setRange} />
+            <div className="swatch" data-action="color" data-option="orange" onClick={setRange} />
           </div>
           <Slider name="opacity" label={false} min={.1} max={1} step={.05} value={state.opacity} onChange={setRange} />
           <div className="row">
-            <div className="swatch" data-action="color" data-option="green" />
-            <div className="swatch" data-action="color" data-option="cyan" />
-            <div className="swatch" data-action="color" data-option="blue" />
-            <div className="swatch" data-action="color" data-option="magenta" />
+            <div className="swatch" data-action="color" data-option="green" onClick={setRange} />
+            <div className="swatch" data-action="color" data-option="cyan" onClick={setRange} />
+            <div className="swatch" data-action="color" data-option="blue" onClick={setRange} />
+            <div className="swatch" data-action="color" data-option="magenta" onClick={setRange} />
           </div>
         </div>
 
@@ -127,15 +121,15 @@ export default class Remote extends Component {
           <div className="row">
             <Slider name="background" min={0} max={1} step={.01} value={state.background} onChange={setRange} />
             <Slider name="size" min={1} max={15} step={.25} value={state.size} onChange={setRange} />
-            <Slider name="angle" min={-45} max={45} value={state.angle} onChange={setRange} />
-            <Slider name="length" min={10} max={50} value={state.length} onChange={setRange} />
+            <Slider name="angle" min={-45} max={45} value={state.angle} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />
+            <Slider name="length" min={10} max={50} value={state.length} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />
           </div>
         </div>
 
         <div className="shapes">
-          <div className="shape" data-action="shape" data-option="circle">&#9679;</div>
-          <div className="shape" data-action="shape" data-option="square">&#9632;</div>
-          <div className="shape diamond" data-action="shape" data-option="diamond">&#9670;</div>
+          <div className="shape" data-action="shape" data-option="circle" onClick={setRange}>&#9679;</div>
+          <div className="shape" data-action="shape" data-option="square" onClick={setRange}>&#9632;</div>
+          <div className="shape diamond" data-action="shape" data-option="diamond" onClick={setRange}>&#9670;</div>
         </div>
 
       </div>

@@ -10,12 +10,6 @@ export default class Display extends Component {
   };
   settings = defaults;
   limits = limits;
-  bindings = [
-    { selector: '#target', handler: 'ping', event: 'animationiteration' },
-    { selector: '#target', handler: 'updateMainAnimation' },
-    { selector: 'body', handler: 'toggleToolbar', event: 'mousemove' },
-  ];
-  selectors = [ '.toolbar', '#container', '#target', '#display' ];
   animatorStylesheets = ['length', 'wave'];
 
   get targetStyle() {
@@ -29,10 +23,12 @@ export default class Display extends Component {
   }
 
   get containerStyle() {
-    const { settings: { angle }, velocity } = this;
+    const { settings: { angle, length, size }, velocity } = this;
     return {
+      width: `${length * 2}vw`,
       transform: `rotateZ(${angle}deg)`,
       animationDuration: `${velocity / limits.waveAmplitude}ms`,
+      borderRadius: `${size/2}vw`,
     };
   }
 
@@ -46,10 +42,9 @@ export default class Display extends Component {
   }
 
   init() {
+    bindEvent('body', 'mousemove', this.toggleToolbar);
     this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
     this.animatorStylesheets.forEach(this.createAnimatorStylesheet.bind(this));
-    this.selectors.forEach(this.setElement);
-    this.bindings.forEach(bindEvent.bind(this));
     window.addEventListener('message', receiveMessage.bind(this));
     this.target.className = 'color-white shape-circle';
     this.updateStyles();
@@ -57,10 +52,8 @@ export default class Display extends Component {
 
   createAnimatorStylesheet = name => {
     const styleElement = document.createElement('style');
-    const id = `${name}Styles`;
-    styleElement.setAttribute('id', id);
     document.head.append(styleElement);
-    this.setElement(`#${id}`);
+    this[`${name}Styles`] = styleElement;
   };
 
   updateStyles = () => {
@@ -104,11 +97,6 @@ export default class Display extends Component {
     // `;
     index && waveStyles.sheet.deleteRule(0);
     waveStyles.sheet.insertRule(body, 0);
-  };
-
-  setElement = selector => {
-    const name = selector.replace(/^\.|#/, '');
-    this[name] = document.querySelector(selector)
   };
 
   setColor = newColor => {
@@ -156,6 +144,7 @@ export default class Display extends Component {
 
   setLength = value => {
     this.settings.length = value;
+    this.updateStyles();
     this.updateMainAnimation();
   };
 
@@ -185,11 +174,11 @@ export default class Display extends Component {
     this.updateStyles();
   };
 
-  flashAngle = () => {
+  flashBar = () => {
     this.container.className += ' containerActive';
   };
 
-  hideAngle = () => {
+  hideBar = () => {
     this.container.className = '';
   };
 
@@ -200,10 +189,10 @@ export default class Display extends Component {
   }
 
   sendSettings = () => {
-    const { settings: params, frame, remote } = this;
+    const { settings: params, toolbar, remote } = this;
     const action = 'updateSettings';
     const target = window.location.href + (remote ? 'remote' : 'embedded');
-    const windowObj = remote || frame.contentWindow;
+    const windowObj = remote || toolbar.contentWindow;
     sendMessage({ action, params }, target, windowObj);
   };
 
@@ -281,16 +270,16 @@ export default class Display extends Component {
     return impulse;
   };
 
-  setRef = (key, ref) => {
+  setRef(key, ref) {
     this[key] = ref;
-  };
+  }
 
   render() {
     const { hidden, remoteMode } = this.state;
     return (
-      <div id="display">
-        <div id="container">
-          <div id="target">
+      <div id="display" ref={this.setRef.bind(this, 'display')}>
+        <div id="container" ref={this.setRef.bind(this, 'container')}>
+          <div id="target" ref={this.setRef.bind(this, 'target')} onClick={this.updateMainAnimation} onAnimationIteration={this.ping}>
             <div id="icon"></div>
           </div>
         </div>
@@ -298,7 +287,7 @@ export default class Display extends Component {
           title="remote"
           className={`toolbar ${hidden} ${remoteMode}`}
           src="./embedded"
-          ref={this.setRef.bind(this, 'frame')}
+          ref={this.setRef.bind(this, 'toolbar')}
         />
       </div>
     );

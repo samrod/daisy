@@ -1,6 +1,6 @@
 import React from "react";
 
-const Slider = ({ name, label=true, min, max, step=1, value, onMouseUp=() => true, onChange }) => {
+const Slider = ({ name, label=true, min, max, step=1, value, onMouseUp=() => true, onChange, ...props }) => {
   return (
     <div className="slider">
       {label && name}: {value}
@@ -14,6 +14,7 @@ const Slider = ({ name, label=true, min, max, step=1, value, onMouseUp=() => tru
         step={step}
         type="range"
         value={value}
+        {...props}
       />
     </div>
   );
