@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { camelCase } from 'lodash';
 import Slider from './Slider';
-import { bindEvent, sendMessage } from '../common/utils';
+import { bindEvent, sendMessage, receiveMessage } from '../common/utils';
 import { defaults, limits } from '../common/constants';
 import './Remote.scss';
 
@@ -30,7 +30,17 @@ export default class Remote extends Component {
     this.bindings.forEach(bindEvent.bind(this));
     (window.parent || window.opener).addEventListener('keydown', this.keys);
     window.addEventListener('unload', this.killRemote);
+    window.addEventListener('message', receiveMessage.bind(this));
+    this.sendSettings();
   }
+
+  sendSettings() {
+    sendMessage({ action: 'sendSettings' });;
+  }
+
+  updateSettings = props => {
+    this.setState(props);
+  };
 
   setRange = ({ target: { value, dataset: { action: rawAction, option }}}, execute = true) => {
     const params = value || option;
@@ -56,6 +66,7 @@ export default class Remote extends Component {
 
   killRemote = () => {
     sendMessage({ action: 'killRemote' });
+    this.sendSettings();
   };
 
   keys = ({ keyCode, key }) => {
@@ -102,27 +113,27 @@ export default class Remote extends Component {
             <div className="swatch" data-action="color" data-option="yellow" />
             <div className="swatch" data-action="color" data-option="orange" />
           </div>
+          <Slider name="opacity" label={false} min={.1} max={1} step={.05} value={this.state.opacity} onChange={this.setRange} />
           <div className="row">
             <div className="swatch" data-action="color" data-option="green" />
             <div className="swatch" data-action="color" data-option="cyan" />
             <div className="swatch" data-action="color" data-option="blue" />
             <div className="swatch" data-action="color" data-option="magenta" />
           </div>
-          <Slider name="opacity" label={false} min={.1} max={1} step={.05} value={this.state.opacity} onChange={this.setRange} />
         </div>
 
         <div className="sliders">
           <div className="row">
-            <Slider name="size" min={1} max={15} step={.25} value={this.state.size} onChange={this.setRange} />
-            <Slider name="angle" min={-45} max={45} value={this.state.angle} onChange={this.setRange} />
+            <Slider name="speed" min={this.minSpeed} max={this.maxSpeed} value={this.state.speed} onChange={e => this.setRange(e, false)} onMouseUp={this.setRange} />
+            <Slider name="pitch" min={50} max={2000} value={this.state.pitch} onChange={this.setRange} />
+            <Slider name="volume" min={this.minVolume} max={this.maxVolume} value={this.state.volume} onChange={this.setRange} />
             <Slider name="wave" min={0} max={25} value={this.state.wave} onChange={this.setRange} />
-            <Slider name="background" min={0} max={1} step={.01} value={this.state.background} onChange={this.setRange} />
           </div>
           <div className="row">
+            <Slider name="background" min={0} max={1} step={.01} value={this.state.background} onChange={this.setRange} />
+            <Slider name="size" min={1} max={15} step={.25} value={this.state.size} onChange={this.setRange} />
+            <Slider name="angle" min={-45} max={45} value={this.state.angle} onChange={this.setRange} />
             <Slider name="length" min={10} max={50} value={this.state.length} onChange={this.setRange} />
-            <Slider name="pitch" min={50} max={2000} value={this.state.pitch} onChange={this.setRange} />
-            <Slider name="speed" min={this.minSpeed} max={this.maxSpeed} value={this.state.speed} onChange={e => this.setRange(e, false)} onMouseUp={this.setRange} />
-            <Slider name="volume" min={this.minVolume} max={this.maxVolume} value={this.state.volume} onChange={this.setRange} />
           </div>
         </div>
 

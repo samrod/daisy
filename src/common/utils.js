@@ -5,15 +5,14 @@ export function bindEvent({ selector, event = 'click', handler }) {
 export function receiveMessage({ data }) {
   const { action, params } = JSON.parse(data);
   if (this[action]) {
-    this[action](params);
+    this[action].call(this, params);
   } else {
     console.warn(`${action} is not available.`);
   }
 };
 
-export const sendMessage = data => {
+export const sendMessage = (data, target = window.location.href, display = window.opener || window.parent) => {
   const message = JSON.stringify(data);
-  const display = window.opener || window.parent;
-  display.postMessage(message, window.location.href);
+  display.postMessage(message, target);
 };
 

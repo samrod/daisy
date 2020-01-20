@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { bindEvent, receiveMessage } from '../common/utils';
+import { bindEvent, receiveMessage, sendMessage } from '../common/utils';
 import { defaults, limits } from '../common/constants';
 import './Display.scss';
 
@@ -8,6 +8,7 @@ export default class Display extends Component {
     remoteMode: '',
     hidden: '',
   };
+  settings = defaults;
   minSpeed = limits.minSpeed;
   maxSpeed = limits.maxSpeed;
   bindings = [
@@ -18,7 +19,7 @@ export default class Display extends Component {
   selectors = [ '.toolbar', '#container', '#target', '#dynamicStyles', '#display' ];
 
   get targetStyle() {
-    const { size, speed, opacity } = this;
+    const { size, speed, opacity } = this.settings;
     return {
       width: `${size}vw`,
       height: `${size}vw`,
@@ -28,7 +29,7 @@ export default class Display extends Component {
   }
 
   get containerStyle() {
-    const { angle, speed } = this;
+    const { angle, speed } = this.settings;
     return {
       transform: `rotateZ(${angle}deg)`,
       'animationDuration': `${speed/3}ms`,
@@ -40,7 +41,6 @@ export default class Display extends Component {
   }
 
   init() {
-    Object.assign(this, defaults);
     const styleElement = document.createElement('style');
     styleElement.setAttribute('id', 'dynamicStyles');
     document.head.append(styleElement);
@@ -54,14 +54,14 @@ export default class Display extends Component {
   }
 
   updateDynamicStyles = () => {
-    const { targetStyle, containerStyle } = this;
-    Object.assign(this.target.style, targetStyle);
-    Object.assign(this.container.style, containerStyle);
-    this.display.style.backgroundColor = `rgba(0,0,0,${this.background})`;
+    const { display, target, targetStyle, container, containerStyle, settings: { background } } = this;
+    Object.assign(target.style, targetStyle);
+    Object.assign(container.style, containerStyle);
+    display.style.backgroundColor = `rgba(0,0,0,${background})`;
   };
 
   updateMainAnimation = () => {
-    const { length, size, dynamicStyles } = this;
+    const { settings: { length, size }, dynamicStyles } = this;
     const distance = length - (size / 2);
     const index = dynamicStyles.sheet.cssRules.length;
     const body = `
@@ -77,8 +77,8 @@ export default class Display extends Component {
     const index = this.dynamicStyles.sheet.cssRules.length;
     const body = `
       @keyframes wave {
-        0% { top: -${this.wave}vh; }
-        100%  { top: ${this.wave}vh; }
+        0% { top: -${this.settings.wave}vh; }
+        100%  { top: ${this.settings.wave}vh; }
       }
     `;
     // const body = `
@@ -99,32 +99,33 @@ export default class Display extends Component {
   };
 
   setColor = newColor => {
-    const switchToblack = newColor === 'white' && this.background <= .5;
+    const switchToblack = newColor === 'white' && this.settings.background <= .5;
     const newClass = !switchToblack ? `color-${newColor}` : 'color-black';
     const newClasses = this.target.className.replace(/ *color-[a-z]+/gi, newClass);
     this.target.className = newClasses;
-    this.color = newColor;
+    this.settings.color = newColor;
   };
 
   setShape = newShape => {
     const newClass = ` shape-${newShape}`;
     const newClasses = this.target.className.replace(/ *shape-[a-z]+/gi, newClass);
+    this.settings.shape = newShape;
     this.target.className = newClasses;
   };
 
   setSize = value => {
-    this.size = value;
+    this.settings.size = value;
     this.updateDynamicStyles();
     this.updateMainAnimation();
   };
 
   setBackground = value => {
-    this.background = value;
+    this.settings.background = value;
 
-    if (this.color === 'white' && value <= .5) {
+    if (this.settings.color === 'white' && value <= .5) {
       this.setColor('black');
     }
-    if (this.color === 'black' && value > .5) {
+    if (this.settings.color === 'black' && value > .5) {
       this.setColor('white');
     }
 
@@ -132,42 +133,42 @@ export default class Display extends Component {
   };
 
   setPitch = value => {
-    this.pitch = value;
+    this.settings.pitch = value;
   };
 
   setWave = value => {
-    this.wave = value;
+    this.settings.wave = value;
     this.updateWaveAnimation();
   };
 
   setLength = value => {
-    this.length = value;
+    this.settings.length = value;
     this.updateMainAnimation();
   };
 
   setVolume = value => {
-    this.volume = value;
+    this.settings.volume = value;
   };
 
   setSpeed = value => {
-    this.speed = value ? this.maxSpeed - value + this.minSpeed : 0;
+    this.settings.speed = value ? this.maxSpeed - value + this.minSpeed : 0;
+    this.updateDynamicStyles();
+  };
+
+  setOpacity = value => {
+    this.settings.opacity = value;
     this.updateDynamicStyles();
   };
 
   setAngle = value => {
-    this.angle = Number(value);
-    const { container, angle } = this;
+    this.settings.angle = Number(value);
+    const { container, settings: { angle } } = this;
     const hasLevel = container.className.indexOf('containerLevel') > -1;
     if (!angle) {
       container.className = container.className + ' containerLevel';
     } else if (hasLevel) {
       container.className = container.className.replace(' containerLevel', '');
     }
-    this.updateDynamicStyles();
-  };
-
-  setOpacity = value => {
-    this.opacity = value;
     this.updateDynamicStyles();
   };
 
@@ -181,11 +182,20 @@ export default class Display extends Component {
 
   popRemote() {
     const top = window.screen.availHeight - 150;
-    window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
-    this.setState({ remoteMode: 'remoteMode' });
+    this.remote = window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
+    this.setState({ remoteMode: 'remoteMode' }, this.sendSettings);
   }
 
+  sendSettings = () => {
+    const { settings: params, frame, remote } = this;
+    const action = 'updateSettings';
+    const target = window.location.href + (remote ? 'remote' : 'embedded');
+    const windowObj = remote || frame.contentWindow;
+    sendMessage({ action, params }, target, windowObj);
+  };
+
   killRemote() {
+    this.remote = undefined;
     this.setState({
       remoteMode: '',
       hidden: '',
@@ -227,10 +237,10 @@ export default class Display extends Component {
     panner.coneOuterGain = 0;
     panner.setPosition(panX,0,0);
 
-    const duration = this.speed / 2500;
-    volume.gain.value = this.volume;
+    const duration = this.settings.speed / 2500;
+    volume.gain.value = this.settings.volume;
     reverb.buffer = this.impulseResponse(duration, 4.5);
-    source.frequency.value = this.pitch;
+    source.frequency.value = this.settings.pitch;
     source.type = 'sine';
 
     source.connect(volume);
@@ -258,7 +268,12 @@ export default class Display extends Component {
     return impulse;
   };
 
+  setRef = (key, ref) => {
+    this[key] = ref;
+  };
+
   render() {
+    const { hidden, remoteMode } = this.state;
     return (
       <div id="display">
         <div id="container">
@@ -266,7 +281,12 @@ export default class Display extends Component {
             <div id="icon"></div>
           </div>
         </div>
-        <iframe title="remote" className={`toolbar ${this.state.hidden} ${this.state.remoteMode}`} src="./remote" />
+        <iframe
+          title="remote"
+          className={`toolbar ${hidden} ${remoteMode}`}
+          src="./embedded"
+          ref={this.setRef.bind(this, 'frame')}
+        />
       </div>
     );
   }

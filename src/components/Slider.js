@@ -3,7 +3,7 @@ import React from "react";
 const Slider = ({ name, label=true, min, max, step=1, value, onMouseUp=() => true, onChange }) => {
   return (
     <div className="slider">
-      {label && name}
+      {label && name}: {value}
       <input
         className="valueSlider"
         data-action={name}
