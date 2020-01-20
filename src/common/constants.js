@@ -16,6 +16,7 @@ const limits = {
   maxSpeed: 3000,
   minVolume: 0,
   maxVolume: 4000,
+  waveAmplitude: 2.5,
   speedAdjustIncrement: 10,
   volumeAdjustIncrement: 50,
 };

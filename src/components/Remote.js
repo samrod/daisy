@@ -7,13 +7,7 @@ import './Remote.scss';
 
 export default class Remote extends Component {
   state = defaults;
-  minSpeed = limits.minSpeed;
-  maxSpeed = limits.maxSpeed;
-  minVolume = limits.minVolume;
-  maxVolume = limits.maxVolume;
-  speedAdjustIncrement = limits.speedAdjustIncrement;
-  volumeAdjustIncrement = limits.volumeAdjustIncrement;
-
+  limits = limits;
   popup = window.parent === window.self;
   bindings = [
     { selector: 'body', handler: 'keys', event: 'keypress' },
@@ -69,29 +63,30 @@ export default class Remote extends Component {
   };
 
   keys = ({ keyCode, key }) => {
+    const { state, limits } = this;
     let speed, volume;
 
     switch (keyCode) {
       case 39:
-        speed = Math.min(this.state.speed + this.speedAdjustIncrement, this.maxSpeed);
-        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: this.state.speed }));
+        speed = Math.min(state.speed + limits.speedAdjustIncrement, limits.maxSpeed);
+        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: state.speed }));
         break;
       case 37:
-        speed = Math.max(this.state.speed - this.speedAdjustIncrement, this.minSpeed);
-        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: this.state.speed }));
+        speed = Math.max(state.speed - limits.speedAdjustIncrement, limits.minSpeed);
+        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: state.speed }));
         break;
       case 38:
-        volume = Math.min(this.state.volume + this.volumeAdjustIncrement, this.maxVolume);
-        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: this.state.volume }));
+        volume = Math.min(state.volume + limits.volumeAdjustIncrement, limits.maxVolume);
+        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: state.volume }));
         break;
       case 40:
-        volume = Math.max(this.state.volume - this.volumeAdjustIncrement, this.minVolume);
-        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: this.state.volume }));
+        volume = Math.max(state.volume - limits.volumeAdjustIncrement, limits.minVolume);
+        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: state.volume }));
         break;
       case 32:
-        speed = this.state.speed ? 0 : this.previousSpeed;
-        this.previousSpeed = this.state.speed;
-        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: this.state.speed }));
+        speed = state.speed ? 0 : this.previousSpeed;
+        this.previousSpeed = state.speed;
+        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: state.speed }));
         break;
       default:
         break;
@@ -100,10 +95,11 @@ export default class Remote extends Component {
   };
 
   render() {
+    const { state, limits, popup, popRemote, setRange } = this;
     return (
-      <div id="remote" className={this.popup ? 'popup' : ''}>
-        {!this.popup &&
-          <div className="popButton" title="Pop Remote" onClick={this.popRemote} id="pop">&#10696;</div>
+      <div id="remote" className={popup ? 'popup' : ''}>
+        {!popup &&
+          <div className="popButton" title="Pop Remote" onClick={popRemote} id="pop">&#10696;</div>
         }
         <div className="swatches">
           <div className="row">
@@ -112,7 +108,7 @@ export default class Remote extends Component {
             <div className="swatch" data-action="color" data-option="yellow" />
             <div className="swatch" data-action="color" data-option="orange" />
           </div>
-          <Slider name="opacity" label={false} min={.1} max={1} step={.05} value={this.state.opacity} onChange={this.setRange} />
+          <Slider name="opacity" label={false} min={.1} max={1} step={.05} value={state.opacity} onChange={setRange} />
           <div className="row">
             <div className="swatch" data-action="color" data-option="green" />
             <div className="swatch" data-action="color" data-option="cyan" />
@@ -123,16 +119,16 @@ export default class Remote extends Component {
 
         <div className="sliders">
           <div className="row">
-            <Slider name="speed" min={this.minSpeed} max={this.maxSpeed} value={this.state.speed} onChange={e => this.setRange(e, false)} onMouseUp={this.setRange} />
-            <Slider name="pitch" min={50} max={2000} value={this.state.pitch} onChange={this.setRange} />
-            <Slider name="volume" min={this.minVolume} max={this.maxVolume} value={this.state.volume} onChange={this.setRange} />
-            <Slider name="wave" min={0} max={25} value={this.state.wave} onChange={this.setRange} />
+            <Slider name="speed" min={limits.minSpeed} max={limits.maxSpeed} value={state.speed} onChange={e => setRange(e, false)} onMouseUp={setRange} />
+            <Slider name="pitch" min={50} max={2000} value={state.pitch} onChange={setRange} />
+            <Slider name="volume" min={limits.minVolume} max={limits.maxVolume} value={state.volume} onChange={setRange} />
+            <Slider name="wave" min={0} max={25} value={state.wave} onChange={setRange} />
           </div>
           <div className="row">
-            <Slider name="background" min={0} max={1} step={.01} value={this.state.background} onChange={this.setRange} />
-            <Slider name="size" min={1} max={15} step={.25} value={this.state.size} onChange={this.setRange} />
-            <Slider name="angle" min={-45} max={45} value={this.state.angle} onChange={this.setRange} />
-            <Slider name="length" min={10} max={50} value={this.state.length} onChange={this.setRange} />
+            <Slider name="background" min={0} max={1} step={.01} value={state.background} onChange={setRange} />
+            <Slider name="size" min={1} max={15} step={.25} value={state.size} onChange={setRange} />
+            <Slider name="angle" min={-45} max={45} value={state.angle} onChange={setRange} />
+            <Slider name="length" min={10} max={50} value={state.length} onChange={setRange} />
           </div>
         </div>
 

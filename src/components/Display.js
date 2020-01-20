@@ -9,14 +9,14 @@ export default class Display extends Component {
     hidden: '',
   };
   settings = defaults;
-  minSpeed = limits.minSpeed;
-  maxSpeed = limits.maxSpeed;
+  limits = limits;
   bindings = [
     { selector: '#target', handler: 'ping', event: 'animationiteration' },
     { selector: '#target', handler: 'updateMainAnimation' },
     { selector: 'body', handler: 'toggleToolbar', event: 'mousemove' },
   ];
-  selectors = [ '.toolbar', '#container', '#target', '#dynamicStyles', '#display' ];
+  selectors = [ '.toolbar', '#container', '#target', '#display' ];
+  animatorStylesheets = ['length', 'wave'];
 
   get targetStyle() {
     const { settings: { size, opacity }, velocity } = this;
@@ -29,15 +29,15 @@ export default class Display extends Component {
   }
 
   get containerStyle() {
-    const { angle, settings: { velocity } } = this;
+    const { settings: { angle }, velocity } = this;
     return {
       transform: `rotateZ(${angle}deg)`,
-      'animationDuration': `${velocity/3}ms`,
+      animationDuration: `${velocity / limits.waveAmplitude}ms`,
     };
   }
 
   get velocity() {
-    const { settings: { speed }, maxSpeed, minSpeed } = this;
+    const { settings: { speed }, limits: { maxSpeed, minSpeed } } = this;
     return speed ? maxSpeed - speed + minSpeed : 0;
   }
 
@@ -46,19 +46,24 @@ export default class Display extends Component {
   }
 
   init() {
-    const styleElement = document.createElement('style');
-    styleElement.setAttribute('id', 'dynamicStyles');
-    document.head.append(styleElement);
-
     this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+    this.animatorStylesheets.forEach(this.createAnimatorStylesheet.bind(this));
     this.selectors.forEach(this.setElement);
     this.bindings.forEach(bindEvent.bind(this));
     window.addEventListener('message', receiveMessage.bind(this));
     this.target.className = 'color-white shape-circle';
-    this.updateDynamicStyles();
+    this.updateStyles();
   }
 
-  updateDynamicStyles = () => {
+  createAnimatorStylesheet = name => {
+    const styleElement = document.createElement('style');
+    const id = `${name}Styles`;
+    styleElement.setAttribute('id', id);
+    document.head.append(styleElement);
+    this.setElement(`#${id}`);
+  };
+
+  updateStyles = () => {
     const { display, target, targetStyle, container, containerStyle, settings: { background } } = this;
     Object.assign(target.style, targetStyle);
     Object.assign(container.style, containerStyle);
@@ -66,24 +71,26 @@ export default class Display extends Component {
   };
 
   updateMainAnimation = () => {
-    const { settings: { length, size }, dynamicStyles } = this;
+    const { settings: { length, size }, lengthStyles } = this;
     const distance = length - (size / 2);
-    const index = dynamicStyles.sheet.cssRules.length;
+    const index = lengthStyles.sheet.cssRules.length;
     const body = `
       @keyframes bounce {
         0% { left: -${distance}vw; }
         100%  { left: ${distance}vw; }
       }
     `;
-    dynamicStyles.sheet.insertRule(body, index);
+    index && lengthStyles.sheet.deleteRule(0);
+    lengthStyles.sheet.insertRule(body, 0);
   };
 
   updateWaveAnimation = () => {
-    const index = this.dynamicStyles.sheet.cssRules.length;
+    const { settings: { wave }, waveStyles } = this;
+    const index = waveStyles.sheet.cssRules.length;
     const body = `
       @keyframes wave {
-        0% { top: -${this.settings.wave}vh; }
-        100%  { top: ${this.settings.wave}vh; }
+        0% { top: -${wave}vh; }
+        100%  { top: ${wave}vh; }
       }
     `;
     // const body = `
@@ -95,7 +102,8 @@ export default class Display extends Component {
     //     100%  { top: 0; }
     //   }
     // `;
-    this.dynamicStyles.sheet.insertRule(body, index);
+    index && waveStyles.sheet.deleteRule(0);
+    waveStyles.sheet.insertRule(body, 0);
   };
 
   setElement = selector => {
@@ -120,7 +128,7 @@ export default class Display extends Component {
 
   setSize = value => {
     this.settings.size = value;
-    this.updateDynamicStyles();
+    this.updateStyles();
     this.updateMainAnimation();
   };
 
@@ -134,7 +142,7 @@ export default class Display extends Component {
       this.setColor('white');
     }
 
-    this.updateDynamicStyles()
+    this.updateStyles()
   };
 
   setPitch = value => {
@@ -157,12 +165,12 @@ export default class Display extends Component {
 
   setSpeed = value => {
     this.settings.speed = value;
-    this.updateDynamicStyles();
+    this.updateStyles();
   };
 
   setOpacity = value => {
     this.settings.opacity = value;
-    this.updateDynamicStyles();
+    this.updateStyles();
   };
 
   setAngle = value => {
@@ -174,7 +182,7 @@ export default class Display extends Component {
     } else if (hasLevel) {
       container.className = container.className.replace(' containerLevel', '');
     }
-    this.updateDynamicStyles();
+    this.updateStyles();
   };
 
   flashAngle = () => {
@@ -230,7 +238,7 @@ export default class Display extends Component {
     const source = audioCtx.createOscillator();
     const volume = audioCtx.createGain();
     const panner = audioCtx.createPanner();
-    const reverb = audioCtx.createConvolver();
+    // const reverb = audioCtx.createConvolver();
 
     panner.panningModel = 'HRTF';
     panner.distanceModel = 'inverse';
@@ -242,9 +250,9 @@ export default class Display extends Component {
     panner.coneOuterGain = 0;
     panner.setPosition(panX,0,0);
 
-    const duration = this.settings.speed / 2500;
+    // const duration = this.settings.speed / 2500;
+    // reverb.buffer = this.impulseResponse(duration, 4.5);
     volume.gain.value = this.settings.volume;
-    reverb.buffer = this.impulseResponse(duration, 4.5);
     source.frequency.value = this.settings.pitch;
     source.type = 'sine';
 
