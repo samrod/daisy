@@ -1,5 +1,5 @@
-export function bindEvent({ selector, event = 'click', handler }) {
-  document.querySelectorAll(selector).forEach(item => item.addEventListener(event, this[handler]));
+export function bindEvent({ element, event , handler }) {
+  element.addEventListener(event, handler);
 }
 
 export function receiveMessage({ data }) {

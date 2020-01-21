@@ -11,15 +11,17 @@ export default class Remote extends Component {
   popup = window.parent === window.self;
 
   componentDidMount() {
-    this.init();
+    this.bindEvents();
+    this.sendSettings();
   }
 
-  init() {
-    bindEvent('body', 'keypress', this.keys);
-    (window.parent || window.opener).addEventListener('keydown', this.keys);
-    window.addEventListener('unload', this.killRemote);
-    window.addEventListener('message', receiveMessage.bind(this));
-    this.sendSettings();
+  bindEvents() {
+    [
+      { event: 'keydown', handler: this.keys, element: (window.parent || window.opener) },
+      { event: 'keypress', handler: this.keys, element: document.body },
+      { event: 'unload', handler: this.killRemote, element: window },
+      { event: 'message', handler: receiveMessage.bind(this), element: window },
+    ].forEach(bindEvent);
   }
 
   sendSettings() {

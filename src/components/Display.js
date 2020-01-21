@@ -38,16 +38,18 @@ export default class Display extends Component {
   }
 
   componentDidMount() {
-    this.init();
-  }
-
-  init() {
-    bindEvent('body', 'mousemove', this.toggleToolbar);
+    this.bindEvents();
     this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
     this.animatorStylesheets.forEach(this.createAnimatorStylesheet.bind(this));
-    window.addEventListener('message', receiveMessage.bind(this));
     this.target.className = 'color-white shape-circle';
     this.updateStyles();
+  }
+
+  bindEvents() {
+    [
+      { element: document.body, event: 'mousemove', handler: this.toggleToolbar },
+      { element: window, event: 'message', handler: receiveMessage.bind(this) },
+    ].forEach(bindEvent);
   }
 
   createAnimatorStylesheet = name => {
