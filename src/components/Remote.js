@@ -104,7 +104,6 @@ export default class Remote extends Component {
             <div className="swatch" data-action="color" data-option="yellow" onClick={setRange} />
             <div className="swatch" data-action="color" data-option="orange" onClick={setRange} />
           </div>
-          <Slider name="opacity" label={false} min={.1} max={1} step={.05} value={state.opacity} onChange={setRange} />
           <div className="row">
             <div className="swatch" data-action="color" data-option="green" onClick={setRange} />
             <div className="swatch" data-action="color" data-option="cyan" onClick={setRange} />
@@ -119,9 +118,11 @@ export default class Remote extends Component {
             <Slider name="pitch" min={50} max={2000} value={state.pitch} onChange={setRange} />
             <Slider name="volume" min={limits.minVolume} max={limits.maxVolume} value={state.volume} onChange={setRange} />
             <Slider name="wave" min={0} max={25} value={state.wave} onChange={setRange} />
+            <Slider name="steps" min={1} max={8} value={state.steps} onChange={setRange} />
           </div>
           <div className="row">
             <Slider name="background" min={0} max={1} step={.01} value={state.background} onChange={setRange} />
+            <Slider name="opacity" min={.1} max={1} step={.05} value={state.opacity} onChange={setRange} />
             <Slider name="size" min={1} max={15} step={.25} value={state.size} onChange={setRange} />
             <Slider name="angle" min={-45} max={45} value={state.angle} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />
             <Slider name="length" min={10} max={50} value={state.length} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />

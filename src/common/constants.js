@@ -1,6 +1,6 @@
 const defaults = {
   size: 7.5,
-  speed: 1000,
+  speed: 2000,
   angle: 0,
   pitch: 1000,
   volume: 1500,
@@ -8,6 +8,7 @@ const defaults = {
   length: 50,
   background: 1,
   opacity: 1,
+  steps: 1,
   color: 'white',
 };
 

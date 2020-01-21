@@ -8,6 +8,7 @@ export default class Display extends Component {
     remoteMode: '',
     hidden: '',
   };
+  odd = true;
   settings = defaults;
   limits = limits;
   animatorStylesheets = ['length', 'wave'];
@@ -19,6 +20,7 @@ export default class Display extends Component {
       height: `${size}vw`,
       opacity: opacity,
       animationDuration: `${velocity}ms`,
+      animationTimingFunction: this.timingFunction,
     };
   }
 
@@ -30,6 +32,16 @@ export default class Display extends Component {
       animationDuration: `${velocity / limits.waveAmplitude}ms`,
       borderRadius: `${size/2}vw`,
     };
+  }
+
+  get timingFunction() {
+    const { settings: { steps: numString }, odd } = this;
+    const steps = Number(numString) - 1;
+    if (!steps) {
+      return 'ease-in-out';
+    }
+    const directionLimit = odd ? 'start' : 'end';
+    return `steps(${steps}, ${directionLimit})`;
   }
 
   get velocity() {
@@ -144,6 +156,12 @@ export default class Display extends Component {
     this.updateWaveAnimation();
   };
 
+  setSteps = value => {
+    this.settings.steps = value;
+    this.updateStyles()
+    this.updateMainAnimation();
+  };
+
   setLength = value => {
     this.settings.length = value;
     this.updateStyles();
@@ -223,6 +241,14 @@ export default class Display extends Component {
     }
   };
 
+  toggleAnimationStepsEndpoint(odd) {
+    if (this.steps >= 1) {
+      return;
+    }
+    this.odd = odd;
+    this.updateStyles();
+  }
+
   ping = ({target: { offsetLeft }}) => {
     const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
     const { audioCtx } = this;
@@ -230,6 +256,7 @@ export default class Display extends Component {
     const volume = audioCtx.createGain();
     const panner = audioCtx.createPanner();
     // const reverb = audioCtx.createConvolver();
+    this.toggleAnimationStepsEndpoint(panX <= 0);
 
     panner.panningModel = 'HRTF';
     panner.distanceModel = 'inverse';

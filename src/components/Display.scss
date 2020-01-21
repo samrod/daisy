@@ -14,6 +14,7 @@
   position: relative;
   transition:
     transform .125s linear,
+    width .125s linear,
     background-color .125s linear;
 
   animation-name: wave;
@@ -32,11 +33,11 @@
 }
 
 #target {
+  left: 0vw;
   position: relative;
   animation-name: bounce;
   animation-direction: alternate;
   animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
 }
 
 #icon {
