@@ -1,8 +1,12 @@
-export function bindEvent({ element, event , handler }) {
+export function unbindEvent({ element, event, handler }) {
+  element.removeEventListener(event, handler);
+}
+
+export function bindEvent({ element, event, handler }) {
   element.addEventListener(event, handler);
 }
 
-export function receiveMessage({ data }) {
+export function receiveMessage({ data, ...e }) {
   const { action, params } = JSON.parse(data);
   if (this[action]) {
     this[action].call(this, params);

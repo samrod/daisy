@@ -194,6 +194,10 @@ export default class Display extends Component {
     this.updateStyles();
   };
 
+  setPanel = value => {
+    this.settings.panel = value;
+  };
+
   flashBar = () => {
     this.container.className += ' containerActive';
   };
@@ -216,7 +220,7 @@ export default class Display extends Component {
     sendMessage({ action, params }, target, windowObj);
   };
 
-  killRemote() {
+  killRemote(route) {
     this.remote = undefined;
     this.setState({
       remoteMode: '',

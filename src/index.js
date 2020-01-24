@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route } from 'react-router-dom';
 import './components/global.scss'
-import Display from './components/Display';
-import Remote from './components/Remote';
+import Display from './Screens/Display';
+import Remote from './Screens/Remote';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render((

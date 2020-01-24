@@ -18,6 +18,6 @@ body, #root {
   justify-content: center;
   overflow: hidden;
   box-sizing: border-box;
-
-  font: 12px system;
+  -webkit-font-smoothing: antialiased;
+  font: 16px system;
 }

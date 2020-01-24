@@ -1,15 +1,16 @@
 const defaults = {
-  size: 7.5,
+  size: 3,
   speed: 2000,
   angle: 0,
-  pitch: 1000,
-  volume: 1500,
+  pitch: 250,
+  volume: 0,
   wave: 0,
   length: 50,
   background: 1,
   opacity: 1,
   steps: 1,
   color: 'white',
+  panel: 'appearance',
 };
 
 const limits = {

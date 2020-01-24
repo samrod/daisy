@@ -1,5 +1,4 @@
 #display {
-  background-color: black;
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -50,15 +49,6 @@
     transform .5s ease-in-out;
 }
 
-a {
-  transition: transform .15s ease-in-out;
-  cursor: pointer;
-}
-
-a:hover {
-  transform: scale(1.25);
-}
-
 #icon {
   .shape-circle & { border-radius: 50%; }
   .shape-square & { border-radius: 0; }
@@ -77,7 +67,7 @@ a:hover {
 
 .toolbar {
   width: 100%;
-  height: 120px;
+  height: 150px;
   background-color: rgba(16,16,16,.85);
   border: none;
   border-top: 1px solid #444;
