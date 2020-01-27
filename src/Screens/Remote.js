@@ -1,4 +1,3 @@
-import { camelCase } from 'lodash';
 import React, { Component } from 'react';
 import { bindEvent, unbindEvent, sendMessage, receiveMessage } from '../common/utils';
 import Slider from '../components/Slider';
@@ -21,6 +20,21 @@ export default class Remote extends Component {
     unbindEvent({ event: 'message', handler: receiveMessage.bind(this), element: window });
   }
 
+  get showLightbarSlider() {
+    const { steps, wave } = this.state;
+    return steps > 1 && !Number(wave);
+  }
+
+  get showWaveSlider() {
+    const { lightbar } = this.state;
+    return !Number(lightbar);
+  }
+
+  get showAudioSliders() {
+    const { volume } = this.state;
+    return !!Number(volume);
+  }
+
   bindEvents() {
     [
       { event: 'message', handler: receiveMessage.bind(this), element: window },
@@ -30,13 +44,16 @@ export default class Remote extends Component {
   }
 
   setRange = ({ target: { value, dataset: { action: rawAction, option } } }, execute = true) => {
-    const params = value || option;
-    const action = camelCase(`set ${rawAction}`);
-    this.setState({ [rawAction]: params });
+    const data = value || option;
+    this.setState({ [rawAction]: data });
     if (execute) {
-      sendMessage({ action, params });
+      this.set(rawAction, data);
     }
   };
+
+  set(setting, data) {
+    sendMessage({ action: 'set', params: { setting, data } } );
+  }
 
   flashBar = () => {
     sendMessage({ action: 'flashBar' });
@@ -70,24 +87,29 @@ export default class Remote extends Component {
     switch (keyCode) {
       case 38:
         volume = Math.min(state.volume + limits.volumeAdjustIncrement, limits.maxVolume);
-        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: state.volume }));
+        this.setState({ volume });
+        this.set('volume', volume);
         break;
       case 40:
         volume = Math.max(state.volume - limits.volumeAdjustIncrement, limits.minVolume);
-        this.setState({ volume }, () => sendMessage({ action: 'setVolume', params: state.volume }));
+        this.setState({ volume });
+        this.set('volume', volume);
         break;
       case 32:
         speed = state.speed ? 0 : this.previousSpeed;
         this.previousSpeed = state.speed;
-        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: state.speed }));
+        this.setState({ speed });
+        this.set('speed', speed);
         break;
       case 39:
         speed = Math.min(state.speed + limits.speedAdjustIncrement, limits.maxSpeed);
-        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: state.speed }));
+        this.setState({ speed });
+        this.set('speed', speed);
         break;
       case 37:
         speed = Math.max(state.speed - limits.speedAdjustIncrement, limits.minSpeed);
-        this.setState({ speed }, () => sendMessage({ action: 'setSpeed', params: state.speed }));
+        this.setState({ speed });
+        this.set('speed', speed);
         break;
       default:
         break;
@@ -116,10 +138,12 @@ export default class Remote extends Component {
               <div className="sliders">
                 <div className="row">
                   <Slider name="speed" min={limits.minSpeed} max={limits.maxSpeed} value={state.speed} onChange={e => setRange(e, false)} onMouseUp={setRange} />
-                  <Slider name="wave" min={0} max={25} value={state.wave} onChange={setRange} />
-                  <Slider name="steps" min={1} max={8} value={state.steps} onChange={setRange} />
+                  {this.showWaveSlider &&
+                    <Slider name="wave" min={0} max={25} value={state.wave} onChange={setRange} />
+                  }
                   <Slider name="angle" min={-45} max={45} value={state.angle} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />
                   <Slider name="length" min={10} max={50} value={state.length} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />
+                  <Slider name="steps" min={1} max={8} value={state.steps} onChange={setRange} />
                 </div>
               </div>
             </div>
@@ -144,6 +168,9 @@ export default class Remote extends Component {
                   <Slider name="background" min={0} max={1} step={.01} value={state.background} onChange={setRange} />
                   <Slider name="opacity" min={.1} max={1} step={.05} value={state.opacity} onChange={setRange} />
                   <Slider name="size" min={1} max={15} step={.25} value={state.size} onChange={setRange} />
+                  {this.showLightbarSlider &&
+                    <Slider name="lightbar" min={0} max={.5} step={.05} value={state.lightbar} onChange={setRange} />
+                  }
                 </div>
               </div>
               <div className="shapes">
@@ -156,8 +183,10 @@ export default class Remote extends Component {
             <div className={`panel ${panel === 'sound' ? 'active' : ''}`}>
               <div className="sliders">
                 <div className="row">
-                  <Slider name="pitch" min={50} max={2000} value={state.pitch} onChange={setRange} />
                   <Slider name="volume" min={limits.minVolume} max={limits.maxVolume} value={state.volume} onChange={setRange} />
+                  {this.showAudioSliders &&
+                    <Slider name="pitch" min={50} max={2000} value={state.pitch} onChange={setRange} />
+                  }
                 </div>
               </div>
             </div>

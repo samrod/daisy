@@ -1,6 +1,6 @@
 const defaults = {
   size: 3,
-  speed: 2000,
+  speed: 2500,
   angle: 0,
   pitch: 250,
   volume: 0,
@@ -8,8 +8,10 @@ const defaults = {
   length: 50,
   background: 1,
   opacity: 1,
+  lightbar: 0,
   steps: 1,
   color: 'white',
+  shape: 'circle',
   panel: 'appearance',
 };
 

@@ -1,20 +1,31 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { bindEvent, receiveMessage, sendMessage } from '../common/utils';
 import { defaults, limits } from '../common/constants';
 import './Display.scss';
 
-export default class Display extends Component {
+export default class Display extends PureComponent {
   state = {
     remoteMode: '',
     hidden: '',
+    settings: defaults,
+    motionBarActive: false,
+    odd: true,
   };
-  odd = true;
-  settings = defaults;
+  callbacks = {
+    length: 'updateMainAnimation',
+    wave: 'updateWaveAnimation',
+  };
   limits = limits;
   animatorStylesheets = ['length', 'wave'];
 
+  get displayStyle() {
+    const { background } = this.state.settings;
+    return { backgroundColor: `rgba(0,0,0,${background})` };
+  }
+
   get targetStyle() {
-    const { settings: { size, opacity }, velocity } = this;
+    const { velocity, state } = this;
+    const { size, opacity } = state.settings;
     return {
       width: `${size}vw`,
       height: `${size}vw`,
@@ -24,8 +35,21 @@ export default class Display extends Component {
     };
   }
 
+  get targetClass() {
+    const { color, shape, background } = this.state.settings;
+    let newColor = color;
+    if (color === 'white' && background <= .5) {
+     newColor = 'black';
+    }
+    if (color === 'black' && background > .5) {
+      newColor ='white';
+    }
+    return `color-${newColor} shape-${shape}`;
+  }
+
   get containerStyle() {
-    const { settings: { angle, length, size }, velocity } = this;
+    const { velocity, state } = this;
+    const { angle, length, size } = state.settings;
     return {
       width: `${length * 2}vw`,
       transform: `rotateZ(${angle}deg)`,
@@ -34,8 +58,22 @@ export default class Display extends Component {
     };
   }
 
+  get containerClass() {
+    const { settings: { angle }, motionBarActive } = this.state;
+    const levelClass = motionBarActive && Number(angle) === 0 ? 'containerLevel' : '';
+    const activeClass = motionBarActive ? 'containerActive' : '';
+    return `${levelClass} ${activeClass}`;
+  }
+
+  get lightbarStyle() {
+    const { lightbar } = this.state.settings;
+    return {
+      opacity: lightbar,
+    };
+  }
+
   get timingFunction() {
-    const { settings: { steps: numString }, odd } = this;
+    const { odd, steps: numString } = this.state.settings;
     const steps = Number(numString) - 1;
     if (!steps) {
       return 'ease-in-out';
@@ -45,16 +83,29 @@ export default class Display extends Component {
   }
 
   get velocity() {
-    const { settings: { speed }, limits: { maxSpeed, minSpeed } } = this;
+    const { maxSpeed, minSpeed } = this.limits;
+    const { speed } = this.state.settings;
     return speed ? maxSpeed - speed + minSpeed : 0;
+  }
+
+  get lights() {
+    const { light, state } = this;
+    const { steps } = state.settings;
+    if (steps > 1) {
+      return Array.apply(null, Array(Number(steps))).map(light);
+    }
+    return null;
+  }
+
+  get distance() {
+    const { length, size } = this.state.settings;
+    return length - (size / 2);
   }
 
   componentDidMount() {
     this.bindEvents();
     this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
     this.animatorStylesheets.forEach(this.createAnimatorStylesheet.bind(this));
-    this.target.className = 'color-white shape-circle';
-    this.updateStyles();
   }
 
   bindEvents() {
@@ -70,30 +121,18 @@ export default class Display extends Component {
     this[`${name}Styles`] = styleElement;
   };
 
-  updateStyles = () => {
-    const { display, target, targetStyle, container, containerStyle, settings: { background } } = this;
-    Object.assign(target.style, targetStyle);
-    Object.assign(container.style, containerStyle);
-    display.style.backgroundColor = `rgba(0,0,0,${background})`;
-  };
-
   updateMainAnimation = () => {
-    const { settings: { length, size }, lengthStyles } = this;
-    const distance = length - (size / 2);
-    const index = lengthStyles.sheet.cssRules.length;
     const body = `
       @keyframes bounce {
-        0% { left: -${distance}vw; }
-        100%  { left: ${distance}vw; }
+        0% { left: -${this.distance}vw; }
+        100%  { left: ${this.distance}vw; }
       }
     `;
-    index && lengthStyles.sheet.deleteRule(0);
-    lengthStyles.sheet.insertRule(body, 0);
+    this.updateAnimation('length', body);
   };
 
   updateWaveAnimation = () => {
-    const { settings: { wave }, waveStyles } = this;
-    const index = waveStyles.sheet.cssRules.length;
+    const { state: { settings: { wave } } } = this;
     const body = `
       @keyframes wave {
         0% { top: -${wave}vh; }
@@ -109,101 +148,42 @@ export default class Display extends Component {
     //     100%  { top: 0; }
     //   }
     // `;
-    index && waveStyles.sheet.deleteRule(0);
-    waveStyles.sheet.insertRule(body, 0);
+    this.updateAnimation('wave', body);
   };
 
-  setColor = newColor => {
-    const switchToblack = newColor === 'white' && this.settings.background <= .5;
-    const newClass = !switchToblack ? `color-${newColor}` : 'color-black';
-    const newClasses = this.target.className.replace(/ *color-[a-z]+/gi, newClass);
-    this.target.className = newClasses;
-    this.settings.color = newColor;
+  updateAnimation(context, css) {
+    const stylesheet = this[`${context}Styles`];
+    const index = stylesheet.sheet.cssRules.length;
+    index && stylesheet.sheet.deleteRule(0);
+    stylesheet.sheet.insertRule(css, 0);
+  }
+
+  set = ({ setting, data }) => {
+    const { settings } = this.state;
+    const callback = this[this.callbacks[setting]] || (() => true);
+    this.setState({
+      settings: {
+        ...settings,
+        [setting]: data,
+      },
+    }, callback);
   };
 
-  setShape = newShape => {
-    const newClass = ` shape-${newShape}`;
-    const newClasses = this.target.className.replace(/ *shape-[a-z]+/gi, newClass);
-    this.settings.shape = newShape;
-    this.target.className = newClasses;
-  };
-
-  setSize = value => {
-    this.settings.size = value;
-    this.updateStyles();
-    this.updateMainAnimation();
-  };
-
-  setBackground = value => {
-    this.settings.background = value;
-
-    if (this.settings.color === 'white' && value <= .5) {
-      this.setColor('black');
-    }
-    if (this.settings.color === 'black' && value > .5) {
-      this.setColor('white');
-    }
-
-    this.updateStyles()
-  };
-
-  setPitch = value => {
-    this.settings.pitch = value;
-  };
-
-  setWave = value => {
-    this.settings.wave = value;
-    this.updateWaveAnimation();
-  };
-
-  setSteps = value => {
-    this.settings.steps = value;
-    this.updateStyles()
-    this.updateMainAnimation();
-  };
-
-  setLength = value => {
-    this.settings.length = value;
-    this.updateStyles();
-    this.updateMainAnimation();
-  };
-
-  setVolume = value => {
-    this.settings.volume = value;
-  };
-
-  setSpeed = value => {
-    this.settings.speed = value;
-    this.updateStyles();
-  };
-
-  setOpacity = value => {
-    this.settings.opacity = value;
-    this.updateStyles();
-  };
-
-  setAngle = value => {
-    this.settings.angle = Number(value);
-    const { container, settings: { angle } } = this;
-    const hasLevel = container.className.indexOf('containerLevel') > -1;
-    if (!angle) {
-      container.className = container.className + ' containerLevel';
-    } else if (hasLevel) {
-      container.className = container.className.replace(' containerLevel', '');
-    }
-    this.updateStyles();
-  };
-
-  setPanel = value => {
-    this.settings.panel = value;
+  light = (item, index) => {
+    const { width, height } = this.targetStyle;
+    return (
+      <div key={index} className="lightWrapper" style={{ width, height }}>
+        <div className="icon" style={{ width, height, ...this.lightbarStyle }} />
+      </div>
+    );
   };
 
   flashBar = () => {
-    this.container.className += ' containerActive';
+    this.setState({ motionBarActive: true });
   };
 
   hideBar = () => {
-    this.container.className = '';
+    this.setState({ motionBarActive: false });
   };
 
   popRemote() {
@@ -213,7 +193,8 @@ export default class Display extends Component {
   }
 
   sendSettings = () => {
-    const { settings: params, toolbar, remote } = this;
+    const { state, toolbar, remote } = this;
+    const { settings: params } = state;
     const action = 'updateSettings';
     const target = window.location.href + (remote ? 'remote' : 'embedded');
     const windowObj = remote || toolbar.contentWindow;
@@ -245,12 +226,20 @@ export default class Display extends Component {
     }
   };
 
-  toggleAnimationStepsEndpoint(odd) {
-    if (this.steps >= 1) {
+  toggleSteppedAnimationFlow(flow) {
+    const { settings } = this.state;
+    const { steps, odd } = settings;
+    if (flow === odd) {
       return;
     }
-    this.odd = odd;
-    this.updateStyles();
+    if (steps >= 1) {
+      this.setState({
+        settings: {
+          ...settings,
+          odd: flow,
+        },
+       });
+    }
   }
 
   ping = ({target: { offsetLeft }}) => {
@@ -260,7 +249,7 @@ export default class Display extends Component {
     const volume = audioCtx.createGain();
     const panner = audioCtx.createPanner();
     // const reverb = audioCtx.createConvolver();
-    this.toggleAnimationStepsEndpoint(panX <= 0);
+    this.toggleSteppedAnimationFlow(panX <= 0);
 
     panner.panningModel = 'HRTF';
     panner.distanceModel = 'inverse';
@@ -274,8 +263,12 @@ export default class Display extends Component {
 
     // const duration = this.settings.speed / 2500;
     // reverb.buffer = this.impulseResponse(duration, 4.5);
-    volume.gain.value = this.settings.volume;
-    source.frequency.value = this.settings.pitch;
+    if (isFinite(this.state.settings.volume)) {
+      volume.gain.value = parseFloat(this.state.settings.volume);
+    }
+    if (isFinite(this.state.settings.pitch)) {
+      source.frequency.value = parseFloat(this.state.settings.pitch);
+    }
     source.type = 'sine';
 
     source.connect(volume);
@@ -310,10 +303,23 @@ export default class Display extends Component {
   render() {
     const { hidden, remoteMode } = this.state;
     return (
-      <div id="display" ref={this.setRef.bind(this, 'display')}>
-        <div id="container" ref={this.setRef.bind(this, 'container')}>
-          <div id="target" ref={this.setRef.bind(this, 'target')} onClick={this.updateMainAnimation} onAnimationIteration={this.ping}>
-            <div id="icon"></div>
+      <div id="display" style={this.displayStyle}>
+        <div
+          id="container"
+          className={this.containerClass}
+          style={this.containerStyle}
+        >
+          <div id="lightbar" className={this.targetClass}>
+            {this.lights}
+          </div>
+          <div
+            id="target"
+            className={this.targetClass}
+            style={this.targetStyle}
+            onClick={this.updateMainAnimation}
+            onAnimationIteration={this.ping}
+          >
+            <div className="icon"></div>
           </div>
         </div>
         <iframe

@@ -27,7 +27,6 @@
 }
 
 .containerLevel {
-  border: 1px solid #666;
   background-color: #333;
 }
 
@@ -39,18 +38,16 @@
   animation-iteration-count: infinite;
 }
 
-#icon {
-  width: 100%;
-  height: 100%;
-  transition:
-    background-color .5s ease-in-out,
-    border-radius .5s ease-in-out,
-    opacity .25s linear,
-    transform .5s ease-in-out;
-}
+.icon {
+    width: 100%;
+    height: 100%;
+    transition:
+      background-color .5s ease-in-out,
+      border-radius .5s ease-in-out,
+      opacity .25s linear,
+      transform .5s ease-in-out;
 
-#icon {
-  .shape-circle & { border-radius: 50%; }
+      .shape-circle & { border-radius: 50%; }
   .shape-square & { border-radius: 0; }
   .shape-diamond & { transform: rotateZ(45deg); }
 
@@ -63,6 +60,22 @@
   .color-cyan & { background-color: #0FF; }
   .color-blue & { background-color: #00F; }
   .color-magenta & { background-color: #F0F; }
+}
+
+  #lightbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: .5;
+  .lightWrapper {
+    position: relative;
+  }
+  .icon {
+    position: absolute;
+  }
 }
 
 .toolbar {
