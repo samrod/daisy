@@ -13,6 +13,8 @@ const defaults = {
   color: 'white',
   shape: 'circle',
   panel: 'appearance',
+  playing: false,
+  mini: false,
 };
 
 const limits = {
@@ -23,6 +25,7 @@ const limits = {
   waveAmplitude: 2.5,
   speedAdjustIncrement: 10,
   volumeAdjustIncrement: 50,
+  miniSize: 300,
 };
 
 export { defaults, limits };

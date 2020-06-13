@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
 import { bindEvent, unbindEvent, sendMessage, receiveMessage } from '../common/utils';
 import Slider from '../components/Slider';
+import Button from '../components/Button';
 import { defaults, limits } from '../common/constants';
 import './Remote.scss';
 
+window.name = 'Remote';
+
 export default class Remote extends Component {
-  state = defaults;
   limits = limits;
   popup = window.parent === window.self;
+  state = defaults;
 
   componentDidMount() {
     this.bindEvents();
@@ -35,11 +38,15 @@ export default class Remote extends Component {
     return !!Number(volume);
   }
 
+  get targetWindow() {
+    return [window.opener || window.parent];
+  }
+
   bindEvents() {
     [
-      { event: 'message', handler: receiveMessage.bind(this), element: window },
-      { event: 'keydown', handler: this.keys, element: document.body },
-      { event: 'unload', handler: this.killRemote, element: window },
+      { event: 'message', element: window, handler: receiveMessage.bind(this) },
+      { event: 'keydown', element: document.body, handler: this.keys },
+      { event: 'unload', element: window, handler: this.killRemote },
     ].forEach(bindEvent);
   }
 
@@ -52,32 +59,42 @@ export default class Remote extends Component {
   };
 
   set(setting, data) {
-    sendMessage({ action: 'set', params: { setting, data } } );
+    sendMessage({ action: 'set', params: { setting, data } }, this.targetWindow );
   }
 
   flashBar = () => {
-    sendMessage({ action: 'flashBar' });
+    sendMessage({ action: 'flashBar' }, this.targetWindow);
   };
 
   hideBar = () => {
-    sendMessage({ action: 'hideBar' });
+    sendMessage({ action: 'hideBar' }, this.targetWindow);
   };
 
   sendSettings() {
-    sendMessage({ action: 'sendSettings' });
+    sendMessage({ action: 'sendSettings' }, this.targetWindow);
   }
-
-  popRemote = () => {
-    sendMessage({ action: 'popRemote' });
-  };
 
   updateSettings = props => {
     this.setState(props);
   };
 
+  popRemote = () => {
+    sendMessage({ action: 'popRemote' }, this.targetWindow);
+  };
+
   killRemote = () => {
-    sendMessage({ action: 'killRemote' });
+    sendMessage({ action: 'killRemote' }, this.targetWindow);
     this.sendSettings();
+  };
+
+
+  togglePlay = () => {
+    const { playing } = this.state;
+    this.setState({
+        playing: !playing,
+      },
+      () => sendMessage({ action: 'updateMainAnimation', params: this.state.playing })
+    );
   };
 
   keys = ({ keyCode, key, type }) => {
@@ -96,10 +113,7 @@ export default class Remote extends Component {
         this.set('volume', volume);
         break;
       case 32:
-        speed = state.speed ? 0 : this.previousSpeed;
-        this.previousSpeed = state.speed;
-        this.setState({ speed });
-        this.set('speed', speed);
+        this.togglePlay();
         break;
       case 39:
         speed = Math.min(state.speed + limits.speedAdjustIncrement, limits.maxSpeed);
@@ -118,7 +132,7 @@ export default class Remote extends Component {
   };
 
   render() {
-    const { setRange, flashBar, hideBar, popup, popRemote, state } = this;
+    const { setRange, togglePlay, flashBar, hideBar, popup, popRemote, state } = this;
     const { panel } = state;
 
     return (
@@ -127,6 +141,13 @@ export default class Remote extends Component {
           {!popup &&
             <div className="popButton" title="Pop Remote" onClick={popRemote} id="pop">&#10696;</div>
           }
+          <div className="topButtons">
+            <Button leftIcon={state.playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
+            {!this.popup &&
+              <Button leftIcon="remote-settings-fill" klass="standardButton" action={popRemote} />
+            }
+          </div>
+          <div className=""></div>
           <div className="tabs">
             <div onClick={setRange} data-action="panel" data-option="motion" className={`tab ${panel === 'motion' ? 'active' : ''}`}>Motion</div>
             <div onClick={setRange} data-action="panel" data-option="appearance" className={`tab ${panel === 'appearance' ? 'active' : ''}`}>Appearance</div>
@@ -143,7 +164,6 @@ export default class Remote extends Component {
                   }
                   <Slider name="angle" min={-45} max={45} value={state.angle} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />
                   <Slider name="length" min={10} max={50} value={state.length} onChange={setRange} onMouseDown={flashBar} onMouseUp={hideBar} />
-                  <Slider name="steps" min={1} max={8} value={state.steps} onChange={setRange} />
                 </div>
               </div>
             </div>
@@ -165,12 +185,13 @@ export default class Remote extends Component {
               </div>
               <div className="sliders">
                 <div className="row">
-                  <Slider name="background" min={0} max={1} step={.01} value={state.background} onChange={setRange} />
-                  <Slider name="opacity" min={.1} max={1} step={.05} value={state.opacity} onChange={setRange} />
-                  <Slider name="size" min={1} max={15} step={.25} value={state.size} onChange={setRange} />
+                  <Slider name="steps" min={1} max={8} value={state.steps} onChange={setRange} />
                   {this.showLightbarSlider &&
                     <Slider name="lightbar" min={0} max={.5} step={.05} value={state.lightbar} onChange={setRange} />
                   }
+                  <Slider name="background" min={0} max={1} step={.01} value={state.background} onChange={setRange} />
+                  <Slider name="opacity" min={.1} max={1} step={.05} value={state.opacity} onChange={setRange} />
+                  <Slider name="size" min={1} max={15} step={.25} value={state.size} onChange={setRange} />
                 </div>
               </div>
               <div className="shapes">

@@ -11,6 +11,7 @@ export default class Display extends PureComponent {
     motionBarActive: false,
     odd: true,
   };
+  noop = () => true;
   callbacks = {
     length: 'updateMainAnimation',
     wave: 'updateWaveAnimation',
@@ -85,7 +86,11 @@ export default class Display extends PureComponent {
   get velocity() {
     const { maxSpeed, minSpeed } = this.limits;
     const { speed } = this.state.settings;
-    return speed ? maxSpeed - speed + minSpeed : 0;
+
+    if (speed) {
+      return maxSpeed - speed + minSpeed;
+    }
+    return 1000000;
   }
 
   get lights() {
@@ -102,17 +107,41 @@ export default class Display extends PureComponent {
     return length - (size / 2);
   }
 
-  componentDidMount() {
-    this.bindEvents();
-    this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-    this.animatorStylesheets.forEach(this.createAnimatorStylesheet.bind(this));
+  get isMini() {
+    const { match: { path } } = this.props;
+    return path === '/mini';
   }
 
+  componentDidMount() {
+    this.bindEvents();
+    this.animatorStylesheets.forEach(this.createAnimatorStylesheet.bind(this));
+    this.target = document.querySelector('#target');
+    this.setMiniMode();
+  }
+
+  setMiniMode() {
+    const { noop } = this;
+    if (this.isMini) {
+      this.popRemote = noop;
+      this.sendSettings = noop;
+      this.ping = this.toggleSteppedAnimationFlow;
+      window.blur();
+      const parent = window.open('', 'Remote');
+      parent.focus();
+    }
+  }
+
+
   bindEvents() {
-    [
-      { element: document.body, event: 'mousemove', handler: this.toggleToolbar },
-      { element: window, event: 'message', handler: receiveMessage.bind(this) },
-    ].forEach(bindEvent);
+    bindEvent({ element: window, event: 'message', handler: receiveMessage.bind(this) });
+    if (!this.isMini) {
+      [
+        { event: 'mousemove', element: document.body, handler: this.toggleToolbar },
+        { event: 'keydown', element: document.body, handler: this.keys },
+        { event: 'message', element: window, handler: this.routeToMini },
+        { event: 'unload', element: window, handler: this.killRemote },
+      ].forEach(bindEvent);
+    }
   }
 
   createAnimatorStylesheet = name => {
@@ -121,14 +150,37 @@ export default class Display extends PureComponent {
     this[`${name}Styles`] = styleElement;
   };
 
-  updateMainAnimation = () => {
-    const body = `
+  getTargetPosition = () => {
+    this.targetPosition = getComputedStyle(this.target).left;
+    if (this.state.settings.playing) {
+      setTimeout(this.getTargetPosition, 1000/30);
+    }
+  };
+
+  updateMainAnimation = (play) => {
+    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    this.setState({
+      settings: {
+        ...this.state.settings,
+        playing: play,
+      },
+    });
+    const body = play
+    ? `
       @keyframes bounce {
         0% { left: -${this.distance}vw; }
         100%  { left: ${this.distance}vw; }
       }
+    `
+      : `
+      @keyframes bounce {
+        0% { left: ${this.targetPosition}; }
+        100%  { left: ${this.targetPosition}; }
+      }
     `;
+    this.getTargetPosition();
     this.updateAnimation('length', body);
+    this.sendSettings();
   };
 
   updateWaveAnimation = () => {
@@ -149,6 +201,10 @@ export default class Display extends PureComponent {
     //   }
     // `;
     this.updateAnimation('wave', body);
+  };
+
+  routeToMini = ({ data }) => {
+    sendMessage(JSON.parse(data), [this.mini], window.location.href + 'mini');
   };
 
   updateAnimation(context, css) {
@@ -173,7 +229,7 @@ export default class Display extends PureComponent {
     const { width, height } = this.targetStyle;
     return (
       <div key={index} className="lightWrapper" style={{ width, height }}>
-        <div className="icon" style={{ width, height, ...this.lightbarStyle }} />
+        <div className="bullseye" style={{ width, height, ...this.lightbarStyle }} />
       </div>
     );
   };
@@ -188,6 +244,9 @@ export default class Display extends PureComponent {
 
   popRemote() {
     const top = window.screen.availHeight - 150;
+    const { miniSize } = limits;
+    const left = window.screen.width - miniSize;
+    this.mini = window.open('/mini', "_mini", `left=${left},height=${miniSize},width=${miniSize},toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
     this.remote = window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
     this.setState({ remoteMode: 'remoteMode' }, this.sendSettings);
   }
@@ -196,13 +255,17 @@ export default class Display extends PureComponent {
     const { state, toolbar, remote } = this;
     const { settings: params } = state;
     const action = 'updateSettings';
-    const target = window.location.href + (remote ? 'remote' : 'embedded');
-    const windowObj = remote || toolbar.contentWindow;
-    sendMessage({ action, params }, target, windowObj);
+    const targetFrame = window.location.href + (remote ? 'remote' : 'embedded');
+    const windowObj = [remote || toolbar.contentWindow];
+    sendMessage({ action, params }, windowObj, targetFrame);
   };
 
-  killRemote(route) {
-    this.remote = undefined;
+  killRemote() {
+    setTimeout(() => {
+      this.remote && this.remote.close();
+      this.mini && this.mini.close();
+      this.remote = undefined;
+    });
     this.setState({
       remoteMode: '',
       hidden: '',
@@ -226,7 +289,10 @@ export default class Display extends PureComponent {
     }
   };
 
-  toggleSteppedAnimationFlow(flow) {
+  toggleSteppedAnimationFlow = e => {
+    const { target: { offsetLeft } } = e;
+    const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
+    const flow = panX <= 0;
     const { settings } = this.state;
     const { steps, odd } = settings;
     if (flow === odd) {
@@ -242,14 +308,16 @@ export default class Display extends PureComponent {
     }
   }
 
-  ping = ({target: { offsetLeft }}) => {
+  ping = e => {
+    const { settings } = this.state;
+    const { target: { offsetLeft } } = e;
     const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
     const { audioCtx } = this;
     const source = audioCtx.createOscillator();
     const volume = audioCtx.createGain();
     const panner = audioCtx.createPanner();
     // const reverb = audioCtx.createConvolver();
-    this.toggleSteppedAnimationFlow(panX <= 0);
+    this.toggleSteppedAnimationFlow(e);
 
     panner.panningModel = 'HRTF';
     panner.distanceModel = 'inverse';
@@ -263,11 +331,11 @@ export default class Display extends PureComponent {
 
     // const duration = this.settings.speed / 2500;
     // reverb.buffer = this.impulseResponse(duration, 4.5);
-    if (isFinite(this.state.settings.volume)) {
-      volume.gain.value = parseFloat(this.state.settings.volume);
+    if (isFinite(settings.volume)) {
+      volume.gain.value = parseFloat(settings.volume);
     }
-    if (isFinite(this.state.settings.pitch)) {
-      source.frequency.value = parseFloat(this.state.settings.pitch);
+    if (isFinite(settings.pitch)) {
+      source.frequency.value = parseFloat(settings.pitch);
     }
     source.type = 'sine';
 
@@ -296,6 +364,45 @@ export default class Display extends PureComponent {
     return impulse;
   };
 
+  togglePlay = () => {
+    this.updateMainAnimation(!this.state.settings.playing);
+  };
+
+  keys = ({ keyCode, key, type }) => {
+    const { state } = this;
+    let speed, volume;
+
+    switch (keyCode) {
+      case 38:
+        volume = Math.min(state.settings.volume + limits.volumeAdjustIncrement, limits.maxVolume);
+        this.setState({ settings: { ...state.settings, volume } });
+        this.set('volume', volume);
+        break;
+      case 40:
+        volume = Math.max(state.settings.volume - limits.volumeAdjustIncrement, limits.minVolume);
+        this.setState({ settings: { ...state.settings, volume } });
+        this.set('volume', volume);
+        break;
+      case 32:
+        this.togglePlay();
+        break;
+      case 39:
+        speed = Math.min(state.settings.speed + limits.speedAdjustIncrement, limits.maxSpeed);
+        this.setState({ settings: { ...state.settings, speed } });
+        this.set('speed', speed);
+        break;
+      case 37:
+        speed = Math.max(state.settings.speed - limits.speedAdjustIncrement, limits.minSpeed);
+        this.setState({ settings: { ...state.settings, speed } });
+        this.set('speed', speed);
+        break;
+      default:
+        break;
+    }
+    this.sendSettings();
+    // console.log({ type, keyCode, key });
+  };
+
   setRef(key, ref) {
     this[key] = ref;
   }
@@ -316,18 +423,21 @@ export default class Display extends PureComponent {
             id="target"
             className={this.targetClass}
             style={this.targetStyle}
-            onClick={this.updateMainAnimation}
+            onClick={this.togglePlay}
             onAnimationIteration={this.ping}
           >
-            <div className="icon"></div>
+            <div className="bullseye"></div>
           </div>
         </div>
-        <iframe
-          title="remote"
-          className={`toolbar ${hidden} ${remoteMode}`}
-          src="./embedded"
-          ref={this.setRef.bind(this, 'toolbar')}
-        />
+        {!this.isMini &&
+          <iframe
+            title="remote"
+            name="remote"
+            className={`toolbar ${hidden} ${remoteMode}`}
+            src="./embedded"
+            ref={this.setRef.bind(this, 'toolbar')}
+          />
+        }
       </div>
     );
   }

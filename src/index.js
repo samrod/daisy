@@ -8,7 +8,8 @@ import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render((
   <BrowserRouter>
-      <Route exact path="/" component={Display} />
+      <Route exact path={"/"} state="foo" component={Display} />
+      <Route exact path="/mini" component={Display} />
       <Route path="/embedded" component={Remote} />
       <Route path="/remote" component={Remote} />
   </BrowserRouter>
