@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { bindEvent, receiveMessage, sendMessage } from '../common/utils';
+import { bindEvent, receiveMessage, sendMessage, generateSound } from '../common/utils';
 import { defaults, limits } from '../common/constants';
 import './Display.scss';
 
@@ -26,12 +26,12 @@ export default class Display extends PureComponent {
 
   get targetStyle() {
     const { velocity, state } = this;
-    const { size, opacity } = state.settings;
+    const { size, opacity, playing } = state.settings;
     return {
       width: `${size}vw`,
       height: `${size}vw`,
       opacity: opacity,
-      animationDuration: `${velocity}ms`,
+      animationDuration: playing ? `${velocity}ms` : '1000s',
       animationTimingFunction: this.timingFunction,
     };
   }
@@ -54,14 +54,18 @@ export default class Display extends PureComponent {
     return {
       width: `${length * 2}vw`,
       transform: `rotateZ(${angle}deg)`,
-      animationDuration: `${velocity / limits.waveAmplitude}ms`,
+      animationDuration: `${velocity / limits.wave.amplitude}ms`,
       borderRadius: `${size/2}vw`,
     };
   }
 
   get containerClass() {
-    const { settings: { angle }, motionBarActive } = this.state;
-    const levelClass = motionBarActive && Number(angle) === 0 ? 'containerLevel' : '';
+    const { settings: { angle }, motionBarActive, activeSetting } = this.state;
+    let levelClass = '';
+    if (motionBarActive && Number(angle) === 0 && activeSetting === 'angle') {
+      levelClass = 'containerLevel';
+      this.hapticBump();
+    };
     const activeClass = motionBarActive ? 'containerActive' : '';
     return `${levelClass} ${activeClass}`;
   }
@@ -84,11 +88,11 @@ export default class Display extends PureComponent {
   }
 
   get velocity() {
-    const { maxSpeed, minSpeed } = this.limits;
+    const { speed: { min, max} } = this.limits;
     const { speed } = this.state.settings;
 
     if (speed) {
-      return maxSpeed - speed + minSpeed;
+      return max - speed + min;
     }
     return 1000000;
   }
@@ -157,27 +161,26 @@ export default class Display extends PureComponent {
     }
   };
 
-  updateMainAnimation = (play) => {
-    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  updateMainAnimation = (play = this.state.settings.playing) => {
     this.setState({
       settings: {
         ...this.state.settings,
         playing: play,
       },
     });
-    const body = play
-    ? `
-      @keyframes bounce {
-        0% { left: -${this.distance}vw; }
-        100%  { left: ${this.distance}vw; }
-      }
-    `
+    const body = play !== false ? `
+        @keyframes bounce {
+          0% { left: -${this.distance}vw; }
+          100%  { left: ${this.distance}vw; }
+        }
+      `
       : `
-      @keyframes bounce {
-        0% { left: ${this.targetPosition}; }
-        100%  { left: ${this.targetPosition}; }
-      }
-    `;
+        @keyframes bounce {
+          0% { left: ${this.targetPosition}; }
+          100%  { left: ${this.targetPosition}; }
+        }
+      `;
+      // this.target.style.left = this.targetPosition;
     this.getTargetPosition();
     this.updateAnimation('length', body);
     this.sendSettings();
@@ -234,8 +237,8 @@ export default class Display extends PureComponent {
     );
   };
 
-  flashBar = () => {
-    this.setState({ motionBarActive: true });
+  flashBar = activeSetting => {
+    this.setState({ motionBarActive: true, activeSetting });
   };
 
   hideBar = () => {
@@ -308,60 +311,19 @@ export default class Display extends PureComponent {
     }
   }
 
-  ping = e => {
-    const { settings } = this.state;
-    const { target: { offsetLeft } } = e;
-    const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
-    const { audioCtx } = this;
-    const source = audioCtx.createOscillator();
-    const volume = audioCtx.createGain();
-    const panner = audioCtx.createPanner();
-    // const reverb = audioCtx.createConvolver();
-    this.toggleSteppedAnimationFlow(e);
-
-    panner.panningModel = 'HRTF';
-    panner.distanceModel = 'inverse';
-    panner.refDistance = 1;
-    panner.maxDistance = 1;
-    panner.rolloffFactor = 1;
-    panner.coneInnerAngle = 360;
-    panner.coneOuterAngle = 0;
-    panner.coneOuterGain = 0;
-    panner.setPosition(panX,0,0);
-
-    // const duration = this.settings.speed / 2500;
-    // reverb.buffer = this.impulseResponse(duration, 4.5);
-    if (isFinite(settings.volume)) {
-      volume.gain.value = parseFloat(settings.volume);
-    }
-    if (isFinite(settings.pitch)) {
-      source.frequency.value = parseFloat(settings.pitch);
-    }
-    source.type = 'sine';
-
-    source.connect(volume);
-    volume.connect(panner);
-    panner.connect(audioCtx.destination);
-
-    source.start();
-
-    setTimeout( () => source.stop(), 70 );
+  hapticBump = () => {
+    generateSound({ pitch: 100, gain: 0.2, duration: 50 });
   };
 
-  impulseResponse = ( duration, decay = 2.0, reverse = false ) => {
-    const { audioCtx } = this;
-    const sampleRate = audioCtx.sampleRate;
-    const length = sampleRate * duration;
-    const impulse = audioCtx.createBuffer(2, length, sampleRate);
-    const impulseL = impulse.getChannelData(0);
-    const impulseR = impulse.getChannelData(1);
-
-    for (var i = 0; i < length; i++){
-      var n = reverse ? length - i : i;
-      impulseL[i] = (Math.random() * 2 - 2) * Math.pow(1 - n / length, decay);
-      impulseR[i] = (Math.random() * 2 - 2) * Math.pow(1 - n / length, decay);
+  ping = e => {
+    const { settings: { pitch, volume: gain } } = this.state;
+    this.toggleSteppedAnimationFlow(e);
+    if (Number(gain) === 0 ) {
+      return;
     }
-    return impulse;
+    const { target: { offsetLeft } } = e;
+    const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
+    generateSound({ panX, pitch, gain, duration: 70 });
   };
 
   togglePlay = () => {
@@ -374,12 +336,12 @@ export default class Display extends PureComponent {
 
     switch (keyCode) {
       case 38:
-        volume = Math.min(state.settings.volume + limits.volumeAdjustIncrement, limits.maxVolume);
+        volume = Math.min(state.settings.volume + limits.volume.nudge, limits.volume.max);
         this.setState({ settings: { ...state.settings, volume } });
         this.set('volume', volume);
         break;
       case 40:
-        volume = Math.max(state.settings.volume - limits.volumeAdjustIncrement, limits.minVolume);
+        volume = Math.max(state.settings.volume - limits.volume.nudge, limits.volume.min);
         this.setState({ settings: { ...state.settings, volume } });
         this.set('volume', volume);
         break;
@@ -387,12 +349,12 @@ export default class Display extends PureComponent {
         this.togglePlay();
         break;
       case 39:
-        speed = Math.min(state.settings.speed + limits.speedAdjustIncrement, limits.maxSpeed);
+        speed = Math.min(state.settings.speed + limits.speed.nudge, limits.speed.max);
         this.setState({ settings: { ...state.settings, speed } });
         this.set('speed', speed);
         break;
       case 37:
-        speed = Math.max(state.settings.speed - limits.speedAdjustIncrement, limits.minSpeed);
+        speed = Math.max(state.settings.speed - limits.speed.nudge, limits.speed.min);
         this.setState({ settings: { ...state.settings, speed } });
         this.set('speed', speed);
         break;

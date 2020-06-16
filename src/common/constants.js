@@ -18,13 +18,17 @@ const defaults = {
 };
 
 const limits = {
-  minSpeed: 250,
-  maxSpeed: 3000,
-  minVolume: 0,
-  maxVolume: 4000,
-  waveAmplitude: 2.5,
-  speedAdjustIncrement: 10,
-  volumeAdjustIncrement: 50,
+  wave: { min: 0, max: 25, amplitude: 2.5 },
+  angle: { min: -45, max: 45 },
+  length: { min: 10, max: 50 },
+  speed: { min: 250, max: 3000, nudge: 10 },
+  volume: { min: 0, max: 4000, nudge: 50 },
+  pitch: { min: 50, max: 2000 },
+  steps: { min: 1, max: 8 },
+  lightbar: { min: 0, max: 0.5, step: 0.05 },
+  background: { min: 0, max: 1, step: 0.05 },
+  opacity: { min: 0.1, max: 1, step: 0.01 },
+  size: { min: 1, max: 15, step: 0.25 },
   miniSize: 300,
 };
 
