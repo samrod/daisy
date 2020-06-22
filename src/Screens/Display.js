@@ -15,6 +15,7 @@ export default class Display extends PureComponent {
   callbacks = {
     length: 'updateMainAnimation',
     wave: 'updateWaveAnimation',
+    size: 'updateMainAnimation',
   };
   limits = limits;
   animatorStylesheets = ['length', 'wave'];
@@ -31,6 +32,9 @@ export default class Display extends PureComponent {
       width: `${size}vw`,
       height: `${size}vw`,
       opacity: opacity,
+      left: this.targetPosition,
+      animationName: playing ? 'bounce' : 'none',
+      animationDelay: `${this.timeOffset}ms`,
       animationDuration: playing ? `${velocity}ms` : '1000s',
       animationTimingFunction: this.timingFunction,
     };
@@ -162,25 +166,13 @@ export default class Display extends PureComponent {
   };
 
   updateMainAnimation = (play = this.state.settings.playing) => {
-    this.setState({
-      settings: {
-        ...this.state.settings,
-        playing: play,
-      },
-    });
-    const body = play !== false ? `
+    this.set({ setting: 'playing', data: play });
+    const body =`
         @keyframes bounce {
           0% { left: -${this.distance}vw; }
           100%  { left: ${this.distance}vw; }
         }
-      `
-      : `
-        @keyframes bounce {
-          0% { left: ${this.targetPosition}; }
-          100%  { left: ${this.targetPosition}; }
-        }
       `;
-      // this.target.style.left = this.targetPosition;
     this.getTargetPosition();
     this.updateAnimation('length', body);
     this.sendSettings();
@@ -194,15 +186,6 @@ export default class Display extends PureComponent {
         100%  { top: ${wave}vh; }
       }
     `;
-    // const body = `
-    //   @keyframes wave {
-    //     0% { top: 0; }
-    //     25% { top: -${this.wave}vh; }
-    //     50% { top: 0; }
-    //     75%  { top: ${this.wave}vh; }
-    //     100%  { top: 0; }
-    //   }
-    // `;
     this.updateAnimation('wave', body);
   };
 
@@ -263,7 +246,7 @@ export default class Display extends PureComponent {
     sendMessage({ action, params }, windowObj, targetFrame);
   };
 
-  killRemote() {
+  killRemote = () => {
     setTimeout(() => {
       this.remote && this.remote.close();
       this.mini && this.mini.close();
@@ -273,7 +256,7 @@ export default class Display extends PureComponent {
       remoteMode: '',
       hidden: '',
     });
-  }
+  };
 
   toggleToolbar = ({clientY}) => {
     const { remoteMode, hidden } = this.state;
@@ -326,8 +309,21 @@ export default class Display extends PureComponent {
     generateSound({ panX, pitch, gain, duration: 70 });
   };
 
+  updateTimeOffset() {
+    const { length, speed } = this.state.settings;
+    const distance = window.innerWidth * length / 100;
+    const position = parseInt(this.targetPosition);
+    const absolutePosition = position + distance;
+    const totalDistance = distance * 2;
+    const percentComplete = absolutePosition / totalDistance;
+    const offset = speed * percentComplete;
+    this.timeOffset = -offset;
+  }
+
   togglePlay = () => {
-    this.updateMainAnimation(!this.state.settings.playing);
+    const { playing } = this.state.settings;
+    playing && this.updateTimeOffset();
+    this.updateMainAnimation(!playing);
   };
 
   keys = ({ keyCode, key, type }) => {
@@ -338,12 +334,12 @@ export default class Display extends PureComponent {
       case 38:
         volume = Math.min(state.settings.volume + limits.volume.nudge, limits.volume.max);
         this.setState({ settings: { ...state.settings, volume } });
-        this.set('volume', volume);
+        this.set({ settings: 'volume', data: volume });
         break;
       case 40:
         volume = Math.max(state.settings.volume - limits.volume.nudge, limits.volume.min);
         this.setState({ settings: { ...state.settings, volume } });
-        this.set('volume', volume);
+        this.set({ settings: 'volume', data: volume });
         break;
       case 32:
         this.togglePlay();
@@ -351,12 +347,12 @@ export default class Display extends PureComponent {
       case 39:
         speed = Math.min(state.settings.speed + limits.speed.nudge, limits.speed.max);
         this.setState({ settings: { ...state.settings, speed } });
-        this.set('speed', speed);
+        this.set({ settings: 'speed', data: speed });
         break;
       case 37:
         speed = Math.max(state.settings.speed - limits.speed.nudge, limits.speed.min);
         this.setState({ settings: { ...state.settings, speed } });
-        this.set('speed', speed);
+        this.set({ settings: 'speed', data: speed });
         break;
       default:
         break;
