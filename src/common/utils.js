@@ -1,3 +1,5 @@
+import { limits } from '../common/constants';
+
 export function unbindEvent({ element, event, handler }) {
   element.removeEventListener(event, handler);
 }
@@ -22,6 +24,42 @@ export const sendMessage = (data, displays = [window.opener || window.parent], t
     display && display.postMessage(message, target);
   });
 };
+
+export function setKeys(callback = () => true, { keyCode, key, type }) {
+  const { settings } = this.state;
+  let speed, volume;
+
+  switch (keyCode) {
+    case 38:
+      volume = Math.min(settings.volume + limits.volume.nudge, limits.volume.max);
+      this.setState({ settings: { ...settings, volume } });
+      this.set({ settings: 'volume', data: volume });
+      break;
+    case 40:
+      volume = Math.max(settings.volume - limits.volume.nudge, limits.volume.min);
+      this.setState({ settings: { ...settings, volume } });
+      this.set({ settings: 'volume', data: volume });
+      break;
+    case 32:
+      this.togglePlay();
+      break;
+    case 39:
+      speed = Math.min(settings.speed + limits.speed.nudge, limits.speed.max);
+      this.setState({ settings: { ...settings, speed } });
+      this.set({ settings: 'speed', data: speed });
+      break;
+    case 37:
+      speed = Math.max(settings.speed - limits.speed.nudge, limits.speed.min);
+      this.setState({ settings: { ...settings, speed } });
+      this.set({ settings: 'speed', data: speed });
+      break;
+    default:
+      break;
+  }
+  // console.log({ type, keyCode, key });
+  callback();
+};
+
 
 const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
 

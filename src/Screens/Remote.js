@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { bindEvent, unbindEvent, sendMessage, receiveMessage } from '../common/utils';
+import { bindEvent, unbindEvent, sendMessage, receiveMessage, setKeys } from '../common/utils';
 import Slider from '../components/Slider';
 import Button from '../components/Button';
 import { defaults, limits } from '../common/constants';
@@ -10,7 +10,9 @@ window.name = 'Remote';
 export default class Remote extends Component {
   limits = limits;
   popup = window.parent === window.self;
-  state = defaults;
+  state = {
+    settings: defaults,
+  };
 
   componentDidMount() {
     this.bindEvents();
@@ -45,20 +47,26 @@ export default class Remote extends Component {
   bindEvents() {
     [
       { event: 'message', element: window, handler: receiveMessage.bind(this) },
-      { event: 'keydown', element: document.body, handler: this.keys },
+      { event: 'keydown', element: document.body, handler: setKeys.bind(this, undefined) },
       { event: 'unload', element: window, handler: this.killRemote },
     ].forEach(bindEvent);
   }
 
   setRange = ({ target: { value, dataset: { action: rawAction, option } } }, execute = true) => {
     const data = value || option;
-    this.setState({ [rawAction]: data });
+    const { settings } = this.state;
+    this.setState({
+      settings: {
+        ...settings,
+        [rawAction]: data,
+       },
+    });
     if (execute) {
-      this.set(rawAction, data);
+      this.set({ setting: rawAction, data });
     }
   };
 
-  set(setting, data) {
+  set({ setting, data }) {
     sendMessage({ action: 'set', params: { setting, data } }, this.targetWindow );
   }
 
@@ -74,8 +82,8 @@ export default class Remote extends Component {
     sendMessage({ action: 'sendSettings' }, this.targetWindow);
   }
 
-  updateSettings = props => {
-    this.setState(props);
+  updateSettings = settings => {
+    this.setState({ settings });
   };
 
   popRemote = () => {
@@ -89,51 +97,20 @@ export default class Remote extends Component {
 
 
   togglePlay = () => {
-    const { playing } = this.state;
+    const { settings } = this.state;
     this.setState({
-        playing: !playing,
+        settings: {
+          ...settings,
+          playing: !settings.playing,
+        },
       },
-      () => sendMessage({ action: 'updateMainAnimation', params: this.state.playing })
+      () => sendMessage({ action: 'updateMainAnimation', params: this.state.settings.playing })
     );
-  };
-
-  keys = ({ keyCode, key, type }) => {
-    const { state } = this;
-    let speed, volume;
-
-    switch (keyCode) {
-      case 38:
-        volume = Math.min(state.volume + limits.volume.nudge, limits.volume.max);
-        this.setState({ volume });
-        this.set('volume', volume);
-        break;
-      case 40:
-        volume = Math.max(state.volume - limits.volume.nudge, limits.volume.min);
-        this.setState({ volume });
-        this.set('volume', volume);
-        break;
-      case 32:
-        this.togglePlay();
-        break;
-      case 39:
-        speed = Math.min(state.speed + limits.speed.nudge, limits.speed.max);
-        this.setState({ speed });
-        this.set('speed', speed);
-        break;
-      case 37:
-        speed = Math.max(state.speed - limits.speed.nudge, limits.speed.min);
-        this.setState({ speed });
-        this.set('speed', speed);
-        break;
-      default:
-        break;
-    }
-    // console.log({ type, keyCode, key });
   };
 
   render() {
     const { setRange, togglePlay, flashBar, hideBar, popup, popRemote, state } = this;
-    const { panel } = state;
+    const { settings } = state;
 
     return (
       <div id="remote" className={popup ? 'popup' : ''}>
@@ -142,33 +119,33 @@ export default class Remote extends Component {
             <div className="popButton" title="Pop Remote" onClick={popRemote} id="pop">&#10696;</div>
           }
           <div className="topButtons">
-            <Button leftIcon={state.playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
+            <Button leftIcon={settings.playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
             {!this.popup &&
               <Button leftIcon="remote-settings-fill" klass="standardButton" action={popRemote} />
             }
           </div>
           <div className=""></div>
           <div className="tabs">
-            <div onClick={setRange} data-action="panel" data-option="motion" className={`tab ${panel === 'motion' ? 'active' : ''}`}>Motion</div>
-            <div onClick={setRange} data-action="panel" data-option="appearance" className={`tab ${panel === 'appearance' ? 'active' : ''}`}>Appearance</div>
-            <div onClick={setRange} data-action="panel" data-option="sound" className={`tab ${panel === 'sound' ? 'active' : ''}`}>Sound</div>
+            <div onClick={setRange} data-action="panel" data-option="motion" className={`tab ${settings.panel === 'motion' ? 'active' : ''}`}>Motion</div>
+            <div onClick={setRange} data-action="panel" data-option="appearance" className={`tab ${settings.panel === 'appearance' ? 'active' : ''}`}>Appearance</div>
+            <div onClick={setRange} data-action="panel" data-option="sound" className={`tab ${settings.panel === 'sound' ? 'active' : ''}`}>Sound</div>
           </div>
           <div className="panels">
 
-            <div className={`panel ${panel === 'motion' ? 'active' : ''}`}>
+            <div className={`panel ${settings.panel === 'motion' ? 'active' : ''}`}>
               <div className="sliders">
                 <div className="row">
-                  <Slider name="speed" value={state.speed} onChange={e => setRange(e, false)} onMouseUp={setRange} />
+                  <Slider name="speed" value={settings.speed} onChange={e => setRange(e, false)} onMouseUp={setRange} />
                   {this.showWaveSlider &&
-                    <Slider name="wave" value={state.wave} onChange={setRange} />
+                    <Slider name="wave" value={settings.wave} onChange={setRange} />
                   }
-                  <Slider name="angle" value={state.angle} onChange={setRange} onMouseDown={flashBar.bind(this, 'angle')} onMouseUp={hideBar} />
-                  <Slider name="length" value={state.length} onChange={setRange} onMouseDown={flashBar.bind(this, 'length')} onMouseUp={hideBar} />
+                  <Slider name="angle" value={settings.angle} onChange={setRange} onMouseDown={flashBar.bind(this, 'angle')} onMouseUp={hideBar} />
+                  <Slider name="length" value={settings.length} onChange={setRange} onMouseDown={flashBar.bind(this, 'length')} onMouseUp={hideBar} />
                 </div>
               </div>
             </div>
 
-            <div className={`panel ${panel === 'appearance' ? 'active' : ''}`}>
+            <div className={`panel ${settings.panel === 'appearance' ? 'active' : ''}`}>
               <div className="swatches">
                 <div className="row">
                   <div className="swatch" data-action="color" data-option="white" onClick={setRange} />
@@ -185,13 +162,13 @@ export default class Remote extends Component {
               </div>
               <div className="sliders">
                 <div className="row">
-                  <Slider name="steps" value={state.steps} onChange={setRange} />
+                  <Slider name="steps" value={settings.steps} onChange={setRange} />
                   {this.showLightbarSlider &&
-                    <Slider name="lightbar" value={state.lightbar} onChange={setRange} />
+                    <Slider name="lightbar" value={settings.lightbar} onChange={setRange} />
                   }
-                  <Slider name="background" value={state.background} onChange={setRange} />
-                  <Slider name="opacity" value={state.opacity} onChange={setRange} />
-                  <Slider name="size" value={state.size} onChange={setRange} />
+                  <Slider name="background" value={settings.background} onChange={setRange} />
+                  <Slider name="opacity" value={settings.opacity} onChange={setRange} />
+                  <Slider name="size" value={settings.size} onChange={setRange} />
                 </div>
               </div>
               <div className="shapes">
@@ -201,12 +178,12 @@ export default class Remote extends Component {
               </div>
             </div>
 
-            <div className={`panel ${panel === 'sound' ? 'active' : ''}`}>
+            <div className={`panel ${settings.panel === 'sound' ? 'active' : ''}`}>
               <div className="sliders">
                 <div className="row">
-                  <Slider name="volume" value={state.volume} onChange={setRange} />
+                  <Slider name="volume" value={settings.volume} onChange={setRange} />
                   {this.showAudioSliders &&
-                    <Slider name="pitch" value={state.pitch} onChange={setRange} />
+                    <Slider name="pitch" value={settings.pitch} onChange={setRange} />
                   }
                 </div>
               </div>

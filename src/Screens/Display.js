@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { bindEvent, receiveMessage, sendMessage, generateSound } from '../common/utils';
+import { bindEvent, receiveMessage, sendMessage, generateSound, setKeys } from '../common/utils';
 import { defaults, limits } from '../common/constants';
 import './Display.scss';
 
@@ -145,7 +145,7 @@ export default class Display extends PureComponent {
     if (!this.isMini) {
       [
         { event: 'mousemove', element: document.body, handler: this.toggleToolbar },
-        { event: 'keydown', element: document.body, handler: this.keys },
+        { event: 'keydown', element: document.body, handler: setKeys.bind(this, this.sendSettings) },
         { event: 'message', element: window, handler: this.routeToMini },
         { event: 'unload', element: window, handler: this.killRemote },
       ].forEach(bindEvent);
@@ -324,41 +324,6 @@ export default class Display extends PureComponent {
     const { playing } = this.state.settings;
     playing && this.updateTimeOffset();
     this.updateMainAnimation(!playing);
-  };
-
-  keys = ({ keyCode, key, type }) => {
-    const { state } = this;
-    let speed, volume;
-
-    switch (keyCode) {
-      case 38:
-        volume = Math.min(state.settings.volume + limits.volume.nudge, limits.volume.max);
-        this.setState({ settings: { ...state.settings, volume } });
-        this.set({ settings: 'volume', data: volume });
-        break;
-      case 40:
-        volume = Math.max(state.settings.volume - limits.volume.nudge, limits.volume.min);
-        this.setState({ settings: { ...state.settings, volume } });
-        this.set({ settings: 'volume', data: volume });
-        break;
-      case 32:
-        this.togglePlay();
-        break;
-      case 39:
-        speed = Math.min(state.settings.speed + limits.speed.nudge, limits.speed.max);
-        this.setState({ settings: { ...state.settings, speed } });
-        this.set({ settings: 'speed', data: speed });
-        break;
-      case 37:
-        speed = Math.max(state.settings.speed - limits.speed.nudge, limits.speed.min);
-        this.setState({ settings: { ...state.settings, speed } });
-        this.set({ settings: 'speed', data: speed });
-        break;
-      default:
-        break;
-    }
-    this.sendSettings();
-    // console.log({ type, keyCode, key });
   };
 
   setRef(key, ref) {
