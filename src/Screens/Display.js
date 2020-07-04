@@ -124,6 +124,7 @@ export default class Display extends PureComponent {
     this.bindEvents();
     this.animatorStylesheets.forEach(this.createAnimatorStylesheet.bind(this));
     this.target = document.querySelector('#target');
+    this.toggleToolbar();
     this.setMiniMode();
   }
 
@@ -144,6 +145,8 @@ export default class Display extends PureComponent {
     bindEvent({ element: window, event: 'message', handler: receiveMessage.bind(this) });
     if (!this.isMini) {
       [
+        { event: 'mouseout', element: this.toolbar, handler: this.setToolbarFree },
+        { event: 'mouseover', element: this.toolbar, handler: this.setToolbarBusy },
         { event: 'mousemove', element: document.body, handler: this.toggleToolbar },
         { event: 'keydown', element: document.body, handler: setKeys.bind(this, this.sendSettings) },
         { event: 'message', element: window, handler: this.routeToMini },
@@ -258,20 +261,30 @@ export default class Display extends PureComponent {
     });
   };
 
-  toggleToolbar = ({clientY}) => {
+  setToolbarBusy = () => {
+    this.toolbarBusy = true;
+  };
+
+  setToolbarFree = () => {
+    setTimeout(() => {
+      this.toolbarBusy = false;
+    }, 50);
+  };
+
+  toggleToolbar = () => {
     const { remoteMode, hidden } = this.state;
     if ( remoteMode ) {
       return;
     }
-    const toolbarZone = window.innerHeight - this.toolbar.clientHeight - 30;
-    const toolbarNeeded = clientY >= toolbarZone;
-
-    if (toolbarNeeded) {
-      if (hidden.length) {
-        this.setState({ hidden: '' });
-      }
-    } else if (!hidden) {
-      this.setState({ hidden: 'hidden' });
+    clearTimeout(this.toolbarTimer);
+    if (hidden.length) {
+      this.setState({ hidden: '' });
+    }
+    if (!this.toolbarBusy) {
+      this.toolbarTimer = setTimeout(() =>
+        this.setState({ hidden: 'hidden' }),
+        3000
+      );
     }
   };
 

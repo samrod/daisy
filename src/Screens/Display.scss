@@ -92,7 +92,6 @@
     opacity .25s ease-out;
 
   &.hidden {
-    transition-delay: 2s;
     transition-duration: .75s;
     transform: translateY(100%);
     opacity: 0;

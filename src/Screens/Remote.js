@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import React, { Component } from 'react';
 import { bindEvent, unbindEvent, sendMessage, receiveMessage, setKeys } from '../common/utils';
 import Slider from '../components/Slider';
@@ -26,17 +27,17 @@ export default class Remote extends Component {
   }
 
   get showLightbarSlider() {
-    const { steps, wave } = this.state;
+    const { steps, wave } = this.state.settings;
     return steps > 1 && !Number(wave);
   }
 
   get showWaveSlider() {
-    const { lightbar } = this.state;
+    const { lightbar } = this.state.settings;
     return !Number(lightbar);
   }
 
   get showAudioSliders() {
-    const { volume } = this.state;
+    const { volume } = this.state.settings;
     return !!Number(volume);
   }
 
@@ -46,6 +47,7 @@ export default class Remote extends Component {
 
   bindEvents() {
     [
+      { event: 'mousemove', element: document.body, handler: debounce(this.setToolbarBusy, 25) },
       { event: 'message', element: window, handler: receiveMessage.bind(this) },
       { event: 'keydown', element: document.body, handler: setKeys.bind(this, undefined) },
       { event: 'unload', element: window, handler: this.killRemote },
@@ -69,6 +71,10 @@ export default class Remote extends Component {
   set({ setting, data }) {
     sendMessage({ action: 'set', params: { setting, data } }, this.targetWindow );
   }
+
+  setToolbarBusy = () => {
+    sendMessage({ action: 'setToolbarBusy' });
+  };
 
   flashBar = activeSetting => {
     sendMessage({ action: 'flashBar', params: activeSetting }, this.targetWindow);
