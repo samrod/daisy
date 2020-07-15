@@ -30,6 +30,7 @@ const limits = {
   opacity: { min: 0.1, max: 1, step: 0.01 },
   size: { min: 1, max: 15, step: 0.25 },
   miniSize: 300,
+  audioPanRange: 10000,
 };
 
 export { defaults, limits };

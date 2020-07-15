@@ -82,7 +82,7 @@ export default class Display extends PureComponent {
   }
 
   get timingFunction() {
-    const { odd, steps: numString } = this.state.settings;
+    const { odd, settings: { steps: numString } } = this.state;
     const steps = Number(numString) - 1;
     if (!steps) {
       return 'ease-in-out';
@@ -289,20 +289,15 @@ export default class Display extends PureComponent {
   };
 
   toggleSteppedAnimationFlow = e => {
-    const { target: { offsetLeft } } = e;
-    const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
-    const flow = panX <= 0;
-    const { settings } = this.state;
-    const { steps, odd } = settings;
+    const flow = parseInt(getComputedStyle(e.target).left) < 0;
+    const { settings, odd } = this.state;
+    const { steps } = settings;
     if (flow === odd) {
       return;
     }
     if (steps >= 1) {
       this.setState({
-        settings: {
-          ...settings,
-          odd: flow,
-        },
+        odd: flow,
        });
     }
   }
@@ -312,13 +307,14 @@ export default class Display extends PureComponent {
   };
 
   ping = e => {
-    const { settings: { pitch, volume: gain } } = this.state;
+    const { odd, settings: { pitch, steps, volume: gain } } = this.state;
+    const { audioPanRange } = this.limits;
     this.toggleSteppedAnimationFlow(e);
     if (Number(gain) === 0 ) {
       return;
     }
-    const { target: { offsetLeft } } = e;
-    const panX = (offsetLeft - (window.innerWidth / 2)) * 10;
+    const twoStepReverse = Number(steps) !== 2 ? 1 : -1;
+    const panX = (odd ? audioPanRange : -audioPanRange) * twoStepReverse;
     generateSound({ panX, pitch, gain, duration: 70 });
   };
 
