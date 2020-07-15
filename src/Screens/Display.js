@@ -1,12 +1,13 @@
 import React, { PureComponent } from 'react';
 import { bindEvent, receiveMessage, sendMessage, generateSound, setKeys } from '../common/utils';
 import { defaults, limits } from '../common/constants';
+import classNames from 'classnames';
 import './Display.scss';
 
 export default class Display extends PureComponent {
   state = {
-    remoteMode: '',
-    hidden: '',
+    remoteMode: false,
+    hidden: false,
     settings: defaults,
     motionBarActive: false,
     odd: true,
@@ -16,6 +17,7 @@ export default class Display extends PureComponent {
     length: 'updateMainAnimation',
     wave: 'updateWaveAnimation',
     size: 'updateMainAnimation',
+    shape: 'updateMainAnimation',
   };
   limits = limits;
   animatorStylesheets = ['length', 'wave'];
@@ -74,13 +76,6 @@ export default class Display extends PureComponent {
     return `${levelClass} ${activeClass}`;
   }
 
-  get lightbarStyle() {
-    const { lightbar } = this.state.settings;
-    return {
-      opacity: lightbar,
-    };
-  }
-
   get timingFunction() {
     const { odd, settings: { steps: numString } } = this.state;
     const steps = Number(numString) - 1;
@@ -110,9 +105,14 @@ export default class Display extends PureComponent {
     return null;
   }
 
+  get absoluteSize() {
+    const { shape, size } = this.state.settings;
+    return shape !== 'diamond' ? size : Math.sqrt((size ** 2) * 2);
+  }
+
   get distance() {
-    const { length, size } = this.state.settings;
-    return length - (size / 2);
+    const { length } = this.state.settings;
+    return length - (this.absoluteSize / 2);
   }
 
   get isMini() {
@@ -216,9 +216,13 @@ export default class Display extends PureComponent {
 
   light = (item, index) => {
     const { width, height } = this.targetStyle;
+    const { lightbar: opacity } = this.state.settings;
+    const marginLeft = (this.absoluteSize - parseInt(width)) / 2 + 'vw';
+    const left = (this.distance * 2 / (this.state.settings.steps - 1) * index) + 'vw';
+
     return (
-      <div key={index} className="lightWrapper" style={{ width, height }}>
-        <div className="bullseye" style={{ width, height, ...this.lightbarStyle }} />
+      <div key={index} className="lightWrapper" style={{ left, marginLeft, width, height }}>
+        <div className="bullseye" style={{ width, height, opacity }} />
       </div>
     );
   };
@@ -237,7 +241,7 @@ export default class Display extends PureComponent {
     const left = window.screen.width - miniSize;
     this.mini = window.open('/mini', "_mini", `left=${left},height=${miniSize},width=${miniSize},toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
     this.remote = window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
-    this.setState({ remoteMode: 'remoteMode' }, this.sendSettings);
+    this.setState({ remoteMode: true }, this.sendSettings);
   }
 
   sendSettings = () => {
@@ -256,13 +260,14 @@ export default class Display extends PureComponent {
       this.remote = undefined;
     });
     this.setState({
-      remoteMode: '',
-      hidden: '',
+      remoteMode: false,
+      hidden: false,
     });
   };
 
   setToolbarBusy = () => {
     this.toolbarBusy = true;
+    clearTimeout(this.toolbarTimer);
   };
 
   setToolbarFree = () => {
@@ -277,13 +282,13 @@ export default class Display extends PureComponent {
       return;
     }
     clearTimeout(this.toolbarTimer);
-    if (hidden.length) {
-      this.setState({ hidden: '' });
+    if (hidden) {
+      this.setState({ hidden: false });
     }
     if (!this.toolbarBusy) {
       this.toolbarTimer = setTimeout(() =>
-        this.setState({ hidden: 'hidden' }),
-        3000
+        this.setState({ hidden: true }),
+        this.limits.toolbarHideDelay
       );
     }
   };
@@ -365,7 +370,7 @@ export default class Display extends PureComponent {
           <iframe
             title="remote"
             name="remote"
-            className={`toolbar ${hidden} ${remoteMode}`}
+            className={classNames('toolbar', { hidden, remoteMode })}
             src="./embedded"
             ref={this.setRef.bind(this, 'toolbar')}
           />
