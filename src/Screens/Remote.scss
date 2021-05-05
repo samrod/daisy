@@ -220,7 +220,9 @@
           1px 1px 2px #0005 inset,
           -1px -1px 2px #FFF4 inset;
         &::-webkit-slider-thumb {
-          transform: scale(1.25);
+          transform: scale(1.5);
+          transition-duration: 0.25s;
+          transition-timing-function: cubic-bezier(0.12, 3.04, 0.63, -0.09);
         }
       }
       &::-webkit-slider-thumb {
@@ -230,10 +232,10 @@
         border-radius: 100%;
         background-color: #0054DF;
         transition:
-          transform 0.25s cubic-bezier(0.12, 3.04, 0.63, -0.09),
+          transform 0.5s ease-in-out,
           background-color 0.125s ease-in-out;
         &:hover {
-          background-color: #0074FF;
+          background-color: #c80;
         }
       }
       // &::-webkit-slider-runnable-track {}

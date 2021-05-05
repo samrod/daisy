@@ -15,6 +15,7 @@ const defaults = {
   panel: 'appearance',
   playing: false,
   mini: false,
+  startTime: 0,
 };
 
 const limits = {
@@ -27,7 +28,7 @@ const limits = {
   steps: { min: 1, max: 8 },
   lightbar: { min: 0, max: 0.5, step: 0.05 },
   background: { min: 0, max: 1, step: 0.05 },
-  opacity: { min: 0.1, max: 1, step: 0.01 },
+  opacity: { min: 0, max: 1, step: 0.01 },
   size: { min: 1, max: 15, step: 0.1 },
   miniSize: 300,
   audioPanRange: 10000,

@@ -132,7 +132,8 @@ export default class Display extends PureComponent {
     const { noop } = this;
     if (this.isMini) {
       this.popRemote = noop;
-      this.sendSettings = noop;
+      this.sendSettingsToRemote = noop;
+      this.sendMessageToRemote = noop;
       this.ping = this.toggleSteppedAnimationFlow;
       window.blur();
       const parent = window.open('', 'Remote');
@@ -148,9 +149,9 @@ export default class Display extends PureComponent {
         { event: 'mouseout', element: this.toolbar, handler: this.setToolbarFree },
         { event: 'mouseover', element: this.toolbar, handler: this.setToolbarBusy },
         { event: 'mousemove', element: document.body, handler: this.toggleToolbar },
-        { event: 'keydown', element: document.body, handler: setKeys.bind(this, this.sendSettings) },
+        { event: 'keydown', element: document.body, handler: setKeys.bind(this, this.sendSettingsToRemote) },
         { event: 'message', element: window, handler: this.routeToMini },
-        { event: 'unload', element: window, handler: this.killRemote },
+        { event: 'pagehide', element: window, handler: this.killRemote },
       ].forEach(bindEvent);
     }
   }
@@ -178,7 +179,7 @@ export default class Display extends PureComponent {
       `;
     this.getTargetPosition();
     this.updateAnimation('length', body);
-    this.sendSettings();
+    this.sendSettingsToRemote();
   };
 
   updateWaveAnimation = () => {
@@ -241,16 +242,21 @@ export default class Display extends PureComponent {
     const left = window.screen.width - miniSize;
     this.mini = window.open('/mini', "_mini", `left=${left},height=${miniSize},width=${miniSize},toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
     this.remote = window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
-    this.setState({ remoteMode: true }, this.sendSettings);
+    this.setState({ remoteMode: true }, this.sendSettingsToRemote);
   }
 
-  sendSettings = () => {
-    const { state, toolbar, remote } = this;
+  sendSettingsToRemote = () => {
+    const { state } = this;
     const { settings: params } = state;
     const action = 'updateSettings';
+    this.sendMessageToRemote({ action, params});
+  };
+
+  sendMessageToRemote = data => {
+    const { toolbar, remote } = this;
     const targetFrame = window.location.href + (remote ? 'remote' : 'embedded');
     const windowObj = [remote || toolbar.contentWindow];
-    sendMessage({ action, params }, windowObj, targetFrame);
+    sendMessage(data, windowObj, targetFrame);
   };
 
   killRemote = () => {
@@ -336,7 +342,12 @@ export default class Display extends PureComponent {
 
   togglePlay = () => {
     const { playing } = this.state.settings;
-    playing && this.updateTimeOffset();
+    // if (playing) {
+    //   this.updateTimeOffset();
+    // } else {
+    //   this.sendMessageToRemote({ action: 'resetClock' });
+    // }
+    // this.sendMessageToRemote({ action: 'updateClock' });
     this.updateMainAnimation(!playing);
   };
 

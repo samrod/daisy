@@ -1,7 +1,8 @@
 import { debounce } from 'lodash';
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import { bindEvent, unbindEvent, sendMessage, receiveMessage, setKeys } from '../common/utils';
 import Slider from '../components/Slider';
+import Clock from '../components/Clock';
 import Button from '../components/Button';
 import { defaults, limits } from '../common/constants';
 import './Remote.scss';
@@ -12,17 +13,18 @@ export default class Remote extends Component {
   limits = limits;
   popup = window.parent === window.self;
   state = {
-    settings: defaults,
+    settings: {
+      ...defaults,
+      startTime: new Date().getTime(),
+    },
   };
 
   componentDidMount() {
     this.bindEvents();
-    this.sendSettings();
+    this.sendSettingsToRemote();
   }
 
   componentWillUnmount() {
-    this.mainEvents.forEach(unbindEvent);
-    this.events.forEach(unbindEvent);
     unbindEvent({ event: 'message', handler: receiveMessage.bind(this), element: window });
   }
 
@@ -50,7 +52,7 @@ export default class Remote extends Component {
       { event: 'mousemove', element: document.body, handler: debounce(this.setToolbarBusy, 25) },
       { event: 'message', element: window, handler: receiveMessage.bind(this) },
       { event: 'keydown', element: document.body, handler: setKeys.bind(this, undefined) },
-      { event: 'unload', element: window, handler: this.killRemote },
+      { event: 'pagehide', element: window, handler: this.killRemote },
     ].forEach(bindEvent);
   }
 
@@ -84,8 +86,8 @@ export default class Remote extends Component {
     sendMessage({ action: 'hideBar' }, this.targetWindow);
   };
 
-  sendSettings() {
-    sendMessage({ action: 'sendSettings' }, this.targetWindow);
+  sendSettingsToRemote() {
+    sendMessage({ action: 'sendSettingsToRemote' }, this.targetWindow);
   }
 
   updateSettings = settings => {
@@ -97,21 +99,23 @@ export default class Remote extends Component {
   };
 
   killRemote = () => {
+    this.sendSettingsToRemote();
+    // this.updateClock();
     sendMessage({ action: 'killRemote' }, this.targetWindow);
-    this.sendSettings();
   };
 
+  // updateClock() {
+  //   const { settings } = this.state;
+  //   this.setState({
+  //     settings: {
+  //       ...settings,
+  //       startTime: new Date().getTime(),
+  //     },
+  //   });
+  // }
 
   togglePlay = () => {
-    const { settings } = this.state;
-    this.setState({
-        settings: {
-          ...settings,
-          playing: !settings.playing,
-        },
-      },
-      () => sendMessage({ action: 'updateMainAnimation', params: this.state.settings.playing })
-    );
+    sendMessage({ action: 'togglePlay' });
   };
 
   render() {
@@ -130,7 +134,11 @@ export default class Remote extends Component {
               <Button leftIcon="remote-settings-fill" klass="standardButton" action={popRemote} />
             }
           </div>
-          <div className=""></div>
+          <Clock
+            ref={this.timer}
+            playing={settings.playing}
+            startTime={settings.startTime}
+          />
           <div className="tabs">
             <div onClick={setRange} data-action="panel" data-option="motion" className={`tab ${settings.panel === 'motion' ? 'active' : ''}`}>Motion</div>
             <div onClick={setRange} data-action="panel" data-option="appearance" className={`tab ${settings.panel === 'appearance' ? 'active' : ''}`}>Appearance</div>
