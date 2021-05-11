@@ -15,6 +15,7 @@ const defaults = {
   panel: 'appearance',
   playing: false,
   mini: false,
+  startTime: 0,
 };
 
 const limits = {
