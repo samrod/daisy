@@ -50,7 +50,7 @@ export default class Remote extends Component {
       { event: 'mousemove', element: document.body, handler: debounce(this.setToolbarBusy, 25) },
       { event: 'message', element: window, handler: receiveMessage.bind(this) },
       { event: 'keydown', element: document.body, handler: setKeys.bind(this, undefined) },
-      { event: 'unload', element: window, handler: this.killRemote },
+      { event: 'pagehide', element: window, handler: this.killRemote },
     ].forEach(bindEvent);
   }
 

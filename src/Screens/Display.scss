@@ -11,10 +11,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
   transition:
-    transform .125s linear,
-    width .125s linear,
     background-color .125s linear;
 
   animation-name: wave;
@@ -64,15 +61,14 @@
 }
 
 #lightbar {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
   position: absolute;
   width: 100%;
   height: 100%;
   opacity: .5;
   .lightWrapper {
-    position: relative;
+    position: absolute;
+    transition: margin-left .5s ease-in-out;
   }
   .icon {
     position: absolute;
