@@ -1,3 +1,13 @@
 {
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "workbench.colorCustomizations": {
+    "[Monokai]": {
+      "editor.background": "#191919",
+      "terminal.background": "#000",
+      "terminal.ansiYellow": "#FF0",
+      "terminal.ansiBlue": "#0044FF",
+      "terminal.ansiGreen": "#00A600",
+      "terminal.ansiBlack": "#000"
+    }
+  }
 }

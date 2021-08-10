@@ -7,6 +7,7 @@ $i-mini: "\e902";
 $i-mini-fill: "\e903";
 $i-remote-settings: "\e904";
 $i-remote-settings-fill: "\e905";
+$i-user: "\e906";
 
 
 @font-face {
@@ -40,5 +41,6 @@ $i-remote-settings-fill: "\e905";
     &-mini-fill:before { content: $i-mini-fill; }
     &-remote-settings-fill:before { content: $i-remote-settings-fill }
     &-remote-settings:before { content: $i-remote-settings }
+    &-user:before { content: $i-user }
   }
 }
