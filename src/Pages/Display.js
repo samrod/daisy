@@ -1,18 +1,19 @@
 import React, { PureComponent } from 'react';
 import { bindEvent, receiveMessage, sendMessage, generateSound, setKeys } from '../common/utils';
 import { defaults, limits } from '../common/constants';
+import { noop } from 'lodash';
 import classNames from 'classnames';
 import './Display.scss';
 
 export default class Display extends PureComponent {
   state = {
     remoteMode: false,
+    userMode: false,
     hidden: false,
     settings: defaults,
     motionBarActive: false,
     odd: true,
   };
-  noop = () => true;
   callbacks = {
     length: 'updateMainAnimation',
     wave: 'updateWaveAnimation',
@@ -129,12 +130,11 @@ export default class Display extends PureComponent {
   }
 
   setMiniMode() {
-    const { noop } = this;
     if (this.isMini) {
       this.popRemote = noop;
       this.sendSettingsToRemote = noop;
       this.sendMessageToRemote = noop;
-      this.ping = this.toggleSteppedAnimationFlow;
+      this.ping = noop;
       window.blur();
       const parent = window.open('', 'Remote');
       parent.focus();
@@ -241,7 +241,7 @@ export default class Display extends PureComponent {
     const { miniSize } = limits;
     const left = window.screen.width - miniSize;
     this.mini = window.open('/mini', "_mini", `left=${left},height=${miniSize},width=${miniSize},toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
-    this.remote = window.open('/remote', "_blank", `top=${top},height=150,width=1000,toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
+    this.remote = window.open('/remote', "_blank", `top=${top}, height=150, width=1000, resizable`);
     this.setState({ remoteMode: true }, this.sendSettingsToRemote);
   }
 
@@ -254,6 +254,9 @@ export default class Display extends PureComponent {
 
   sendMessageToRemote = data => {
     const { toolbar, remote } = this;
+    if (!toolbar) {
+      return false;
+    }
     const targetFrame = window.location.href + (remote ? 'remote' : 'embedded');
     const windowObj = [remote || toolbar.contentWindow];
     sendMessage(data, windowObj, targetFrame);
@@ -296,6 +299,17 @@ export default class Display extends PureComponent {
         this.setState({ hidden: true }),
         this.limits.toolbarHideDelay
       );
+    }
+  };
+
+  setUserMode = ({ active = true }) => {
+    this.setState({
+      userMode: active,
+    });
+    if (this.state.remoteMode) {
+      const top = window.screen.availHeight - (active ? 450 : 150);
+      this.remote.resizeTo(1000, active ? 450 : 205);
+      this.remote.moveTo(0, top);
     }
   };
 
@@ -342,12 +356,6 @@ export default class Display extends PureComponent {
 
   togglePlay = () => {
     const { playing } = this.state.settings;
-    // if (playing) {
-    //   this.updateTimeOffset();
-    // } else {
-    //   this.sendMessageToRemote({ action: 'resetClock' });
-    // }
-    // this.sendMessageToRemote({ action: 'updateClock' });
     this.updateMainAnimation(!playing);
   };
 
@@ -356,7 +364,8 @@ export default class Display extends PureComponent {
   }
 
   render() {
-    const { hidden, remoteMode } = this.state;
+    const { hidden, userMode, remoteMode } = this.state;
+
     return (
       <div id="display" style={this.displayStyle}>
         <div
@@ -381,7 +390,7 @@ export default class Display extends PureComponent {
           <iframe
             title="remote"
             name="remote"
-            className={classNames('toolbar', { hidden, remoteMode })}
+            className={classNames('toolbar', { hidden, userMode, remoteMode })}
             src="./embedded"
             ref={this.setRef.bind(this, 'toolbar')}
           />

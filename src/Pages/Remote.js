@@ -1,11 +1,15 @@
 import { debounce } from 'lodash';
-import React, { Component, createRef } from 'react';
+import React, { Component } from 'react';
 import { bindEvent, unbindEvent, sendMessage, receiveMessage, setKeys } from '../common/utils';
 import Slider from '../components/Slider';
 import Clock from '../components/Clock';
 import Button from '../components/Button';
+import Tabs from '../components/Tabs';
+import UserPanel from './UserPanel';
+
 import { defaults, limits } from '../common/constants';
 import './Remote.scss';
+import cn from 'classnames';
 
 window.name = 'Remote';
 
@@ -13,6 +17,7 @@ export default class Remote extends Component {
   limits = limits;
   popup = window.parent === window.self;
   state = {
+    userMode: false,
     settings: {
       ...defaults,
       startTime: new Date().getTime(),
@@ -100,53 +105,62 @@ export default class Remote extends Component {
 
   killRemote = () => {
     this.sendSettingsToRemote();
-    // this.updateClock();
     sendMessage({ action: 'killRemote' }, this.targetWindow);
   };
-
-  // updateClock() {
-  //   const { settings } = this.state;
-  //   this.setState({
-  //     settings: {
-  //       ...settings,
-  //       startTime: new Date().getTime(),
-  //     },
-  //   });
-  // }
 
   togglePlay = () => {
     sendMessage({ action: 'togglePlay' });
   };
 
+  toggleUserPanel = () => {
+    this.setState({
+        ...this.state,
+        userMode: !this.state.userMode,
+    }, this.updateUserMode);
+  };
+
+  updateUserMode = () => {
+    sendMessage({ action: 'setUserMode', params: { active: this.state.userMode } });
+  };
+
+  swatch = (color, index) => (
+    <div
+      key={`swatch-${index}`}
+      className="swatch"
+      data-action="color"
+      data-option={color}
+      onClick={this.setRange}
+    />
+  )
+  
   render() {
-    const { setRange, togglePlay, flashBar, hideBar, popup, popRemote, state } = this;
-    const { settings } = state;
+    const { setRange, togglePlay, flashBar, hideBar, popup, popRemote, toggleUserPanel, state } = this;
+    const { settings, userMode } = state;
 
     return (
-      <div id="remote" className={popup ? 'popup' : ''}>
+      <div id="remote" className={cn({ popup, userMode })}>
         <div className="page">
-          {!popup &&
-            <div className="popButton" title="Pop Remote" onClick={popRemote} id="pop">&#10696;</div>
-          }
           <div className="topButtons">
             <Button leftIcon={settings.playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
             {!this.popup &&
               <Button leftIcon="remote-settings-fill" klass="standardButton" action={popRemote} />
             }
+              <Button leftIcon="user" klass="standardButton" action={toggleUserPanel} />
           </div>
           <Clock
             ref={this.timer}
             playing={settings.playing}
             startTime={settings.startTime}
           />
-          <div className="tabs">
-            <div onClick={setRange} data-action="panel" data-option="motion" className={`tab ${settings.panel === 'motion' ? 'active' : ''}`}>Motion</div>
-            <div onClick={setRange} data-action="panel" data-option="appearance" className={`tab ${settings.panel === 'appearance' ? 'active' : ''}`}>Appearance</div>
-            <div onClick={setRange} data-action="panel" data-option="sound" className={`tab ${settings.panel === 'sound' ? 'active' : ''}`}>Sound</div>
-          </div>
+          <Tabs 
+            options={['Motion', 'Appearance', 'Sound']}
+            callback={setRange}
+            state={settings.panel}
+            action="panel"
+          />
           <div className="panels">
 
-            <div className={`panel ${settings.panel === 'motion' ? 'active' : ''}`}>
+            <div className={cn('panel', { active: settings.panel === 'motion' })}>
               <div className="sliders">
                 <div className="row">
                   <Slider name="speed" value={settings.speed} onChange={e => setRange(e, false)} onMouseUp={setRange} />
@@ -159,19 +173,13 @@ export default class Remote extends Component {
               </div>
             </div>
 
-            <div className={`panel ${settings.panel === 'appearance' ? 'active' : ''}`}>
+            <div className={cn('panel', { active: settings.panel === 'appearance' })}>
               <div className="swatches">
                 <div className="row">
-                  <div className="swatch" data-action="color" data-option="white" onClick={setRange} />
-                  <div className="swatch" data-action="color" data-option="red" onClick={setRange} />
-                  <div className="swatch" data-action="color" data-option="orange" onClick={setRange} />
-                  <div className="swatch" data-action="color" data-option="yellow" onClick={setRange} />
+                  {['white', 'red', 'orange', 'yellow'].map(this.swatch)}
                 </div>
                 <div className="row">
-                  <div className="swatch" data-action="color" data-option="green" onClick={setRange} />
-                  <div className="swatch" data-action="color" data-option="cyan" onClick={setRange} />
-                  <div className="swatch" data-action="color" data-option="blue" onClick={setRange} />
-                  <div className="swatch" data-action="color" data-option="magenta" onClick={setRange} />
+                  {['green', 'cyan', 'blue', 'magenta'].map(this.swatch)}
                 </div>
               </div>
               <div className="sliders">
@@ -192,7 +200,7 @@ export default class Remote extends Component {
               </div>
             </div>
 
-            <div className={`panel ${settings.panel === 'sound' ? 'active' : ''}`}>
+            <div className={cn('panel', { active: settings.panel === 'sound' })}>
               <div className="sliders">
                 <div className="row">
                   <Slider name="volume" value={settings.volume} onChange={setRange} />
@@ -205,6 +213,7 @@ export default class Remote extends Component {
 
           </div>
         </div>
+        <UserPanel userMode={userMode} toggleUserPanel={toggleUserPanel} />
       </div>
     );
   }

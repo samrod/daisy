@@ -61,9 +61,12 @@ export function setKeys(callback = () => true, { keyCode, key, type }) {
 };
 
 
-const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let AudioCtx = undefined;
 
 export const generateSound = ({ panX = 0, pitch, gain, duration }) => {
+  if (!AudioCtx) {
+    AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
   const source = AudioCtx.createOscillator();
   const volume = AudioCtx.createGain();
   const panner = AudioCtx.createPanner();
