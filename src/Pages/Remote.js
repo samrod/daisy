@@ -108,8 +108,33 @@ export default class Remote extends Component {
     sendMessage({ action: 'killRemote' }, this.targetWindow);
   };
 
-  togglePlay = () => {
-    sendMessage({ action: 'togglePlay' });
+  togglePlay = (playing) => {
+    sendMessage({ action: 'togglePlay', params: playing });
+  };
+
+  onSpeedSliderMouseDown = e => {
+    this.speedSliderActive = true;
+    this.lastPlaying = this.state.settings.playing;
+  };
+
+  onSpeedSliderMove = () => {
+    if (this.speedSliderActive && this.lastPlaying && this.state.settings.playing) {
+      this.speedSliderDragged = true;
+      sendMessage({ action: 'togglePlay', params: false });
+    }
+  }
+
+  onSpeedSliderChange = e => {
+    this.setRange(e, false);
+  };
+
+  onSpeedSliderMouseUp = e => {
+    this.setRange(e);
+    if (this.lastPlaying && this.speedSliderDragged) {
+      setTimeout(this.togglePlay, 0, true);
+    }
+    this.speedSliderDragged = false;
+    this.speedSliderActive = false;
   };
 
   toggleUserPanel = () => {
@@ -134,24 +159,26 @@ export default class Remote extends Component {
   )
   
   render() {
-    const { setRange, togglePlay, flashBar, hideBar, popup, popRemote, toggleUserPanel, state } = this;
-    const { settings, userMode } = state;
+    const {
+      setRange, flashBar, hideBar, popup, popRemote, toggleUserPanel, onSpeedSliderMouseDown, onSpeedSliderMove,
+      onSpeedSliderChange, togglePlay, onSpeedSliderMouseUp, showWaveSlider, showAudioSliders, swatch,
+      showLightbarSlider, timer, state: {
+        settings,
+        userMode
+      },
+    } = this;
 
     return (
       <div id="remote" className={cn({ popup, userMode })}>
         <div className="page">
           <div className="topButtons">
             <Button leftIcon={settings.playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
-            {!this.popup &&
+            {!popup &&
               <Button leftIcon="remote-settings-fill" klass="standardButton" action={popRemote} />
             }
               <Button leftIcon="user" klass="standardButton" action={toggleUserPanel} />
           </div>
-          <Clock
-            ref={this.timer}
-            playing={settings.playing}
-            startTime={settings.startTime}
-          />
+          <Clock ref={timer} playing={settings.playing} startTime={settings.startTime} />
           <Tabs 
             options={['Motion', 'Appearance', 'Sound']}
             callback={setRange}
@@ -163,8 +190,15 @@ export default class Remote extends Component {
             <div className={cn('panel', { active: settings.panel === 'motion' })}>
               <div className="sliders">
                 <div className="row">
-                  <Slider name="speed" value={settings.speed} onChange={e => setRange(e, false)} onMouseUp={setRange} />
-                  {this.showWaveSlider &&
+                  <Slider
+                    name="speed"
+                    value={settings.speed}
+                    onChange={onSpeedSliderChange}
+                    onMouseDown={onSpeedSliderMouseDown}
+                    onMouseUp={onSpeedSliderMouseUp}
+                    onMouseMove={onSpeedSliderMove}
+                  />
+                  {showWaveSlider &&
                     <Slider name="wave" value={settings.wave} onChange={setRange} />
                   }
                   <Slider name="angle" value={settings.angle} onChange={setRange} onMouseDown={flashBar.bind(this, 'angle')} onMouseUp={hideBar} />
@@ -176,16 +210,16 @@ export default class Remote extends Component {
             <div className={cn('panel', { active: settings.panel === 'appearance' })}>
               <div className="swatches">
                 <div className="row">
-                  {['white', 'red', 'orange', 'yellow'].map(this.swatch)}
+                  {['white', 'red', 'orange', 'yellow'].map(swatch)}
                 </div>
                 <div className="row">
-                  {['green', 'cyan', 'blue', 'magenta'].map(this.swatch)}
+                  {['green', 'cyan', 'blue', 'magenta'].map(swatch)}
                 </div>
               </div>
               <div className="sliders">
                 <div className="row">
                   <Slider name="steps" value={settings.steps} onChange={setRange} />
-                  {this.showLightbarSlider &&
+                  {showLightbarSlider &&
                     <Slider name="lightbar" value={settings.lightbar} onChange={setRange} />
                   }
                   <Slider name="background" value={settings.background} onChange={setRange} />
@@ -204,7 +238,7 @@ export default class Remote extends Component {
               <div className="sliders">
                 <div className="row">
                   <Slider name="volume" value={settings.volume} onChange={setRange} />
-                  {this.showAudioSliders &&
+                  {showAudioSliders &&
                     <Slider name="pitch" value={settings.pitch} onChange={setRange} />
                   }
                 </div>

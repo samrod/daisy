@@ -70,16 +70,18 @@ export const generateSound = ({ panX = 0, pitch, gain, duration }) => {
   const source = AudioCtx.createOscillator();
   const volume = AudioCtx.createGain();
   const panner = AudioCtx.createPanner();
+  const listener = AudioCtx.listener;
   // const reverb = AudioCtx.createConvolver();
 
   panner.panningModel = 'HRTF';
   panner.distanceModel = 'inverse';
   panner.refDistance = 1;
-  panner.maxDistance = 1;
-  panner.rolloffFactor = 1;
+  panner.maxDistance = 10000;
+  panner.rolloffFactor = 10;
   panner.coneInnerAngle = 360;
   panner.coneOuterAngle = 0;
   panner.coneOuterGain = 0;
+  listener.setPosition(0, 0, 0);
   panner.setPosition(panX, 0, 0);
 
   // const duration = this.settings.speed / 2500;
@@ -92,9 +94,10 @@ export const generateSound = ({ panX = 0, pitch, gain, duration }) => {
   }
   source.type = 'sine';
 
-  source.connect(volume);
-  volume.connect(panner);
-  panner.connect(AudioCtx.destination);
+  source
+    .connect(volume)
+    .connect(panner)
+    .connect(AudioCtx.destination);
 
   source.start();
   setTimeout(() => source.stop(), duration);
