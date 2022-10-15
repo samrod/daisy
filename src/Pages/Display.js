@@ -35,11 +35,11 @@ export default class Display extends PureComponent {
       width: `${size}vw`,
       height: `${size}vw`,
       opacity: opacity,
-      left: this.targetPosition,
-      animationName: playing ? 'bounce' : 'none',
+      animationName: 'bounce',
       animationDelay: `${this.timeOffset}ms`,
-      animationDuration: playing ? `${velocity}ms` : '1000s',
+      animationDuration: `${velocity}ms`,
       animationTimingFunction: this.timingFunction,
+      animationPlayState: playing ? 'running' : 'paused',
     };
   }
 
@@ -177,7 +177,6 @@ export default class Display extends PureComponent {
           100%  { left: ${this.distance}vw; }
         }
       `;
-    this.getTargetPosition();
     this.updateAnimation('length', body);
     this.sendSettingsToRemote();
   };
@@ -207,6 +206,7 @@ export default class Display extends PureComponent {
   set = ({ setting, data }) => {
     const { settings } = this.state;
     const callback = this[this.callbacks[setting]] || (() => true);
+    // console.log(setting, data);
     this.setState({
       settings: {
         ...settings,
@@ -328,7 +328,7 @@ export default class Display extends PureComponent {
   }
 
   hapticBump = () => {
-    generateSound({ pitch: 100, gain: 0.2, duration: 50 });
+    generateSound({ pitch: 225, gain: 0.2, duration: 70 });
   };
 
   ping = e => {
@@ -343,20 +343,9 @@ export default class Display extends PureComponent {
     generateSound({ panX, pitch, gain, duration: 70 });
   };
 
-  updateTimeOffset() {
-    const { length, speed } = this.state.settings;
-    const distance = window.innerWidth * length / 100;
-    const position = parseInt(this.targetPosition);
-    const absolutePosition = position + distance;
-    const totalDistance = distance * 2;
-    const percentComplete = absolutePosition / totalDistance;
-    const offset = speed * percentComplete;
-    this.timeOffset = -offset;
-  }
-
-  togglePlay = () => {
-    const { playing } = this.state.settings;
-    this.updateMainAnimation(!playing);
+  togglePlay = (override) => {
+    const playing = typeof override !== 'undefined' ? override : !this.state.settings.playing;
+    this.updateMainAnimation(playing);
   };
 
   setRef(key, ref) {
