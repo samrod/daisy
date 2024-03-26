@@ -9,35 +9,44 @@ export function bindEvent({ element, event, handler }) {
 }
 
 export function receiveMessage({ data, ...e }) {
+  if (typeof data !== "string") {
+    console.warn("*** receiveMessage: data", data, typeof data);
+    return;
+  }
   const { action, params } = JSON.parse(data);
   if (this[action]) {
-    // console.log(window.location.pathname, data);
+    // console.log("*** receiveMessage:", window.name, action, data);
     this[action].call(this, params);
   } else {
-    console.warn(`${action} is not available.`);
+    console.warn(`*** receiveMessage: ${action} is not available.`);
   }
 };
 
 export const sendMessage = (data, displays = [window.opener || window.parent], target = window.location.href) => {
+  if (!data) {
+    console.warn("*** sendMessage: data", data, typeof data);
+    return;
+  }
   const message = JSON.stringify(data);
   displays.forEach(display => {
+    // console.log("*** sendMessage:", window.name, message, data);
     display && display.postMessage(message, target);
   });
 };
 
 export function setKeys(callback = () => true, { keyCode, key, type }) {
-  const { settings } = this.state;
+  const { settings } = this;
   let speed, volume;
 
   switch (keyCode) {
     case 38:
       volume = Math.min(settings.volume + limits.volume.nudge, limits.volume.max);
-      this.setState({ settings: { ...settings, volume } });
+      this.setSettings({ settings: { ...settings, volume } });
       this.set({ settings: 'volume', data: volume });
       break;
     case 40:
       volume = Math.max(settings.volume - limits.volume.nudge, limits.volume.min);
-      this.setState({ settings: { ...settings, volume } });
+      this.setSettings({ settings: { ...settings, volume } });
       this.set({ settings: 'volume', data: volume });
       break;
     case 32:
@@ -45,12 +54,12 @@ export function setKeys(callback = () => true, { keyCode, key, type }) {
       break;
     case 39:
       speed = Math.min(settings.speed + limits.speed.nudge, limits.speed.max);
-      this.setState({ settings: { ...settings, speed } });
+      this.setSettings({ settings: { ...settings, speed } });
       this.set({ settings: 'speed', data: speed });
       break;
     case 37:
       speed = Math.max(settings.speed - limits.speed.nudge, limits.speed.min);
-      this.setState({ settings: { ...settings, speed } });
+      this.setSettings({ settings: { ...settings, speed } });
       this.set({ settings: 'speed', data: speed });
       break;
     default:

@@ -1,19 +1,26 @@
-import React from "react";
+import React, { DetailedHTMLProps, InputHTMLAttributes } from "react";
 import { limits } from '../common/constants';
 
-const Slider = ({ name, label=true, value, onMouseUp=() => true, onChange, ...props }) => {
+interface SliderProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
+  name: string;
+  label?: boolean | string;
+}
+
+const Slider = ({ name, label, value, ...props }: SliderProps) => {
+  const { onMouseUp, onChange } = props;
   const onBlur = e => {
     e.target.blur();
     (window.opener || window.parent).focus();
-    onMouseUp.call(this, e);
+    onMouseUp && onMouseUp.call(this, e);
   };
 
-  const title = label && name;
+  const title = (label || name).toString();
 
   return (
     <div className="slider">
       {title}{title.length && `: ${value}`}
       <input
+        {...props}
         className="valueSlider"
         data-action={name}
         max={limits[name].max}
@@ -23,7 +30,6 @@ const Slider = ({ name, label=true, value, onMouseUp=() => true, onChange, ...pr
         onChange={onChange}
         type="range"
         value={value}
-        {...props}
       />
     </div>
   );

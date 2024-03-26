@@ -22,7 +22,7 @@ const UpdateAccount = ({ onClose }: UpdateAccountProps) => {
       return e;
     }
 
-    const promises = [];
+    const promises: string[] = [];
     setLoading(true);
     setError('');
 

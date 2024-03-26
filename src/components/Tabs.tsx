@@ -1,16 +1,16 @@
-import React from 'react'
+import React, { MouseEventHandler } from 'react'
 import cn from 'classnames';
 
 interface TabsProps {
   options: string[];
-  callback: () => void;
+  callback: MouseEventHandler<HTMLDivElement>;
   state: string;
   action: string;
 }
 
 const Tabs = ({ options, action, callback, state}: TabsProps) => {
 
-  const tab = (label: string, index: number)=> {
+  const tab = (label: string, index: number) => {
     const option = label.toLowerCase();
 
     return (
