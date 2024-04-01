@@ -1,157 +1,43 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { bindEvent, receiveMessage, sendMessage, generateSound, setKeys } from '../common/utils';
-import { defaults, limits } from '../common/constants';
-import { noop } from 'lodash';
+import { createPortal } from "react-dom";
 import cn from 'classnames';
+
+import { bindEvent, unbindEvent, receiveMessage, generateSound, setKeys } from '../lib/utils';
+import { limits } from '../lib/constants';
+import { useStore } from "../lib/state";
+import Remote from './Remote';
 import './Display.scss';
 
-const animationCallbacks = {
-  length: 'updateMainAnimation',
-  wave: 'updateWaveAnimation',
-  size: 'updateMainAnimation',
-  shape: 'updateMainAnimation',
-};
-
 const Display = () => {
-  const [remoteMode, setRemoteMode] = useState(false);
-  const [userMode, _setUserMode] = useState(false);
+  const State = useStore(state => state);
+  const { settings, userMode, motionBarActive, activeSetting } = State;
+  const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settings;
+
   const [hidden, setHidden] = useState(true);
-  const [settings, setSettings] = useState(defaults);
-  const [motionBarActive, setMotionBarActive] = useState(false);
   const [odd, setOdd] = useState(true);
 
   const animatorStylesheets = useRef(['length', 'wave']);
-  const PublicMethods = useRef();
-  const toolbarTimer = useRef(0);
+  const initialized = useRef(false);
+  const playbackStarted = useRef(false);
   const toolbarBusy = useRef(false);
-  const callback = useRef(noop);
-  const target = useRef("");
+  const toolbarTimer = useRef(0);
   const toolbar = useRef();
-  const remote = useRef();
-  const mini = useRef();
-  const isMini = useRef(window.location.pathname.includes("/mini"))
+  const bindList = useRef();
 
-  const set = useCallback(({ setting, data })  => {
-    callback.current = PublicMethods.current[animationCallbacks[setting]] || noop;
-    // console.log(setting, data);
-    setSettings({ ...settings, [setting]: data });
-  }, [settings]);
-
-  const sendSettingsToRemote = useCallback(() => {
-    if (isMini.current) {
-      return false;
-    }
-    sendMessageToRemote({ action: "updateSettings", params: settings });
-  }, [settings]);
-
-  const sendMessageToRemote = data => {
-    if (isMini.current || !toolbar.current) {
-      return false;
-    }
-    const targetFrame = window.location.href + (remote.current ? 'remote' : 'embedded');
-    const windowObj = [remote.current || toolbar.current.contentWindow];
-    sendMessage(data, windowObj, targetFrame);
-  };
-
-  const displayStyle = () => {
-    const { background } = settings;
-    return { backgroundColor: `rgba(0,0,0,${background})` };
-  };
-
-  const targetStyle = () => {
-    const { size, opacity, playing } = settings;
-    return {
-      width: `${size}vw`,
-      height: `${size}vw`,
-      opacity: opacity,
-      animationName: 'bounce',
-      // animationDelay: `${timeOffset}ms`,
-      animationDuration: `${velocity()}ms`,
-      animationTimingFunction: timingFunction(),
-      animationPlayState: playing ? 'running' : 'paused',
-    };
-  };
-
-  const targetClass = () => {
-    const { color, shape, background } = settings;
-    let newColor = color;
-    if (color === 'white' && background <= .5) {
-     newColor = 'black';
-    }
-    if (color === 'black' && background > .5) {
-      newColor ='white';
-    }
-    return `color-${newColor} shape-${shape}`;
-  };
-
-  const containerStyle = () => {
-    const { angle, length, size } = settings;
-    return {
-      width: `${length * 2}vw`,
-      transform: `rotateZ(${angle}deg)`,
-      animationDuration: `${velocity() / limits.wave.amplitude}ms`,
-      borderRadius: `${size/2}vw`,
-    };
-  };
-
-  const containerClass = () => {
-    const { angle, activeSetting } = settings;
-    let levelClass = '';
-    if (motionBarActive && Number(angle) === 0 && activeSetting === 'angle') {
-      levelClass = 'containerLevel';
-      hapticBump();
-    };
-    const activeClass = motionBarActive ? 'containerActive' : '';
-    return `${levelClass} ${activeClass}`;
-  };
-
-  const timingFunction = () => {
-    const { steps: numString } = settings;
-    const steps = Number(numString) - 1;
-    if (!steps) {
-      return 'ease-in-out';
-    }
-    const directionLimit = odd ? 'start' : 'end';
-    return `steps(${steps}, ${directionLimit})`;
-  };
-
-  const velocity = () => {
-    const { speed: { min, max} } = limits;
-    const { speed } = settings;
-
-    if (speed) {
-      return max - speed + min;
-    }
-    return 1000000;
-  };
+  let absoluteSize, containerStyle, targetStyle, displayStyle, targetClass, containerClass = "";
+  const mountNode = toolbar.current?.contentWindow?.document?.body;
 
   const lights = () => {
-    const { steps } = settings;
     if (steps > 1) {
-      return Array.apply(null, Array(Number(steps))).map(light);
+      return Array.apply(null, Array(steps)).map(light);
     }
     return null;
   };
 
-  const absoluteSize = useCallback(() => {
-    const { shape, size } = settings;
-    return shape !== 'diamond' ? size : Math.sqrt((size ** 2) * 2);
-  }, [settings]);
-
   const distance = useCallback(() => {
-    const { length } = settings;
-    return length - (absoluteSize() / 2);
-  }, [absoluteSize, settings]);
-
-  const setMiniMode = useCallback(() => {
-    if (isMini.current) {
-      popRemote.current = noop;
-      ping.current = noop;
-      window.blur();
-      const parent = window.open('', 'Remote');
-      parent.focus();
-    }
-  }, []);
+    return length - (absoluteSize / 2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [absoluteSize, length, shape, size]);
 
   const createAnimatorStylesheet = useCallback(name => {
     const styleElement = document.createElement('style');
@@ -159,26 +45,18 @@ const Display = () => {
     animatorStylesheets.current[`${name}Styles`] = styleElement;
   }, [animatorStylesheets]);
 
-  // const getTargetPosition = () => {
-  //   targetPosition = getComputedStyle(target.current).left;
-  //   if (settings.playing) {
-  //     setTimeout(getTargetPosition, 1000/30);
-  //   }
-  // };
-
   const updateMainAnimation = useCallback(() => {
+    const _distance = distance();
     const body =`
         @keyframes bounce {
-          0% { left: -${distance()}vw; }
-          100%  { left: ${distance()}vw; }
+          0% { left: -${_distance}vw; }
+          100%  { left: ${_distance}vw; }
         }
       `;
     updateAnimation('length', body);
-    sendSettingsToRemote();
-  }, [distance, sendSettingsToRemote]);
+  }, [distance]);
 
   const updateWaveAnimation = useCallback(() => {
-    const { wave } = settings;
     const body = `
       @keyframes wave {
         0% { top: -${wave}vh; }
@@ -186,7 +64,7 @@ const Display = () => {
       }
     `;
     updateAnimation('wave', body);
-  }, [settings]);
+  }, [wave]);
 
   const updateAnimation = (context, css) => {
     const stylesheet = animatorStylesheets.current[`${context}Styles`];
@@ -195,50 +73,16 @@ const Display = () => {
     stylesheet.sheet.insertRule(css, 0);
   };
 
-  const routeToMini = ({ data }) => {
-    if (typeof data === "string") {
-      sendMessage(JSON.parse(data), [mini.current], window.location.href + 'mini');
-    }
-  };
-
   const light = (item, index) => {
-    const { width, height } = targetStyle();
-    const { lightbar: opacity, steps } = settings;
-    const marginLeft = (absoluteSize() - parseInt(width)) / 2 + 'vw';
+    const { width, height } = targetStyle;
+    const marginLeft = (absoluteSize - parseInt(width)) / 2 + 'vw';
     const left = (distance() * 2 / (steps - 1) * index) + 'vw';
 
     return (
       <div key={index} className="lightWrapper" style={{ left, marginLeft, width, height }}>
-        <div className="bullseye" style={{ width, height, opacity }} />
+        <div className="bullseye" style={{ width, height, opacity: lightbar }} />
       </div>
     );
-  };
-
-  const flashBar = activeSetting => {
-    setMotionBarActive(true)
-  };
-
-  const hideBar = () => {
-    setMotionBarActive(false);
-  };
-
-  let popRemote = useRef(() => {
-    const top = window.screen.availHeight - 150;
-    const { miniSize } = limits;
-    const left = window.screen.width - miniSize;
-    mini.current = window.open('/mini', "_mini", `left=${left},height=${miniSize},width=${miniSize},toolbar=0,titlebar=0,location=0,status=0,menubar=0,scrollbars=0,resizable=0`);
-    remote.current = window.open('/remote', "_blank", `top=${top}, height=150, width=1000, resizable`);
-    setRemoteMode(true, sendSettingsToRemote);
-  });
-
-  const killRemote = () => {
-    setTimeout(() => {
-      remote.current && remote.current.close();
-      mini && mini.close();
-      remote.current = undefined;
-    });
-    setRemoteMode(false);
-    setHidden(false);
   };
 
   const setToolbarBusy = () => {
@@ -253,9 +97,6 @@ const Display = () => {
   };
 
   const toggleToolbar = useCallback(() => {
-    if ( remoteMode ) {
-      return;
-    }
     clearTimeout(toolbarTimer.current);
     if (hidden) {
       setHidden(false);
@@ -267,20 +108,10 @@ const Display = () => {
       limits.toolbarHideDelay
       );
     }
-  }, [hidden, remoteMode]);
-
-  const setUserMode = useCallback(({ active = true }) => {
-    _setUserMode(active);
-    if (remoteMode) {
-      const top = window.screen.availHeight - (active ? 450 : 150);
-      remote.resizeTo(1000, active ? 450 : 205);
-      remote.moveTo(0, top);
-    }
-  }, [remoteMode]);
+  }, [hidden]);
 
   const toggleSteppedAnimationFlow = e => {
     const flow = parseInt(getComputedStyle(e.target).left) < 0;
-    const { steps } = settings;
     if (flow === odd) {
       return;
     }
@@ -293,102 +124,149 @@ const Display = () => {
     generateSound({ pitch: 225, gain: 0.2, duration: 70 });
   };
 
-  let ping = useRef(e => {
-    const { pitch, steps, volume: gain } = settings;
+  const routeKeys = useCallback((e) => {
+    setKeys(e, State);
+  }, [State]);
+
+  const ping = e => {
     const { audioPanRange } = limits;
     toggleSteppedAnimationFlow(e);
-    if (Number(gain) === 0 ) {
+    if (gain === 0 ) {
       return;
     }
-    const twoStepReverse = Number(steps) !== 2 ? 1 : -1;
+    const twoStepReverse = steps !== 2 ? 1 : -1;
     const panX = (odd ? audioPanRange : -audioPanRange) * twoStepReverse;
     generateSound({ panX, pitch, gain, duration: 70 });
-  });
-
-  const togglePlay = useCallback((override) => {
-    const playing = typeof override !== 'undefined' ? override : !settings.playing;
-    set({ setting: 'playing', data: playing });
-  }, [settings, set]);
+  };
 
   const bindEvents = useCallback(() => {
-    PublicMethods.current = {
-      updateWaveAnimation,
-      updateMainAnimation,
-      flashBar,
-      hideBar,
-      setUserMode,
-      settings,
-      set,
-      setSettings,
-      togglePlay,
-      popRemote: popRemote.current,
-      setToolbarBusy,
-      sendSettingsToRemote,
-    };
-
-    bindEvent({ element: window, event: 'message', handler: receiveMessage.bind(PublicMethods.current) });
-    if (!isMini.current) {
-      [
-        { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
-        { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
-        { event: 'mousemove', element: document.body, handler: toggleToolbar },
-        { event: 'keydown', element: document.body, handler: setKeys.bind(PublicMethods.current, undefined) },
-        { event: 'message', element: window, handler: routeToMini },
-        { event: 'pagehide', element: window, handler: killRemote },
-      ].forEach(bindEvent);
+    bindList.current = [
+      { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
+      { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
+      { event: 'mousemove', element: document.body, handler: toggleToolbar },
+      { event: 'keydown', element: document.body, handler: (e) => setKeys(e, State), options: { capture: true }},
+      { event: 'message', element: window, handler: receiveMessage.bind({routeKeys}) },
+    ];
+  
+    if (toolbar.current && !initialized.current) {
+      bindList.current.forEach(bindEvent);
     }
-  }, [sendSettingsToRemote, set, setUserMode, settings, togglePlay, toggleToolbar, updateMainAnimation, updateWaveAnimation]);
+  }, [State, routeKeys, toggleToolbar]);
 
-  useEffect((e) => {
-    bindEvents();
-    toggleToolbar();
-    // updateMainAnimation();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const unbindEvents = useCallback(() => {
+    if (toolbar.current && !initialized.current) {
+      bindList.forEach(unbindEvent);
+    }
+  }, [bindList]);
 
-  useEffect((e) => {
-    setMiniMode();
-    target.current = document.querySelector('#target');
-    animatorStylesheets.current.forEach(createAnimatorStylesheet);
-  }, [createAnimatorStylesheet, setMiniMode]);
+  const updateClassesAndStyles = () => {
+    console.log("*** updateClassesAndStyles");
+    const stepped = steps - 1;
+    const timingFunction = !stepped
+      ? "ease-in-out"
+      : `steps(${stepped}, ${odd ? "start" : "end"})`;
+  
+    const velocity = speed
+      ? limits.speed.max - speed + limits.speed.min
+      :  1000000;
+  
+    let newColor = color
+    if (color === 'white' && background <= .5) {
+      newColor = 'black';
+    }
+    if (color === 'black' && background > .5) {
+      newColor ='white';
+    }
+  
+    containerStyle = {
+      width: `${length * 2}vw`,
+      transform: `rotateZ(${angle}deg)`,
+      animationDuration: `${velocity / limits.wave.amplitude}ms`,
+      borderRadius: `${size/2}vw`,
+    };
+  
+    let levelClass = "";
+    if (motionBarActive && angle === 0 && activeSetting === 'angle') {
+      levelClass = "containerLevel";
+      hapticBump();
+    };
+    absoluteSize = shape !== 'diamond' ? size : Math.sqrt((size ** 2) << 1);
+    containerClass = `${levelClass} ${motionBarActive ? "containerActive" : ""}`;
+    targetClass = `color-${newColor} shape-${shape}`;
+    displayStyle = { backgroundColor: `rgba(0,0,0,${background})` };  
+    targetStyle = {
+      width: `${size}vw`,
+      height: `${size}vw`,
+      opacity: opacity,
+      animationName: "bounce",
+      animationDuration: `${velocity}ms`,
+      animationTimingFunction: timingFunction,
+      animationPlayState: playing ? "running" : "paused",
+    };
+  }
 
   useEffect(() => {
-    callback.current();
-    callback.current = noop;
+    if (!initialized.current) {
+      return;
+    }
+    updateWaveAnimation();
+  }, [updateWaveAnimation, wave]);
+
+  useEffect(() => {
+    if (playing) {
+      playbackStarted.current = true;
+    }
+    if (!initialized.current || !playbackStarted.current) {
+      return;
+    }
     updateMainAnimation();
-    console.log("*** settings: ", settings);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [length, shape, size, playing]);
+
+  useEffect(() => {
+    if (!initialized.current) {
+      return;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
 
+  useEffect(() => {
+    bindEvents();
+    initialized.current = true;
+    animatorStylesheets.current.forEach(createAnimatorStylesheet);
+     return unbindEvents;
+  });
+
+  updateClassesAndStyles();
+
   return (
-    <div id="display" style={displayStyle()}>
+    <div id="display" style={displayStyle}>
       <div
         id="container"
-        className={containerClass()}
-        style={containerStyle()}
+        className={containerClass}
+        style={containerStyle}
       >
-        <div id="lightbar" className={targetClass()}>
+        <div id="lightbar" className={targetClass}>
           {lights()}
         </div>
         <div
           id="target"
-          className={targetClass()}
-          style={targetStyle()}
-          onClick={togglePlay}
-          onAnimationIteration={ping.current}
+          className={targetClass}
+          style={targetStyle}
+          onAnimationIteration={ping}
         >
           <div className="bullseye"></div>
         </div>
       </div>
-      {!isMini.current &&
-        <iframe
-          title="remote"
-          name="remote"
-          className={cn('toolbar', { hidden, userMode, remoteMode })}
-          src="./embedded"
-          ref={toolbar}
-        />
-      }
+      <iframe
+        ref={toolbar}
+        src="./embedded"
+        name="remote"
+        title="remote"
+        className={cn('toolbar', { hidden, userMode })}
+      >
+        {mountNode && createPortal(<div><Remote /></div>, mountNode)}
+    </iframe>
     </div>
   );
 };

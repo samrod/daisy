@@ -1,16 +1,34 @@
-import { limits } from '../common/constants';
+import { noop } from 'lodash';
+import { ActionsType, StateType } from './state';
+
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext
+  }
+  interface BindParams {
+    event: string;
+    element: HTMLElement | Window;
+    handler: (e: Event) => void;
+    options?: {
+      capture?: boolean;
+      one?: boolean;
+      passive?: boolean;
+      signal?: boolean;
+    }
+  }
+}
 
 export function unbindEvent({ element, event, handler }) {
   element.removeEventListener(event, handler);
 }
 
-export function bindEvent({ element, event, handler }) {
-  element.addEventListener(event, handler);
+export function bindEvent({ element, event, handler, options = {} }) {
+  element.addEventListener(event, handler, options);
 }
 
 export function receiveMessage({ data, ...e }) {
   if (typeof data !== "string") {
-    console.warn("*** receiveMessage: data", data, typeof data);
+    console.warn(`*** received non-string data at "${window.self.location.pathname}":\n`, data, typeof data);
     return;
   }
   const { action, params } = JSON.parse(data);
@@ -18,54 +36,47 @@ export function receiveMessage({ data, ...e }) {
     // console.log("*** receiveMessage:", window.name, action, data);
     this[action].call(this, params);
   } else {
-    console.warn(`*** receiveMessage: ${action} is not available.`);
+    console.warn(`*** receivedMessage "${action}" is not available at ${window.self.location.pathname}`);
   }
 };
 
-export const sendMessage = (data, displays = [window.opener || window.parent], target = window.location.href) => {
+export const sendMessage = (
+  data: { action: string, params?: unknown },
+  windows: Window[] = [window.opener || window.parent],
+  target: string = window.location.href
+) => {
   if (!data) {
-    console.warn("*** sendMessage: data", data, typeof data);
+    console.warn("*** sendMessage is missing data: ", data, typeof data);
     return;
   }
   const message = JSON.stringify(data);
-  displays.forEach(display => {
-    // console.log("*** sendMessage:", window.name, message, data);
-    display && display.postMessage(message, target);
+  windows.filter(n=>n).forEach(window => {
+    // console.log("*** sendMessage from ", window.self.location.pathname, data);
+    window.postMessage(message, target);
   });
 };
 
-export function setKeys(callback = () => true, { keyCode, key, type }) {
-  const { settings } = this;
-  let speed, volume;
-
-  switch (keyCode) {
-    case 38:
-      volume = Math.min(settings.volume + limits.volume.nudge, limits.volume.max);
-      this.setSettings({ settings: { ...settings, volume } });
-      this.set({ settings: 'volume', data: volume });
+export const setKeys = ({ key }, State: StateType & ActionsType, callback = noop) => {
+  // console.log({ type, keyCode, key });
+  switch (key) {
+    case "ArrowDown":
+      State.volumeDown();
       break;
-    case 40:
-      volume = Math.max(settings.volume - limits.volume.nudge, limits.volume.min);
-      this.setSettings({ settings: { ...settings, volume } });
-      this.set({ settings: 'volume', data: volume });
+    case "ArrowUp":
+      State.volumeUp();
       break;
-    case 32:
-      this.togglePlay();
+    case " ":
+      State.togglePlay();;
       break;
-    case 39:
-      speed = Math.min(settings.speed + limits.speed.nudge, limits.speed.max);
-      this.setSettings({ settings: { ...settings, speed } });
-      this.set({ settings: 'speed', data: speed });
+    case "ArrowLeft":
+      State.speedDown();
       break;
-    case 37:
-      speed = Math.max(settings.speed - limits.speed.nudge, limits.speed.min);
-      this.setSettings({ settings: { ...settings, speed } });
-      this.set({ settings: 'speed', data: speed });
+    case "ArrowRight":
+      State.speedUp();
       break;
     default:
       break;
   }
-  // console.log({ type, keyCode, key });
   callback();
 };
 

@@ -1,5 +1,5 @@
 import React, { DetailedHTMLProps, InputHTMLAttributes } from "react";
-import { limits } from '../common/constants';
+import { limits } from '../lib/constants';
 
 interface SliderProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
   name: string;
@@ -7,6 +7,7 @@ interface SliderProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputEle
 }
 
 const Slider = ({ name, label, value, ...props }: SliderProps) => {
+  const title = (label || name).toString();
   const { onMouseUp, onChange } = props;
   const onBlur = e => {
     e.target.blur();
@@ -14,11 +15,11 @@ const Slider = ({ name, label, value, ...props }: SliderProps) => {
     onMouseUp && onMouseUp.call(this, e);
   };
 
-  const title = (label || name).toString();
-
   return (
     <div className="slider">
-      {title}{title.length && `: ${value}`}
+      <label>
+        {title}{title.length && `: ${value}`}
+      </label>
       <input
         {...props}
         className="valueSlider"

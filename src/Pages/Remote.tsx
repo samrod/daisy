@@ -1,30 +1,33 @@
-import React, { useEffect, useCallback, useState, MouseEvent, useRef, ChangeEvent } from "react";
-import { debounce } from "lodash";
+import React, { useEffect, useState, MouseEvent, useRef, ChangeEvent } from "react";
 import cn from "classnames";
 
+import { useStore } from "../lib/state";
 import Slider from "../components/Slider";
-import Clock from "../components/Clock";
+import Swatch from "../components/Swatch";
 import Button from "../components/Button";
 import Tabs from "../components/Tabs";
+import Clock from "../components/Clock";
 import UserPanel from "./UserPanel";
-import { bindEvent, unbindEvent, sendMessage, receiveMessage, setKeys } from "../common/utils";
-import { defaults } from "../common/constants";
+import RemoteEmbedded from "./RemoteEmbedded";
 import "./Remote.scss";
 
-window.name = "Remote";
+const embedded = window.location.pathname === "/embedded";
 
 const Remote = () => {
-  const popup = useRef(window.parent === window.self);
-  const targetWindow = useRef([window.opener || window.parent]);
+  const startTime = useRef(new Date().getTime());
+  
+  const State = useStore(state => state);
+  const { settings, userMode, toggleUserMode, setSettings, togglePlay, flashBar, hideBar } = State;
+  const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settings;
+  const [speedSliderValue, setSpeedSliderValue] = useState(speed);
+  const localState = {
+    speed: setSpeedSliderValue,
+  };
 
-  const [lastPlaying, setLastPlaying] = useState(false);
+  const [panel, setPanel] = useState("appearance");
+  const [lastPlayingState, setLastPlayingState] = useState(false);
   const [speedSliderActive, setSpeedSliderActive] = useState(false);
   const [speedSliderDragged, setSpeedSliderDragged] = useState(false);
-  const [userMode, setUserMode] = useState(false);
-  const [settings, setSettings] = useState<typeof defaults>({
-      ...defaults,
-      startTime: new Date().getTime(),
-  });
 
   const showLightbarSlider = () => {
     const { steps, wave } = settings;
@@ -41,205 +44,105 @@ const Remote = () => {
     return !!Number(volume);
   };
 
-  interface SetType {
-    setting: string;
-    data?: number;
-  }
-
-  const set = ({ setting, data }: SetType) => {
-    sendMessage({ action: 'set', params: { setting, data } }, targetWindow.current );
+  const onTabClick = ({ target }) => {
+    setPanel(target.dataset.option);
   };
 
-  // const setValue = (e: MouseEventHandler<HTMLDivElement>, execute = true) => {
   const setValue = (e: any, execute = true) => {
-    // console.log('*** setValue e: ', e);
     const { target } = e;
     const { value, dataset: { action: rawAction, option } } = target;
-    const data = value || option;
-    setSettings({
-      ...settings,
-      [rawAction]: data,
-    });
+    const data = option || Number(value);
+    if (localState[rawAction]) {
+      localState[rawAction](data);
+    }
     if (execute) {
-      set({ setting: rawAction, data });
+      setSettings(rawAction, data);
     }
   }
-
-  // const setRange = (e: React.ChangeEventHandler<HTMLInputElement>, execute = true) => {
-  const setRange = (e: any, execute = true) => {
-      // console.log('*** setRange e: ', e);
-    const { target } = e;
-    const { value, dataset: { action: rawAction, option } } = target;
-    const data = value || option;
-    setSettings({
-      ...settings,
-      [rawAction]: data,
-    });
-    if (execute) {
-      set({ setting: rawAction, data });
-    }
-  };
-
-  const setToolbarBusy = () => {
-    sendMessage({ action: 'setToolbarBusy' });
-  };
-
-  const flashBar = (activeSetting: boolean) => {
-    sendMessage({ action: 'flashBar', params: activeSetting }, targetWindow.current);
-  };
-
-  const hideBar = () => {
-    sendMessage({ action: 'hideBar' }, targetWindow.current);
-  };
-
-  const sendSettingsToRemote = useCallback(() => {
-    sendMessage({ action: 'sendSettingsToRemote' }, targetWindow.current);
-  }, []);
-
-  const popRemote = () => {
-    sendMessage({ action: 'popRemote' }, targetWindow.current);
-  };
-
-  const killRemote = useCallback(() => {
-    sendSettingsToRemote();
-    sendMessage({ action: 'killRemote' }, targetWindow.current);
-  }, [sendSettingsToRemote]);
-
-  const updateSettings = useCallback((newSettings: typeof defaults = settings) => {
-    console.log("*** updateSettings: ", newSettings);
-    setSettings(newSettings);
-  }, [settings]);
-
-  const togglePlay = useCallback(() => {
-    sendMessage({ action: 'togglePlay', params: settings.playing });
-  }, [settings.playing]);
 
   const onSpeedSliderMouseDown = (e: MouseEvent) => {
     setSpeedSliderActive(true);
-    setLastPlaying(settings.playing);
+    setLastPlayingState(playing);
   };
 
   const onSpeedSliderMove = () => {
-    if (speedSliderActive && lastPlaying && settings.playing) {
+    if (speedSliderActive && lastPlayingState && playing) {
       setSpeedSliderDragged(true);
-      sendMessage({ action: 'togglePlay', params: false });
+      setSettings("playing", false);
     }
   }
 
   const onSpeedSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setRange(e, false);
+    setValue(e, false);
   };
 
   const onSpeedSliderMouseUp = e => {
-    setRange(e);
-    if (lastPlaying && speedSliderDragged) {
+    setValue(e);
+    if (lastPlayingState && speedSliderDragged) {
       setTimeout(togglePlay, 0, true);
     }
     setSpeedSliderDragged(false);
     setSpeedSliderActive(false);
   };
 
-  const toggleUserPanel = () => {
-    setUserMode(!userMode);
-  };
-
-  const swatch = (color: string, index: number) => (
-    <div
-      key={`swatch-${index}`}
-      className="swatch"
-      data-action="color"
-      data-option={color}
-      onClick={setRange}
-    />
-  );
-
-  const bindEvents = useCallback(() => {
-    const PublicMethods = {
-      updateSettings,
-      togglePlay,
-      setSettings,
-      settings,
-      set,
-    };
-    
-    [
-      { event: "mousemove", element: document.body, handler: debounce(setToolbarBusy, 25) },
-      { event: "message", element: window, handler: receiveMessage.bind(PublicMethods) },
-      { event: "keydown", element: document.body, handler: setKeys.bind(PublicMethods, undefined) },
-      { event: "pagehide", element: window, handler: killRemote },
-    ].forEach(bindEvent);
-  }, [killRemote, settings, togglePlay, updateSettings]);
-
   useEffect(() => {
-    sendMessage({ action: "setUserMode", params: { active: userMode } });
-  }, [userMode]);
-
-  useEffect(() => {
-    bindEvents();
-    sendSettingsToRemote();
-    return () => {
-      unbindEvent({ event: "message", handler: receiveMessage, element: window });
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setSpeedSliderValue(speed);
+  },[speed]);
 
   return (
-    <div id="remote" className={cn({ popup: popup.current, userMode })}>
+    <div id="remote" className={cn({ userMode })}>
       <div className="page">
         <div className="topButtons">
-          <Button leftIcon={settings.playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
-          {!popup.current &&
-            <Button leftIcon="remote-settings-fill" klass="standardButton" action={popRemote} />
-          }
-            <Button leftIcon="user" klass="standardButton" action={toggleUserPanel} />
+          <Button leftIcon={playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
+          <Button leftIcon="user" klass="standardButton" action={toggleUserMode} />
         </div>
-        <Clock playing={settings.playing} startTime={settings.startTime} />
+        <Clock playing={playing} startTime={startTime.current} />
         <Tabs 
           options={['Motion', 'Appearance', 'Sound']}
-          callback={setValue}
-          state={settings.panel}
+          callback={onTabClick}
+          state={panel}
           action="panel"
         />
         <div className="panels">
 
-          <div className={cn('panel', { active: settings.panel === 'motion' })}>
+          <div className={cn('panel', { active: panel === 'motion' })}>
             <div className="sliders">
               <div className="row">
                 <Slider
                   name="speed"
-                  value={settings.speed}
+                  value={speedSliderValue}
                   onChange={onSpeedSliderChange}
                   onMouseDown={onSpeedSliderMouseDown}
                   onMouseUp={onSpeedSliderMouseUp}
                   onMouseMove={onSpeedSliderMove}
                 />
                 {showWaveSlider() &&
-                  <Slider name="wave" value={settings.wave} onChange={setRange} />
+                  <Slider name="wave" value={wave} onChange={setValue} />
                 }
-                <Slider name="angle" value={settings.angle} onChange={setRange} onMouseDown={flashBar.bind(this, 'angle')} onMouseUp={hideBar} />
-                <Slider name="length" value={settings.length} onChange={setRange} onMouseDown={flashBar.bind(this, 'length')} onMouseUp={hideBar} />
+                <Slider name="angle" value={angle} onChange={setValue} onMouseDown={flashBar.bind(this, 'angle')} onMouseUp={hideBar} />
+                <Slider name="length" value={length} onChange={setValue} onMouseDown={flashBar.bind(this, 'length')} onMouseUp={hideBar} />
               </div>
             </div>
           </div>
 
-          <div className={cn('panel', { active: settings.panel === 'appearance' })}>
+          <div className={cn('panel', { active: panel === 'appearance' })}>
             <div className="swatches">
               <div className="row">
-                {['white', 'red', 'orange', 'yellow'].map(swatch)}
+                {['white', 'red', 'orange', 'yellow'].map(Swatch.bind(null, setValue))}
               </div>
               <div className="row">
-                {['green', 'cyan', 'blue', 'magenta'].map(swatch)}
+                {['green', 'cyan', 'blue', 'magenta'].map(Swatch.bind(null, setValue))}
               </div>
             </div>
             <div className="sliders">
               <div className="row">
-                <Slider name="steps" value={settings.steps} onChange={setRange} />
+                <Slider name="steps" value={steps} onChange={setValue} />
                 {showLightbarSlider() &&
-                  <Slider name="lightbar" value={settings.lightbar} onChange={setRange} />
+                  <Slider name="lightbar" value={lightbar} onChange={setValue} />
                 }
-                <Slider name="background" value={settings.background} onChange={setRange} />
-                <Slider name="opacity" value={settings.opacity} onChange={setRange} />
-                <Slider name="size" value={settings.size} onChange={setRange} />
+                <Slider name="background" value={background} onChange={setValue} />
+                <Slider name="opacity" value={opacity} onChange={setValue} />
+                <Slider name="size" value={size} onChange={setValue} />
               </div>
             </div>
             <div className="shapes">
@@ -249,12 +152,12 @@ const Remote = () => {
             </div>
           </div>
 
-          <div className={cn('panel', { active: settings.panel === 'sound' })}>
+          <div className={cn('panel', { active: panel === 'sound' })}>
             <div className="sliders">
               <div className="row">
-                <Slider name="volume" value={settings.volume} onChange={setRange} />
+                <Slider name="volume" value={volume} onChange={setValue} />
                 {showAudioSliders() &&
-                  <Slider name="pitch" value={settings.pitch} onChange={setRange} />
+                  <Slider name="pitch" value={pitch} onChange={setValue} />
                 }
               </div>
             </div>
@@ -262,9 +165,9 @@ const Remote = () => {
 
         </div>
       </div>
-      <UserPanel userMode={userMode} toggleUserPanel={toggleUserPanel} />
+      <UserPanel toggleUserPanel={toggleUserMode} />
     </div>
   );
 }
 
-export default Remote;
+export default embedded ? RemoteEmbedded : Remote;

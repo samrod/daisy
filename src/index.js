@@ -24,7 +24,6 @@ ReactDOM.render((
         <PrivateRoute path="/account" component={Account} />
 
         <PrivateRoute exact path="/" component={Display} />
-        <PrivateRoute path="/mini" component={Display} />
         <PrivateRoute path="/embedded" component={Remote} />
         <PrivateRoute path="/remote" component={Remote} />
     </BrowserRouter>

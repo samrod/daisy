@@ -4,13 +4,13 @@ export default api => {
     presets: ['module:metro-react-native-babel-preset'],
     plugins: [
       [
-        'module-resolver',
+        require.resolve('babel-plugin-module-resolver'),
         {
           root: ['./src'],
           alias: {
-            common: './src/common',
-            assets: './assets',
-            components: './src/components'
+            "@lib": './src/lib',
+            "@assets": './assets',
+            "@components": './src/components'
           }
         }
       ],

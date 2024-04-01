@@ -13,7 +13,7 @@ const UpdateAccount = ({ onClose }: UpdateAccountProps) => {
   const { currentUser, updateEmail, updatePassword, logout } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const handleSubmit = useCallback((e): FormEventHandler<HTMLFormElement> => {
     e.preventDefault();
 
@@ -51,17 +51,17 @@ const UpdateAccount = ({ onClose }: UpdateAccountProps) => {
       <Form onSubmit={handleSubmit} className="accountForm">
         <Form.Group id="emai">
           <Form.Label>Email</Form.Label>
-          <Form.Control size="sm" type="email" ref={emailRef} required defaultValue={currentUser?.email} />
+          <Form.Control size="sm" type="email" autoComplete="email" ref={emailRef} required defaultValue={currentUser?.email} />
         </Form.Group>
 
         <Form.Group id="password">
           <Form.Label>Password</Form.Label>
-          <Form.Control size="sm" type="password" ref={passwordRef} placeholder="Leave blank to keep current" />
+          <Form.Control size="sm" type="password" autoComplete="off" ref={passwordRef} placeholder="Leave blank to keep current" />
         </Form.Group>
 
         <Form.Group id="confirm">
           <Form.Label>Confirm</Form.Label>
-          <Form.Control size="sm" type="password" ref={confirmRef} placeholder="Leave blank to keep current" />
+          <Form.Control size="sm" type="password" autoComplete="off" ref={confirmRef} placeholder="Leave blank to keep current" />
         </Form.Group>
 
         <Row>

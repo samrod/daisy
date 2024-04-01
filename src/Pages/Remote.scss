@@ -1,5 +1,10 @@
 @import 'variables.scss';
 
+.remoteContainer {
+  position: absolute;
+  bottom: 0;
+}
+
 #remote {
   width: 100vw;
   height: 100vh;
@@ -8,7 +13,7 @@
   padding-bottom: 0;
   box-sizing: border-box;
   display: flex;
-  color: #666;
+  color: #888;
   &.popup {
     background-color: #111;
   }
@@ -217,6 +222,12 @@
   align-items: center;
   flex-wrap: wrap;
   justify-content: space-between;
+  label {
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.5px;;
+    margin-bottom: 0.5em;
+  }
   .slider {
     display: inline-flex;
     flex-direction: column;

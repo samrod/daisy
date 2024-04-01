@@ -5,7 +5,6 @@ import './UserPanel.scss';
 import Account from './auth/Account';
 
 interface UserPanelProps {
-  userMode?: boolean;
   toggleUserPanel: () => void;
 }
 
