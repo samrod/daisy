@@ -1,5 +1,3 @@
-import React, {  } from "react";
-
 const Swatch = (setValue: () => void, color: string, index: number) => (
   <div
     key={`swatch-${index}`}

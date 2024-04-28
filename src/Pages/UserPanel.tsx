@@ -1,4 +1,3 @@
-import React from 'react';
 import CloseButton from '../components/Button';
 import { Card } from 'react-bootstrap';
 import './UserPanel.scss';

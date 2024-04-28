@@ -1,4 +1,4 @@
-import React, { useEffect, useState, MouseEvent, useRef, ChangeEvent } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 import cn from "classnames";
 
 import { useStore } from "../lib/state";
@@ -8,14 +8,12 @@ import Button from "../components/Button";
 import Tabs from "../components/Tabs";
 import Clock from "../components/Clock";
 import UserPanel from "./UserPanel";
-import RemoteEmbedded from "./RemoteEmbedded";
+import RemoteEmbedded from "./RemoteIframeHeader";
 import "./Remote.scss";
 
 const embedded = window.location.pathname === "/embedded";
 
 const Remote = () => {
-  const startTime = useRef(new Date().getTime());
-  
   const State = useStore(state => state);
   const { settings, userMode, toggleUserMode, setSettings, togglePlay, flashBar, hideBar } = State;
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settings;
@@ -28,6 +26,7 @@ const Remote = () => {
   const [lastPlayingState, setLastPlayingState] = useState(false);
   const [speedSliderActive, setSpeedSliderActive] = useState(false);
   const [speedSliderDragged, setSpeedSliderDragged] = useState(false);
+  const [fakePaused, setFakePasued] = useState(false);
 
   const showLightbarSlider = () => {
     const { steps, wave } = settings;
@@ -48,8 +47,7 @@ const Remote = () => {
     setPanel(target.dataset.option);
   };
 
-  const setValue = (e: any, execute = true) => {
-    const { target } = e;
+  const setValue = ({ target }: ChangeEvent<HTMLInputElement>, execute = true) => {
     const { value, dataset: { action: rawAction, option } } = target;
     const data = option || Number(value);
     if (localState[rawAction]) {
@@ -60,9 +58,10 @@ const Remote = () => {
     }
   }
 
-  const onSpeedSliderMouseDown = (e: MouseEvent) => {
+  const onSpeedSliderMouseDown = () => {
     setSpeedSliderActive(true);
     setLastPlayingState(playing);
+    setFakePasued(true);
   };
 
   const onSpeedSliderMove = () => {
@@ -76,15 +75,16 @@ const Remote = () => {
     setValue(e, false);
   };
 
-  const onSpeedSliderMouseUp = e => {
+  const onSpeedSliderMouseUp = (e: ChangeEvent<HTMLInputElement>) => {
     setValue(e);
     if (lastPlayingState && speedSliderDragged) {
-      setTimeout(togglePlay, 0, true);
+      togglePlay();
+      setFakePasued(false);
     }
     setSpeedSliderDragged(false);
     setSpeedSliderActive(false);
   };
-
+ 
   useEffect(() => {
     setSpeedSliderValue(speed);
   },[speed]);
@@ -96,7 +96,7 @@ const Remote = () => {
           <Button leftIcon={playing ? 'pause' : 'play'} klass="playButton" action={togglePlay} />
           <Button leftIcon="user" klass="standardButton" action={toggleUserMode} />
         </div>
-        <Clock playing={playing} startTime={startTime.current} />
+        <Clock playing={playing || fakePaused} />
         <Tabs 
           options={['Motion', 'Appearance', 'Sound']}
           callback={onTabClick}

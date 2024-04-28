@@ -1,20 +1,22 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter, Route } from 'react-router-dom';
-import './components/global.scss'
-import * as serviceWorker from './serviceWorker';
-import { AuthProvider } from './context/AuthContext';
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, Route } from "react-router-dom";
 
-import PrivateRoute from './Pages/auth/PrivateRoute';
-import Signup from './Pages/auth/Signup';
-import Login from './Pages/auth/Login';
-import Account from './Pages/auth/Account';
-import ForgotPassword from './Pages/auth/ForgotPassword';
-import ResetPassword from './Pages/auth/ResetPassword';
-import Display from './Pages/Display';
-import Remote from './Pages/Remote';
+import * as serviceWorker from "./serviceWorker";
+import { AuthProvider } from "./context/AuthContext";
 
-ReactDOM.render((
+import PrivateRoute from "./Pages/auth/PrivateRoute";
+import Signup from "./Pages/auth/Signup";
+import Login from "./Pages/auth/Login";
+import Account from "./Pages/auth/Account";
+import ForgotPassword from "./Pages/auth/ForgotPassword";
+import ResetPassword from "./Pages/auth/ResetPassword";
+import Display from "./Pages/Display";
+import Remote from "./Pages/Remote";
+import "./components/global.scss"
+
+const root = createRoot(document.getElementById("root"));
+
+root.render(
   <AuthProvider>
       <BrowserRouter>
         <Route path="/signup" component={Signup} />
@@ -28,7 +30,6 @@ ReactDOM.render((
         <PrivateRoute path="/remote" component={Remote} />
     </BrowserRouter>
   </AuthProvider>
-), document.getElementById('root')
 );
 
 // If you want your app to work offline and load faster, you can change

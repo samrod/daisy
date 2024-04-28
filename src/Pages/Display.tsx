@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from "react-dom";
 import cn from 'classnames';
+import { noop } from "lodash";
+import CSS from "csstype";
 
 import { bindEvent, unbindEvent, receiveMessage, generateSound, setKeys } from '../lib/utils';
 import { limits } from '../lib/constants';
@@ -20,12 +22,19 @@ const Display = () => {
   const initialized = useRef(false);
   const playbackStarted = useRef(false);
   const toolbarBusy = useRef(false);
-  const toolbarTimer = useRef(0);
-  const toolbar = useRef();
-  const bindList = useRef();
+  const toolbarTimer = useRef<NodeJS.Timeout | number>();
+  const toolbar = useRef<HTMLIFrameElement>();
+  const bindList = useRef<BindParams[]>();
+  const displayStyle = useRef<CSS.Properties>();
 
-  let absoluteSize, containerStyle, targetStyle, displayStyle, targetClass, containerClass = "";
-  const mountNode = toolbar.current?.contentWindow?.document?.body;
+  let
+    absoluteBallSize: number,
+    targetClass: string,
+    containerClass: string,
+    containerStyle: CSS.Properties,
+    targetStyle: CSS.Properties;
+  
+  const iframeMountNode = toolbar.current?.contentWindow?.document?.body;
 
   const lights = () => {
     if (steps > 1) {
@@ -35,15 +44,25 @@ const Display = () => {
   };
 
   const distance = useCallback(() => {
-    return length - (absoluteSize / 2);
+    return length - (absoluteBallSize / 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [absoluteSize, length, shape, size]);
+  }, [absoluteBallSize, length, shape, size]);
 
-  const createAnimatorStylesheet = useCallback(name => {
+  const createAnimatorStylesheet = useCallback((name: string) => {
     const styleElement = document.createElement('style');
+    const id = `${name}Styles`;
+    styleElement.setAttribute("id", id)
+    styleElement.setAttribute("type", "text/css")
     document.head.append(styleElement);
-    animatorStylesheets.current[`${name}Styles`] = styleElement;
+    animatorStylesheets.current[`${name}Styles`] = document.getElementById(id);
   }, [animatorStylesheets]);
+
+  const updateAnimation = (context: string, css: string) => {
+    const stylesheet = animatorStylesheets.current[`${context}Styles`];
+    const index = stylesheet.sheet.cssRules.length;
+    index && stylesheet.sheet.deleteRule(0);
+    stylesheet.sheet.insertRule(css, 0);
+  };
 
   const updateMainAnimation = useCallback(() => {
     const _distance = distance();
@@ -66,16 +85,9 @@ const Display = () => {
     updateAnimation('wave', body);
   }, [wave]);
 
-  const updateAnimation = (context, css) => {
-    const stylesheet = animatorStylesheets.current[`${context}Styles`];
-    const index = stylesheet.sheet.cssRules.length;
-    index && stylesheet.sheet.deleteRule(0);
-    stylesheet.sheet.insertRule(css, 0);
-  };
-
   const light = (item, index) => {
     const { width, height } = targetStyle;
-    const marginLeft = (absoluteSize - parseInt(width)) / 2 + 'vw';
+    const marginLeft = (absoluteBallSize - parseInt(width)) / 2 + 'vw';
     const left = (distance() * 2 / (steps - 1) * index) + 'vw';
 
     return (
@@ -98,7 +110,9 @@ const Display = () => {
 
   const toggleToolbar = useCallback(() => {
     clearTimeout(toolbarTimer.current);
-    if (hidden) {
+    if (!hidden) {
+      return;
+    } else {
       setHidden(false);
     }
     if (!toolbarBusy.current) {
@@ -110,7 +124,21 @@ const Display = () => {
     }
   }, [hidden]);
 
-  const toggleSteppedAnimationFlow = e => {
+  const hapticBump = () => {
+    generateSound({ pitch: 225, gain: 0.2, duration: 70 });
+  };
+
+  const routeKeys = useCallback((e) => {
+    setKeys(e, State);
+  }, [State]);
+
+  const onAnimationIteration = (e) => {
+    toggleSteppedAnimationFlow(e);
+    ping();
+  }
+
+  let toggleSteppedAnimationFlow = noop;
+  const _toggleSteppedAnimationFlow = e => {
     const flow = parseInt(getComputedStyle(e.target).left) < 0;
     if (flow === odd) {
       return;
@@ -120,20 +148,19 @@ const Display = () => {
     }
   };
 
-  const hapticBump = () => {
-    generateSound({ pitch: 225, gain: 0.2, duration: 70 });
-  };
-
-  const routeKeys = useCallback((e) => {
-    setKeys(e, State);
-  }, [State]);
-
-  const ping = e => {
-    const { audioPanRange } = limits;
-    toggleSteppedAnimationFlow(e);
-    if (gain === 0 ) {
-      return;
+  const updateDirectionalCalls = () => {
+    if (gain > 0) {
+      toggleSteppedAnimationFlow = _toggleSteppedAnimationFlow;
+      ping = _ping;
+    } else {
+      toggleSteppedAnimationFlow = steps > 1 ? _toggleSteppedAnimationFlow: noop;
+      ping = noop;
     }
+  }
+
+  let ping = noop;
+  const _ping = e => {
+    const { audioPanRange } = limits;
     const twoStepReverse = steps !== 2 ? 1 : -1;
     const panX = (odd ? audioPanRange : -audioPanRange) * twoStepReverse;
     generateSound({ panX, pitch, gain, duration: 70 });
@@ -151,16 +178,14 @@ const Display = () => {
     if (toolbar.current && !initialized.current) {
       bindList.current.forEach(bindEvent);
     }
+    initialized.current = true;
   }, [State, routeKeys, toggleToolbar]);
 
   const unbindEvents = useCallback(() => {
-    if (toolbar.current && !initialized.current) {
-      bindList.forEach(unbindEvent);
-    }
+    bindList.current.forEach(unbindEvent);
   }, [bindList]);
 
   const updateClassesAndStyles = () => {
-    console.log("*** updateClassesAndStyles");
     const stepped = steps - 1;
     const timingFunction = !stepped
       ? "ease-in-out"
@@ -190,10 +215,10 @@ const Display = () => {
       levelClass = "containerLevel";
       hapticBump();
     };
-    absoluteSize = shape !== 'diamond' ? size : Math.sqrt((size ** 2) << 1);
+    absoluteBallSize = shape !== 'diamond' ? size : Math.sqrt((size ** 2) << 1);
     containerClass = `${levelClass} ${motionBarActive ? "containerActive" : ""}`;
     targetClass = `color-${newColor} shape-${shape}`;
-    displayStyle = { backgroundColor: `rgba(0,0,0,${background})` };  
+    displayStyle.current = { backgroundColor: `rgba(0,0,0,${background})` };  
     targetStyle = {
       width: `${size}vw`,
       height: `${size}vw`,
@@ -224,23 +249,17 @@ const Display = () => {
   }, [length, shape, size, playing]);
 
   useEffect(() => {
-    if (!initialized.current) {
-      return;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings]);
-
-  useEffect(() => {
     bindEvents();
-    initialized.current = true;
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
-     return unbindEvents;
-  });
+    return unbindEvents;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   updateClassesAndStyles();
+  updateDirectionalCalls();
 
   return (
-    <div id="display" style={displayStyle}>
+    <div id="display" style={displayStyle.current}>
       <div
         id="container"
         className={containerClass}
@@ -253,7 +272,7 @@ const Display = () => {
           id="target"
           className={targetClass}
           style={targetStyle}
-          onAnimationIteration={ping}
+          onAnimationIteration={onAnimationIteration}
         >
           <div className="bullseye"></div>
         </div>
@@ -265,7 +284,7 @@ const Display = () => {
         title="remote"
         className={cn('toolbar', { hidden, userMode })}
       >
-        {mountNode && createPortal(<div><Remote /></div>, mountNode)}
+        {iframeMountNode && createPortal(<div><Remote /></div>, iframeMountNode)}
     </iframe>
     </div>
   );

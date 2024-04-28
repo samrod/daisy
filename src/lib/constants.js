@@ -1,4 +1,4 @@
-const defaults = {
+export const defaults = {
   size: 3,
   speed: 2500,
   angle: 0,
@@ -15,7 +15,7 @@ const defaults = {
   playing: false,
 };
 
-const limits = {
+export const limits = {
   wave: { min: 0, max: 25, amplitude: 2.5 },
   angle: { min: -45, max: 45 },
   length: { min: 10, max: 50 },
@@ -30,5 +30,3 @@ const limits = {
   audioPanRange: 10000,
   toolbarHideDelay: 3000,
 };
-
-export { defaults, limits };

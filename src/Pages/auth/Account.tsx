@@ -1,5 +1,9 @@
-import React, { useRef, useState, useCallback, FormEventHandler } from 'react'
-import { Alert, Form, Button, Row } from 'react-bootstrap';
+import { useRef, useState, useCallback, FormEventHandler } from 'react'
+import { Alert, Form, Button, Row } from "react-bootstrap";
+// import Alert from "react-bootstrap/Alert";
+// import Form from "react-bootstrap/Form";
+// import Button from "react-bootstrap/Button";
+// import Row from "react-bootstrap/Row";
 import { useAuth } from '../../context/AuthContext';
 
 interface UpdateAccountProps {

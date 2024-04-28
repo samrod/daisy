@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { bindEvent, unbindEvent, sendMessage } from "../lib/utils";
 import "./Remote.scss";
 
@@ -8,9 +8,6 @@ const EmbeddedRemote = () => {
   const bindList = useRef<BindParams[]>();
 
   const bindEvents = useCallback(() => {
-    if (window.parent["bound"]) {
-      return;
-    }
     bindList.current = [
       { event: "keydown", element: document.body, handler: (e: KeyboardEvent) => sendMessage({ action: 'routeKeys', params: { key: e.key }}, undefined, window.location.href) },
     ];
@@ -20,13 +17,13 @@ const EmbeddedRemote = () => {
   }, []);
 
   const unbindEvents = useCallback(() => {
+    bindList.current.forEach(unbindEvent);
+  }, [bindList]);
+  
+  useEffect(() => {
     if (window.parent["bound"]) {
       return;
     }
-    bindList.current.forEach(unbindEvent);
-  }, [bindList]);
-
-  useEffect(() => {
     bindEvents();
     return unbindEvents;
   });

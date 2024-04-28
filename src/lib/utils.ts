@@ -18,20 +18,25 @@ declare global {
   }
 }
 
-export function unbindEvent({ element, event, handler }) {
+export function unbindEvent({ element, event, handler }: BindParams) {
   element.removeEventListener(event, handler);
 }
 
-export function bindEvent({ element, event, handler, options = {} }) {
+export function bindEvent({ element, event, handler, options = {} }: BindParams) {
   element.addEventListener(event, handler, options);
 }
 
 export function receiveMessage({ data, ...e }) {
-  if (typeof data !== "string") {
-    console.warn(`*** received non-string data at "${window.self.location.pathname}":\n`, data, typeof data);
+  let parsedData: { action: string, params: unknown } | string;
+  try {
+    parsedData = JSON.parse(data);
+  } catch (e) {
+    if (typeof parsedData === "string" && !parsedData.includes("webpack")) {
+      console.warn(`*** received invalid data at "${window.self.location.pathname}":\n`, data, typeof data);
+    }
     return;
   }
-  const { action, params } = JSON.parse(data);
+  const { action, params } = parsedData;
   if (this[action]) {
     // console.log("*** receiveMessage:", window.name, action, data);
     this[action].call(this, params);
