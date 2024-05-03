@@ -1,24 +1,26 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link, useHistory } from "react-router-dom";
 import { Alert, Form, Button, Card } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
 import Layout from "./Layout";
 
 export default function ResetPassword() {
-  const emailRef = useRef();
-  const passwordRef = useRef();
-  const { resetPassword } = useAuth();
+  const { resetPassword, getFormHandlers } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const history = useHistory();
 
-  async function handleSubmit(e) {
+  const { onChangeEmail, onChangePassword } = getFormHandlers({ setEmail, setPassword });
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     try {
       setError('');
       setLoading(true);
-      await resetPassword(emailRef.current.value, passwordRef.current.value);
+      await resetPassword(email, password);
       history.push('/app');
     } catch(e) {
       setError('Password reset failed');
@@ -35,12 +37,12 @@ export default function ResetPassword() {
           <Form onSubmit={handleSubmit}>
             <Form.Group id="emai">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" ref={emailRef} required />
+              <Form.Control type="email" required onChange={onChangeEmail} />
             </Form.Group>
 
             <Form.Group id="password">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" ref={passwordRef} required />
+              <Form.Control type="password" required onChange={onChangePassword} />
             </Form.Group>
 
             <Button disabled={loading} className="w-100" type="submit">Login</Button>

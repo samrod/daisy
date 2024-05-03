@@ -1,29 +1,32 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link, useHistory } from "react-router-dom";
 import { Alert, Form, Button, Card } from 'react-bootstrap';
+
 import { useAuth } from '../../context/AuthContext';
 import Layout from "./Layout";
 
 export default function Signup() {
-  const emailRef = useRef();
-  const passwordRef = useRef();
-  const confirmRef = useRef();
-  const { signup } = useAuth();
+  const { signup, getFormHandlers } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const history = useHistory();
 
-  async function handleSubmit(e) {
+  const { onChangeEmail, onChangePassword, onChangeConfirm } = getFormHandlers({ setEmail, setPassword, setConfirm });
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (passwordRef.current.value !== confirmRef.current.value) {
+    if (password !== confirm) {
       return setError('Passwords don\'t match');
     }
 
     try {
       setError('');
       setLoading(true);
-      await signup(emailRef.current.value, passwordRef.current.value);
+      await signup(email, password);
       history.push('/');
     } catch({ message }) {
       setError(message);
@@ -40,17 +43,17 @@ export default function Signup() {
           <Form onSubmit={handleSubmit}>
             <Form.Group id="emai">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" ref={emailRef} required />
+              <Form.Control autoComplete="email" type="email" onChange={onChangeEmail} required />
             </Form.Group>
 
             <Form.Group id="password">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" ref={passwordRef} required />
+              <Form.Control autoComplete="new-password" type="password" onChange={onChangePassword} required />
             </Form.Group>
 
             <Form.Group id="confirm">
               <Form.Label>Confirm</Form.Label>
-              <Form.Control type="password" ref={confirmRef} required />
+              <Form.Control autoComplete="new-password" type="password" onChange={onChangeConfirm} required />
             </Form.Group>
 
             <Button disabled={loading} className="w-100" type="submit">Sign Up</Button>

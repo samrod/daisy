@@ -1,15 +1,16 @@
 import { create } from "zustand";
 import { defaults, limits } from "./constants";
 import { produce } from "immer";
+import { db } from "./firebase";
 
-export type StateType = {
+export type StateTypes = {
   userMode: boolean;
   motionBarActive: boolean;
   activeSetting: string;
   settings: typeof defaults;
 }
 
-export type ActionsType = {
+export type ActionsTypes = {
   setSettings: (setting: string, value: string | number | boolean) => void;
   togglePlay: () => void;
   toggleUserMode: () => void;
@@ -21,10 +22,10 @@ export type ActionsType = {
   hideBar: () => void;
 }
 
-const update = (set, func: (state: StateType) => void) => set(produce(func));
+const update = (set, func: (state: StateTypes) => void) => set(produce(func));
 const { volume, speed } = limits;
 
-export const useStore = create<StateType & ActionsType>((set) => ({
+export const useStore = create<StateTypes & ActionsTypes>((set) => ({
   userMode: false,
   settings: defaults,
   motionBarActive: false,

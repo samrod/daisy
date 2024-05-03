@@ -1,29 +1,31 @@
-import { useRef, useState } from 'react'
+import { useState } from "react"
 import { Link, useHistory } from "react-router-dom";
-import { Alert, Form, Button, Card } from 'react-bootstrap';
-import { useAuth } from '../../context/AuthContext';
+import { Alert, Form, Button, Card } from "react-bootstrap";
+import { useAuth } from "../../context/AuthContext";
 import Layout from "./Layout";
 
 export default function Login() {
-  const emailRef = useRef();
-  const passwordRef = useRef();
-  const { login } = useAuth();
-  const [error, setError] = useState('');
+  const { login, getFormHandlers } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const history = useHistory();
 
-  async function handleSubmit(e) {
+  const { onChangeEmail, onChangePassword } = getFormHandlers({ setEmail, setPassword });
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     try {
-      setError('');
+      setError("");
       setLoading(true);
-      await login(emailRef.current.value, passwordRef.current.value);
+      await login(email, password);
       setLoading(false);
-      history.push('/');
+      history.push("/");
     } catch({ code, message }) {
       if ( code.match(/not-found/gi)) {
-        setError('Email or password not found.');
+        setError("Email or password not found.");
       } else {
         setError(message);
       }
@@ -40,12 +42,12 @@ export default function Login() {
           <Form onSubmit={handleSubmit}>
             <Form.Group id="emai">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" ref={emailRef} required />
+              <Form.Control autoComplete="email" type="email" required onChange={onChangeEmail} />
             </Form.Group>
 
             <Form.Group id="password">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" ref={passwordRef} required />
+              <Form.Control autoComplete="current-password" type="password" required onChange={onChangePassword} />
             </Form.Group>
 
             <Button disabled={loading} className="w-100" type="submit">Login</Button>
