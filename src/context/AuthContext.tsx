@@ -1,4 +1,4 @@
-import { ChangeEvent, Dispatch, createContext, useContext, useEffect, useState } from 'react';
+import { ChangeEvent, Dispatch, createContext, useContext, useEffect, useRef, useState } from 'react';
 import {
   signOut,
   signInWithEmailAndPassword,
@@ -10,7 +10,9 @@ import {
 } from 'firebase/auth';
 
 import { auth } from '../lib/firebase';
-import { createUser, createUpdateEmail as updateEmailFBRT, captureLogin } from "../lib/store";
+import { createUser, createUpdateEmail as updateEmailFBRT, captureLogin, getUserData, getData } from "../lib/store";
+import { useStore } from '../lib/state';
+import { isEmpty } from 'lodash';
 
 const AuthContext = createContext({});
 
@@ -25,17 +27,11 @@ export function useAuth() {
 }
 
 export const AuthProvider = ({ children }) => {
+  const presetsBoundToStore = useRef(false);
+  const settingsBoundToStore = useRef(false);
+  const { settings, setSetting, presets, activePreset, setUserMode, setActivePreset, setPresets, setUser } = useStore();
   const [currentUser, setCurrentUser] = useState<User>();
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      setLoading(false);
-      setCurrentUser(user);
-    });
-
-    return unsubscribe;
-  }, []);
 
   const value = {
     currentUser,
@@ -67,6 +63,46 @@ export const AuthProvider = ({ children }) => {
       },
     }),
   };
+
+  const updateSettingFromFirebase = (key: string) => (val) => {
+    // console.log(`*** ${document.location.pathname} FB Update:`, key, val);
+    setSetting(key, val);
+  };
+
+  const bindSettingToValue = (key: string) => {
+    getData({ path: `presets/${activePreset}`, key, callback: updateSettingFromFirebase(key) })
+  };
+
+  useEffect(() => {
+    if (settingsBoundToStore.current || isEmpty(presets)) {
+      return;
+    }
+    Object.keys(settings).forEach(bindSettingToValue);
+    settingsBoundToStore.current = true;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [presets]);
+
+  useEffect(() => {
+    if (!currentUser?.uid || presetsBoundToStore.current) {
+      return;
+    }
+
+    getUserData({ key: "activePreset", callback: setActivePreset });
+    getUserData({ key: "userMode", callback: setUserMode });
+    getUserData({ key: `presets`, callback: setPresets });
+
+    presetsBoundToStore.current = true;
+  }, [activePreset, currentUser, presets, setActivePreset, setPresets, setUserMode]);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      setLoading(false);
+      setCurrentUser(user);
+      setUser(user);
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <AuthContext.Provider value={value}>

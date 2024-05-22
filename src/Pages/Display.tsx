@@ -1,18 +1,16 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { createPortal } from "react-dom";
-import cn from 'classnames';
 import { noop } from "lodash";
+import cn from 'classnames';
 import CSS from "csstype";
 
 import { bindEvent, unbindEvent, receiveMessage, generateSound, setKeys } from '../lib/utils';
 import { limits } from '../lib/constants';
 import { useStore } from "../lib/state";
-import Remote from './Remote';
 import './Display.scss';
 
 const Display = () => {
   const State = useStore(state => state);
-  const { settings, userMode, motionBarActive, activeSetting } = State;
+  const { settings, userMode, motionBarActive, activeSetting, setActiveSetting, toggleUserMode } = State;
   const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settings;
 
   const [hidden, setHidden] = useState(true);
@@ -33,8 +31,6 @@ const Display = () => {
     containerClass: string,
     containerStyle: CSS.Properties,
     targetStyle: CSS.Properties;
-  
-  const iframeMountNode = toolbar.current?.contentWindow?.document?.body;
 
   const lights = () => {
     if (steps > 1) {
@@ -159,7 +155,7 @@ const Display = () => {
   }
 
   let ping = noop;
-  const _ping = e => {
+  const _ping = () => {
     const { audioPanRange } = limits;
     const twoStepReverse = steps !== 2 ? 1 : -1;
     const panX = (odd ? audioPanRange : -audioPanRange) * twoStepReverse;
@@ -171,15 +167,15 @@ const Display = () => {
       { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
       { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
       { event: 'mousemove', element: document.body, handler: toggleToolbar },
-      { event: 'keydown', element: document.body, handler: (e) => setKeys(e, State), options: { capture: true }},
-      { event: 'message', element: window, handler: receiveMessage.bind({routeKeys}) },
+      { event: 'keydown', element: document.body, handler: setKeys },
+      { event: 'message', element: window, handler: receiveMessage.bind({ routeKeys, setActiveSetting, toggleUserMode }) },
     ];
   
     if (toolbar.current && !initialized.current) {
       bindList.current.forEach(bindEvent);
     }
     initialized.current = true;
-  }, [State, routeKeys, toggleToolbar]);
+  }, [routeKeys, setActiveSetting, toggleToolbar, toggleUserMode]);
 
   const unbindEvents = useCallback(() => {
     bindList.current.forEach(unbindEvent);
@@ -215,6 +211,7 @@ const Display = () => {
       levelClass = "containerLevel";
       hapticBump();
     };
+
     absoluteBallSize = shape !== 'diamond' ? size : Math.sqrt((size ** 2) << 1);
     containerClass = `${levelClass} ${motionBarActive ? "containerActive" : ""}`;
     targetClass = `color-${newColor} shape-${shape}`;
@@ -226,7 +223,6 @@ const Display = () => {
       animationName: "bounce",
       animationDuration: `${velocity}ms`,
       animationTimingFunction: timingFunction,
-      animationPlayState: playing ? "running" : "paused",
     };
   }
 
@@ -258,6 +254,8 @@ const Display = () => {
   updateClassesAndStyles();
   updateDirectionalCalls();
 
+  // console.log("*** / playing: ", State);
+
   return (
     <div id="display" style={displayStyle.current}>
       <div
@@ -270,7 +268,7 @@ const Display = () => {
         </div>
         <div
           id="target"
-          className={targetClass}
+          className={cn(targetClass, playing ? "playing" : "pause")}
           style={targetStyle}
           onAnimationIteration={onAnimationIteration}
         >
@@ -279,13 +277,11 @@ const Display = () => {
       </div>
       <iframe
         ref={toolbar}
-        src="./embedded"
+        src="./remote"
         name="remote"
         title="remote"
         className={cn('toolbar', { hidden, userMode })}
-      >
-        {iframeMountNode && createPortal(<div><Remote /></div>, iframeMountNode)}
-    </iframe>
+      />
     </div>
   );
 };

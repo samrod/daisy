@@ -1,3 +1,5 @@
+@import "~bootstrap/scss/bootstrap";
+
 .user-panel {
   position: absolute;
   height: 100%;
@@ -30,6 +32,10 @@
     }
   }
 
+  .tab-content {
+    @extend .col-6, .justify-content-center;
+  }
+
   .card {
     background-color: #EEED;
     border: 1px solid #fff9;
@@ -40,13 +46,11 @@
   .card-body {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: start;
     align-items: center;
   }
   
   .accountForm {
-    width: 50%;
-
     button {
       width: 48%;
     }

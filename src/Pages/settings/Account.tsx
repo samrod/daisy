@@ -1,15 +1,11 @@
-import { useState, useCallback, FormEvent, ChangeEvent } from 'react'
+import { useState, useCallback, FormEvent } from 'react'
 import { Alert, Form, Button, Row } from "react-bootstrap";
 import { getAuth, updateEmail, updatePassword } from "firebase/auth";
 
 import { useAuth } from '../../context/AuthContext';
 import { createUpdateEmail as updateEmailFB } from "../../lib/store";
 
-interface UpdateAccountProps {
-  onClose: () => void;
-}
-
-const UpdateAccount = ({ onClose }: UpdateAccountProps) => {
+const UpdateAccount = () => {
   const { logout, getFormHandlers } = useAuth();
   const { currentUser } = getAuth();
   const [email, setEmail] = useState(currentUser?.email);
@@ -43,26 +39,26 @@ const UpdateAccount = ({ onClose }: UpdateAccountProps) => {
       const result = await updatePassword(currentUser, password);
       console.log("*** result: ", result);
     }
-  }, [currentUser, email, password, confirm, updateEmail, updatePassword, onClose]);
+  }, [currentUser, email, password, confirm]);
 
   return (
     <>
-      <h4 className="text-center mb-3">Update Account</h4>
+      <h4 className="text-center mt-3 mb-3">Update Account</h4>
       {error && <Alert variant="danger">{error}</Alert>}
       <Form onSubmit={handleSubmit} className="accountForm">
-        <Form.Group id="emai">
-          <Form.Label>Email</Form.Label>[{email}]
+        <Form.Group id="email">
+          <Form.Label>Email</Form.Label>
           <Form.Control size="sm" type="email" autoComplete="email" onChange={onChangeEmail} required defaultValue={currentUser?.email} />
         </Form.Group>
 
         <Form.Group id="password">
           <Form.Label>Password</Form.Label>
-          <Form.Control size="sm" type="password" autoComplete="off" onChange={onChangePassword} placeholder="Leave blank to keep current" />
+          <Form.Control size="sm" type="password" autoComplete="new-password" onChange={onChangePassword} placeholder="Leave blank to keep current" />
         </Form.Group>
 
         <Form.Group id="confirm">
           <Form.Label>Confirm</Form.Label>
-          <Form.Control size="sm" type="password" autoComplete="off" onChange={onChangeConfirm} placeholder="Leave blank to keep current" />
+          <Form.Control size="sm" type="password" autoComplete="new-password" onChange={onChangeConfirm} placeholder="Leave blank to keep current" />
         </Form.Group>
 
         <Row>

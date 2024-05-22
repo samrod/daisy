@@ -1,19 +1,22 @@
-import { useCallback, useEffect, useState, ChangeEvent, useRef } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 import cn from "classnames";
 
-import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
 import { useStore } from "../lib/state";
+import { update, updateSetting } from "../lib/store";
 import Slider from "../components/Slider";
 import Swatch from "../components/Swatch";
 import Button from "../components/Button";
 import Tabs from "../components/Tabs";
 import Clock from "../components/Clock";
 import UserPanel from "./settings/UserPanel";
+import RemoteEmbedded from "./RemoteIframeHeader";
 import "./Remote.scss";
+
+const embedded = window.location.pathname === "/embedded";
 
 const Remote = () => {
   const State = useStore(state => state);
-  const { settings, setSetting, userMode, setUserMode } = State;
+  const { settings, presets, userMode, toggleUserMode, togglePlay, activePreset } = State;
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settings;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
   const localState = {
@@ -21,16 +24,14 @@ const Remote = () => {
   };
 
   const [panel, setPanel] = useState("appearance");
-  const [lastPlayingState, setLastPlayingState] = useState(false);
+  const [lastPlayingState, setLastPlayingState] = useState("pause");
   const [speedSliderActive, setSpeedSliderActive] = useState(false);
   const [speedSliderDragged, setSpeedSliderDragged] = useState(false);
   const [fakePaused, setFakePasued] = useState(false);
 
-  const bindList = useRef<BindParams[]>();
-
-  const persistPlay = useCallback(() => {
-    setSetting("playing", !playing)
-  }, [playing]);
+  const persistPlay = () => {
+    updateSetting("playing", @playing);
+  };
 
   const showLightbarSlider = () => {
     const { steps, wave } = settings;
@@ -58,7 +59,7 @@ const Remote = () => {
       localState[rawAction](data);
     }
     if (execute) {
-      setSetting(rawAction, data);
+      updateSetting(rawAction, data);
     }
   };
 
@@ -71,7 +72,7 @@ const Remote = () => {
   const onSpeedSliderMove = () => {
     if (speedSliderActive && lastPlayingState && playing) {
       setSpeedSliderDragged(true);
-      setSetting("playing", false);
+      updateSetting("playing", false);
     }
   }
 
@@ -88,43 +89,19 @@ const Remote = () => {
     setSpeedSliderDragged(false);
     setSpeedSliderActive(false);
   };
-
-  const bindEvents = useCallback(() => {
-    bindList.current = [
-      { event: 'keydown', element: document.body, handler: setKeys, options: { capture: true }},
-    ];
-
-    bindList.current.forEach(bindEvent);
-    window.parent["bound"] = true;
-  }, []);
-
-  const unbindEvents = useCallback(() => {
-    bindList.current.forEach(unbindEvent);
-  }, [bindList]);
-
+ 
   useEffect(() => {
     setSpeedSliderValue(speed);
   },[speed]);
-
-  useEffect(() => {
-    if (window.parent["bound"]) {
-      return;
-    }
-    bindEvents();
-    return unbindEvents;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // console.log("*** /remote playing: ", playing, State);
 
   return (
     <div id="remote" className={cn({ userMode })}>
       <div className="page">
         <div className="topButtons">
-          <Button leftIcon={!playing ? "play" : "pause"} klass="playButton" action={persistPlay} />
-          <Button leftIcon="user" klass="standardButton" action={setUserMode} />
+          <Button leftIcon={playing} klass="playButton" action={togglePlay} />
+          <Button leftIcon="user" klass="standardButton" action={toggleUserMode} />
         </div>
-        <Clock playing={playing} />
+        <Clock playing={playing || fakePaused} />
         <Tabs 
           options={['Motion', 'Appearance', 'Sound']}
           callback={onTabClick}
@@ -193,9 +170,9 @@ const Remote = () => {
 
         </div>
       </div>
-      <UserPanel toggleUserPanel={setUserMode} />
+      <UserPanel toggleUserPanel={toggleUserMode} />
     </div>
   );
 }
 
-export default Remote;
+export default embedded ? RemoteEmbedded : Remote;

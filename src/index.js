@@ -7,10 +7,11 @@ import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./Pages/auth/PrivateRoute";
 import Signup from "./Pages/auth/Signup";
 import Login from "./Pages/auth/Login";
-import Account from "./Pages/auth/Account";
+import Account from "./Pages/settings/Account";
 import ForgotPassword from "./Pages/auth/ForgotPassword";
 import ResetPassword from "./Pages/auth/ResetPassword";
 import Display from "./Pages/Display";
+import RemoteHeader from "./Pages/RemoteIframeHeader";
 import Remote from "./Pages/Remote";
 import "./components/global.scss"
 
@@ -26,7 +27,7 @@ root.render(
         <PrivateRoute path="/account" component={Account} />
 
         <PrivateRoute exact path="/" component={Display} />
-        <PrivateRoute path="/embedded" component={Remote} />
+        <PrivateRoute path="/embedded" component={RemoteHeader} />
         <PrivateRoute path="/remote" component={Remote} />
     </BrowserRouter>
   </AuthProvider>

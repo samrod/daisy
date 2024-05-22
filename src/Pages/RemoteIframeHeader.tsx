@@ -2,8 +2,6 @@ import { useEffect, useCallback, useRef } from "react";
 import { bindEvent, unbindEvent, sendMessage } from "../lib/utils";
 import "./Remote.scss";
 
-window.name = "Remote";
-
 const EmbeddedRemote = () => {
   const bindList = useRef<BindParams[]>();
 

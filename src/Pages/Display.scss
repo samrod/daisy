@@ -1,4 +1,4 @@
-@import 'variables.scss';
+@import '../components/variables.scss';
 
 #display {
   width: 100vw;
@@ -21,6 +21,14 @@
   animation-direction: alternate;
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
+}
+
+.playing {
+  animation-play-state: running;
+}
+
+.pause {
+  animation-play-state: paused;
 }
 
 .containerActive {

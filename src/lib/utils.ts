@@ -1,6 +1,6 @@
 import { noop } from 'lodash';
-import { ActionsType, StateType } from './state';
-
+import { ActionsType, StateType, useStore } from './state';
+import { togglePlay } from "./store";
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext
@@ -61,8 +61,9 @@ export const sendMessage = (
   });
 };
 
-export const setKeys = ({ key }, State: StateType & ActionsType, callback = noop) => {
-  // console.log({ type, keyCode, key });
+export const setKeys = ({ key }: KeyboardEvent) => {
+  const State = useStore.getState();
+  // console.log(`*** ${document.location.pathname} setKeys: "${key}"`, test.settings.playing, State.settings.playing);
   switch (key) {
     case "ArrowDown":
       State.volumeDown();
@@ -71,7 +72,7 @@ export const setKeys = ({ key }, State: StateType & ActionsType, callback = noop
       State.volumeUp();
       break;
     case " ":
-      State.togglePlay();;
+      togglePlay();
       break;
     case "ArrowLeft":
       State.speedDown();
@@ -82,7 +83,7 @@ export const setKeys = ({ key }, State: StateType & ActionsType, callback = noop
     default:
       break;
   }
-  callback();
+  // callback();
 };
 
 
