@@ -1,4 +1,5 @@
 import { ChangeEvent, Dispatch, createContext, useContext, useEffect, useRef, useState } from 'react';
+import { isEmpty } from 'lodash';
 import {
   signOut,
   signInWithEmailAndPassword,
@@ -10,9 +11,14 @@ import {
 } from 'firebase/auth';
 
 import { auth } from '../lib/firebase';
-import { createUser, createUpdateEmail as updateEmailFBRT, captureLogin, getUserData, getData } from "../lib/store";
-import { useStore } from '../lib/state';
-import { isEmpty } from 'lodash';
+import { useGuideState } from "../lib/guideState";
+import {
+  createUser,
+  createUpdateEmail as updateEmailFBRT,
+  captureLogin,
+  getUserData,
+  bindAllSettingsToValues,
+} from "../lib/store";
 
 const AuthContext = createContext({});
 
@@ -29,7 +35,7 @@ export function useAuth() {
 export const AuthProvider = ({ children }) => {
   const presetsBoundToStore = useRef(false);
   const settingsBoundToStore = useRef(false);
-  const { settings, setSetting, presets, activePreset, setUserMode, setActivePreset, setPresets, setUser } = useStore();
+  const { presets, activePreset, setUserMode, setActivePreset, setPresets, setUser } = useGuideState();
   const [currentUser, setCurrentUser] = useState<User>();
   const [loading, setLoading] = useState(true);
 
@@ -42,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     },
     signup: async (email: string, password: string) => {
       const newUser = await createUserWithEmailAndPassword(auth, email, password);
-      createUser(newUser.user);
+      await createUser(newUser.user);
     },
     updateEmail: (email: string) => {
       updateEmail(currentUser, email);
@@ -64,23 +70,14 @@ export const AuthProvider = ({ children }) => {
     }),
   };
 
-  const updateSettingFromFirebase = (key: string) => (val) => {
-    // console.log(`*** ${document.location.pathname} FB Update:`, key, val);
-    setSetting(key, val);
-  };
-
-  const bindSettingToValue = (key: string) => {
-    getData({ path: `presets/${activePreset}`, key, callback: updateSettingFromFirebase(key) })
-  };
-
   useEffect(() => {
     if (settingsBoundToStore.current || isEmpty(presets)) {
       return;
     }
-    Object.keys(settings).forEach(bindSettingToValue);
+    bindAllSettingsToValues();
     settingsBoundToStore.current = true;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [presets]);
+}, [presets, activePreset]);
 
   useEffect(() => {
     if (!currentUser?.uid || presetsBoundToStore.current) {
@@ -102,6 +99,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return unsubscribe;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

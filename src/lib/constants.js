@@ -1,3 +1,10 @@
+export const CLIENT_STATES = [
+  "unavailable",
+  "present",
+  "waiting",
+  "authorized",
+];
+
 export const DEFAULT_PRESET_NAME = "Basic Settings";
 export const LINK_PLACEHOLDER = "your custom link";
 

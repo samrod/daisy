@@ -1,12 +1,13 @@
-import { ref, set, query, onValue, push, equalTo, orderByChild, get, limitToLast } from "firebase/database";
+import { ref, set, onValue, push, remove, get, child } from "firebase/database";
 
 import { db } from "./firebase";
 import { User } from "firebase/auth";
 import { DEFAULT_PRESET_NAME, defaults } from "./constants";
-import { useStore } from "./state";
+import { useGuideState } from "./guideState";
+import { useClientState } from "./clientState";
 
 type Setting = string | number | boolean;
-
+export type DataType = Setting | { [key: string]: Setting | {}};
 interface CreatePreset {
   settings?: typeof defaults;
   name?: string;
@@ -38,7 +39,7 @@ export const getData = (params: GetData) => {
 };
 
 export const getUserData = ({ key, callback, debug }: GetData) => {
-  const { user: { uid } } = useStore.getState();
+  const { user: { uid } } = useGuideState.getState();
   if (!uid) {
     return;
   }
@@ -46,62 +47,112 @@ export const getUserData = ({ key, callback, debug }: GetData) => {
   return getData({ path, key, callback, debug });
 };
 
-export const isUniqueUserProp = async (key: string, value: string) => {
+const updateSettingFromFirebase = (key: string) => (val) => {
+  const { setSetting } = useGuideState.getState();
+   setSetting(key, val);
+};
+
+const bindSettingToValue = (activePreset: string, key: string) => {
+  getData({ path: `presets/${activePreset}`, key, callback: updateSettingFromFirebase(key) })
+};
+
+export const bindAllSettingsToValues = () => {
+  const { activePreset, settings } = useGuideState.getState();
+  Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
+};
+
+export const deletePropValue = async (path: string, key: string ) => {
+  const dataRef = child(ref(db), `${path}/${key}`);
+  return await remove(dataRef);
+};
+
+export const readPropValue = async (key: string, value: string) => {
   if (!key || value === undefined || value === null) {
     return "Invalid key or value";
   }
-  const queryRef = query(
-    ref(db, "users"),
-    orderByChild(key),
-    equalTo(value),
-  );
-  try {
-    const snapshot = await get(queryRef);
-    return !snapshot.exists();
-  } catch (error) {
-    return error;
+  const queryRef = child(ref(db), `${key}/${value}`);
+  const snapshot = await get(queryRef);
+  if (snapshot.exists()) {
+    return snapshot.toJSON();
   }
+  return undefined;
 };
 
-export const createUser = (user: User) => {
-  createUpdateEmail(user);
-  captureLogin({ user });
-  createPreset({});
+export const propExists = async (key: string, value: string) => {
+  const response = await readPropValue(key, value);
+  return typeof response !== "undefined" ? response : false;
 };
 
-export const updateUser = (key: string, value: Setting) => {
-  const { user } = useStore.getState();
-  set(ref(db, `users/${user.uid}/${key}`), value);
+export const userPropExists = async (key: string) => {
+  const { user: { uid } } = useGuideState.getState();
+  const response = await readPropValue(`users/${uid}/`, key);
+  return typeof response !== "undefined" ? response : false;
 };
 
-export const updateSetting = (setting: string, value: Setting | { [key: string]: Setting }) => {
-  const { activePreset } = useStore.getState();
-  set(ref(db, `presets/${activePreset}/${setting}`), value);
+export const updateData = async (path: string, value:  DataType) => {
+  await set(ref(db, path), value);
 };
 
-export const togglePlay = () => {
-  const { settings: { playing } } = useStore.getState();
-  updateSetting("playing", !playing);
+export const updateUser = async (key: string, value: DataType) => {
+  const { user } = useGuideState.getState();
+  await updateData(`users/${user.uid}/${key}`, value);
 };
 
-export const createPreset = ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
+export const createUser = async (user: User) => {
+  const initialClientLink = user.email.split("@")[0];
+  const { setUser } = useGuideState.getState();
+  setUser(user);
+  await createUpdateEmail(user);
+  await captureLogin({ user });
+  await createPreset({});
+  await updateClientLink(initialClientLink);
+};
+
+export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
   const presetId = crypto.randomUUID();
 
-  updateUser(`presets/${presetId}`, name);
-  updateUser("activePreset", presetId);
-  updateSetting(presetId, settings);
+  await updateUser("activePreset", presetId);
+  await updateUser(`presets/${presetId}`, name);
+  await updateData(`presets/${presetId}`, settings);
 };
 
-export const createUpdateEmail = (user: User, newEmail?: string) => {
-  const { uid } = user;
-  const email = user.email || newEmail;
-  const usersRef = ref(db, `users/${uid}/email`);
-  set(usersRef, email);
+export const createUpdateEmail = async (user: User, newEmail?: string) => {
+  await updateUser("email", user.email || newEmail);
 };
 
-export const captureLogin = ({ user }) => {
+export const captureLogin = async ({ user }) => {
   const { uid, metadata: { lastSignInTime } } = user;
   const loginListRef = ref(db, `users/${uid}/logins`);
   const newLoginRef = push(loginListRef)
-  set(newLoginRef, lastSignInTime);
+  await set(newLoginRef, lastSignInTime);
 };
+export const updateClientLink = async (clientLink: string) => {
+  const { setClientLink, activePreset: preset } = useGuideState.getState();
+  const { setPreset } = useClientState.getState();
+  const oldClientLink = await userPropExists("clientLink");
+  deletePropValue("clientLinks", oldClientLink as string);
+  setClientLink(clientLink);
+  setPreset(preset);
+  updateUser("clientLink", clientLink);
+  updateData("clientLinks", {
+    [clientLink]: {
+      status: 0,
+      preset,
+    },
+  });
+};
+
+export const updateSetting = async (setting: string, value: DataType) => {
+  const { activePreset } = useGuideState.getState();
+  if (!activePreset) {
+    await updateData(`presets/${setting}`, value);
+    return;
+  }
+  await updateData(`presets/${activePreset}/${setting}`, value);
+};
+
+export const togglePlay = () => {
+  const { settings: { playing } } = useGuideState.getState();
+  updateSetting("playing", !playing);
+};
+

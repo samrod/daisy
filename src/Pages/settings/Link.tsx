@@ -1,22 +1,23 @@
-import { useState, useCallback, FormEvent, useEffect, useRef } from 'react'
+import { useState, useCallback, FormEvent, useEffect } from 'react'
 import { Alert, Form, Button, Row } from "react-bootstrap";
-import { getUserData, isUniqueUserProp, updateUser } from '../../lib/store';
 import { isEmpty } from 'lodash';
+
+import { getUserData, propExists, updateClientLink } from '../../lib/store';
 import { LINK_PLACEHOLDER } from '../../lib/constants';
 
-const Link = () => {
-  const [link, setLink] = useState();
+export const Link = () => {
+  const [clientLink, setClientLink] = useState("");
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const displayLink = isEmpty(link) ? `[${LINK_PLACEHOLDER}]` : link.toLowerCase();
+  const displayLink = isEmpty(clientLink) ? `[${LINK_PLACEHOLDER}]` : clientLink.toLowerCase();
 
   const onChangeLink = ({ target }) => {
-    setLink(target.value);
+    setClientLink(target.value);
   };
 
-  const updateLink = (value) => {
+  const updateLink = (value: string) => {
     if (!isEmpty(value)) {
-      setLink(value);
+      setClientLink(value);
     }
   };
 
@@ -25,20 +26,18 @@ const Link = () => {
 
     setLoading(true);
     setError("");
-    const response = await isUniqueUserProp("link", link);
-
-    if (response === true) {
-      updateUser("link", link);
-    } else if (response === false) {
-      setError(`"${link}" is already used. Please try another link.`);
+    const exists = await propExists("clientLinks", clientLink);
+    if (exists) {
+      setError(`"${clientLink}" is already used. Please try a different client link.`);
     } else {
-      setError(response);
+      updateClientLink(clientLink);
     }
+
     setLoading(false);
-  }, [link]);
+  }, [clientLink]);
 
   useEffect(() => {
-    getUserData({ key: "link", callback: updateLink });
+    getUserData({ key: "clientLink", callback: updateLink });
   }, [])
 
   return (
@@ -46,15 +45,15 @@ const Link = () => {
       <h4 className="text-center mt-3 mb-3">http://daisyemdr.com/{displayLink}</h4>
       {error && <Alert variant="danger">{error}</Alert>}
       <Form onSubmit={handleSubmit} className="accountForm">
-        <Form.Group id="link">
-          <Form.Label>Specify a patient link to your EMDR panel.</Form.Label>
+        <Form.Group id="clientLink">
+          <Form.Label>Specify a client link for your EMDR panel.</Form.Label>
           <Form.Control
             size="sm"
             type="text"
-            autoComplete="link"
+            autoComplete="clientLink"
             onChange={onChangeLink}
             required
-            defaultValue={link}
+            defaultValue={clientLink}
             placeholder={LINK_PLACEHOLDER}
           />
         </Form.Group>
@@ -66,5 +65,3 @@ const Link = () => {
     </>
   )
 }
-
-export default Link;

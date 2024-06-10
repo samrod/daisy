@@ -3,27 +3,23 @@ import { noop } from "lodash";
 import cn from 'classnames';
 import CSS from "csstype";
 
-import { bindEvent, unbindEvent, receiveMessage, generateSound, setKeys } from '../lib/utils';
+import { bindEvent, generateSound, setKeys, unbindEvent } from '../lib/utils';
 import { limits } from '../lib/constants';
-import { useStore } from "../lib/state";
+import { useGuideState } from "../lib/guideState";
 import './Display.scss';
 
-const Display = () => {
-  const State = useStore(state => state);
-  const { settings, userMode, motionBarActive, activeSetting, setActiveSetting, toggleUserMode } = State;
+export const Display = ({ children = null }) => {
+  const State = useGuideState(state => state);
+  const { settings, motionBarActive, activeSetting } = State;
   const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settings;
 
-  const [hidden, setHidden] = useState(true);
   const [odd, setOdd] = useState(true);
 
   const animatorStylesheets = useRef(['length', 'wave']);
   const initialized = useRef(false);
   const playbackStarted = useRef(false);
-  const toolbarBusy = useRef(false);
-  const toolbarTimer = useRef<NodeJS.Timeout | number>();
-  const toolbar = useRef<HTMLIFrameElement>();
-  const bindList = useRef<BindParams[]>();
   const displayStyle = useRef<CSS.Properties>();
+  const bindList = useRef<BindParams[]>();
 
   let
     absoluteBallSize: number,
@@ -93,40 +89,9 @@ const Display = () => {
     );
   };
 
-  const setToolbarBusy = () => {
-    toolbarBusy.current = true;
-    clearTimeout(toolbarTimer.current);
-  };
-
-  const setToolbarFree = () => {
-    setTimeout(() => {
-      toolbarBusy.current = false;
-    }, 50);
-  };
-
-  const toggleToolbar = useCallback(() => {
-    clearTimeout(toolbarTimer.current);
-    if (!hidden) {
-      return;
-    } else {
-      setHidden(false);
-    }
-    if (!toolbarBusy.current) {
-      toolbarTimer.current = setTimeout(() => {
-        setHidden(true);
-      },
-      limits.toolbarHideDelay
-      );
-    }
-  }, [hidden]);
-
   const hapticBump = () => {
     generateSound({ pitch: 225, gain: 0.2, duration: 70 });
   };
-
-  const routeKeys = useCallback((e) => {
-    setKeys(e, State);
-  }, [State]);
 
   const onAnimationIteration = (e) => {
     toggleSteppedAnimationFlow(e);
@@ -161,25 +126,6 @@ const Display = () => {
     const panX = (odd ? audioPanRange : -audioPanRange) * twoStepReverse;
     generateSound({ panX, pitch, gain, duration: 70 });
   };
-
-  const bindEvents = useCallback(() => {
-    bindList.current = [
-      { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
-      { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
-      { event: 'mousemove', element: document.body, handler: toggleToolbar },
-      { event: 'keydown', element: document.body, handler: setKeys },
-      { event: 'message', element: window, handler: receiveMessage.bind({ routeKeys, setActiveSetting, toggleUserMode }) },
-    ];
-  
-    if (toolbar.current && !initialized.current) {
-      bindList.current.forEach(bindEvent);
-    }
-    initialized.current = true;
-  }, [routeKeys, setActiveSetting, toggleToolbar, toggleUserMode]);
-
-  const unbindEvents = useCallback(() => {
-    bindList.current.forEach(unbindEvent);
-  }, [bindList]);
 
   const updateClassesAndStyles = () => {
     const stepped = steps - 1;
@@ -226,6 +172,22 @@ const Display = () => {
     };
   }
 
+
+  const bindEvents = useCallback(() => {
+    bindList.current = [
+      { event: 'keydown', element: document.body, handler: setKeys },
+    ];
+  
+    if (!initialized.current) {
+      bindList.current.forEach(bindEvent);
+    }
+    initialized.current = true;
+  }, []);
+
+  const unbindEvents = useCallback(() => {
+    bindList.current.forEach(unbindEvent);
+  }, [bindList]);
+
   useEffect(() => {
     if (!initialized.current) {
       return;
@@ -245,16 +207,15 @@ const Display = () => {
   }, [length, shape, size, playing]);
 
   useEffect(() => {
-    bindEvents();
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
+    bindEvents();
+    initialized.current = true;
     return unbindEvents;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   updateClassesAndStyles();
   updateDirectionalCalls();
-
-  // console.log("*** / playing: ", State);
 
   return (
     <div id="display" style={displayStyle.current}>
@@ -275,15 +236,7 @@ const Display = () => {
           <div className="bullseye"></div>
         </div>
       </div>
-      <iframe
-        ref={toolbar}
-        src="./remote"
-        name="remote"
-        title="remote"
-        className={cn('toolbar', { hidden, userMode })}
-      />
+      {children}
     </div>
   );
 };
-
-export default Display;

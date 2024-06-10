@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useState, ChangeEvent, useRef } from "react";
+import { isEmpty } from "lodash";
 import cn from "classnames";
 
+import { Slider, Swatch ,Button, Tabs, Clock } from "../components";
+import { UserPanel } from "./settings";
 import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
-import { useStore } from "../lib/state";
-import Slider from "../components/Slider";
-import Swatch from "../components/Swatch";
-import Button from "../components/Button";
-import Tabs from "../components/Tabs";
-import Clock from "../components/Clock";
-import UserPanel from "./settings/UserPanel";
+import { CLIENT_STATES } from "../lib/constants";
+import { getUserData, getData, updateSetting } from "../lib/store";
+import { useGuideState } from "../lib/guideState";
 import "./Remote.scss";
 
 const Remote = () => {
-  const State = useStore(state => state);
-  const { settings, setSetting, userMode, setUserMode } = State;
+  const State = useGuideState(state => state);
+  const { clientStatus, setClientStatus, clientLink, setClientLink, settings, setSetting, userMode, setUserMode } = State;
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settings;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
   const localState = {
@@ -24,13 +23,14 @@ const Remote = () => {
   const [lastPlayingState, setLastPlayingState] = useState(false);
   const [speedSliderActive, setSpeedSliderActive] = useState(false);
   const [speedSliderDragged, setSpeedSliderDragged] = useState(false);
-  const [fakePaused, setFakePasued] = useState(false);
+  const [, setFakePasued] = useState(false);
 
   const bindList = useRef<BindParams[]>();
 
   const persistPlay = useCallback(() => {
-    setSetting("playing", !playing)
-  }, [playing]);
+    setSetting("playing", !playing);
+    updateSetting("playing", !playing);
+  }, [playing, setSetting]);
 
   const showLightbarSlider = () => {
     const { steps, wave } = settings;
@@ -52,13 +52,14 @@ const Remote = () => {
   };
 
   const setValue = ({ target }: ChangeEvent<HTMLInputElement>, execute = true) => {
-    const { value, dataset: { action: rawAction, option } } = target;
+    const { value, dataset: { action, option } } = target;
     const data = option || Number(value);
-    if (localState[rawAction]) {
-      localState[rawAction](data);
+    if (localState[action]) {
+      localState[action](data);
     }
     if (execute) {
-      setSetting(rawAction, data);
+      setSetting(action, data);
+      updateSetting(action, data)
     }
   };
 
@@ -72,6 +73,8 @@ const Remote = () => {
     if (speedSliderActive && lastPlayingState && playing) {
       setSpeedSliderDragged(true);
       setSetting("playing", false);
+      updateSetting("playing", false);
+
     }
   }
 
@@ -82,7 +85,6 @@ const Remote = () => {
   const onSpeedSliderMouseUp = (e: ChangeEvent<HTMLInputElement>) => {
     setValue(e);
     if (lastPlayingState && speedSliderDragged) {
-      togglePlay();
       setFakePasued(false);
     }
     setSpeedSliderDragged(false);
@@ -107,22 +109,27 @@ const Remote = () => {
   },[speed]);
 
   useEffect(() => {
+    if (!isEmpty(clientLink)) {
+      getData({ path: `/clientLinks/${clientLink}`, key: "status", callback: setClientStatus})
+    }
+  }, [clientLink, setClientStatus]);
+
+  useEffect(() => {
     if (window.parent["bound"]) {
       return;
     }
     bindEvents();
+    getUserData({ key: "clientLink", callback: setClientLink });
     return unbindEvents;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // console.log("*** /remote playing: ", playing, State);
-
   return (
-    <div id="remote" className={cn({ userMode })}>
+    <div className={cn("remote", { userMode })}>
       <div className="page">
         <div className="topButtons">
           <Button leftIcon={!playing ? "play" : "pause"} klass="playButton" action={persistPlay} />
-          <Button leftIcon="user" klass="standardButton" action={setUserMode} />
+          <Button leftIcon="user" klass={cn("standardButton", CLIENT_STATES[clientStatus])} action={setUserMode} />
         </div>
         <Clock playing={playing} />
         <Tabs 
@@ -199,3 +206,4 @@ const Remote = () => {
 }
 
 export default Remote;
+

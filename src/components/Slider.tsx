@@ -7,7 +7,7 @@ interface SliderProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputEle
   label?: boolean | string;
 }
 
-const Slider = ({ name, label, value, ...props }: SliderProps) => {
+export const Slider = ({ name, label, value, ...props }: SliderProps) => {
   const title = (label || name).toString();
   const { onMouseUp, onChange } = props;
 
@@ -43,5 +43,3 @@ const Slider = ({ name, label, value, ...props }: SliderProps) => {
     </div>
   );
 };
-
-export default Slider;

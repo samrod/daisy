@@ -1,4 +1,4 @@
-const Swatch = (setValue: () => void, color: string, index: number) => (
+export const Swatch = (setValue: () => void, color: string, index: number) => (
   <div
     key={`swatch-${index}`}
     className="swatch"
@@ -7,5 +7,3 @@ const Swatch = (setValue: () => void, color: string, index: number) => (
     onClick={setValue}
   />
 );
-
-export default Swatch;

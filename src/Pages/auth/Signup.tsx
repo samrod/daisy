@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Alert, Form, Button, Card } from 'react-bootstrap';
 
 import { useAuth } from '../../context/AuthContext';
@@ -12,7 +12,7 @@ export default function Signup() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { onChangeEmail, onChangePassword, onChangeConfirm } = getFormHandlers({ setEmail, setPassword, setConfirm });
 
@@ -27,7 +27,7 @@ export default function Signup() {
       setError('');
       setLoading(true);
       await signup(email, password);
-      history.push('/');
+      navigate('/');
     } catch({ message }) {
       setError(message);
     }

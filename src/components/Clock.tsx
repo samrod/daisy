@@ -9,7 +9,7 @@ const timer = createTimeModel({
 const formatSecs = s => s.toString().padStart(2, 0);
 const formatHours = h => Number(h) && `${h}:`;
 
-const Clock = ({ playing }) => {
+export const Clock = ({ playing }) => {
   const { value: { h, m, s} } = useTimeModel(timer);
 
   useEffect(() => {
@@ -28,5 +28,3 @@ const Clock = ({ playing }) => {
     {formatHours(h)}{m}:{formatSecs(s)}
   </div>;
 };
-
-export default Clock;

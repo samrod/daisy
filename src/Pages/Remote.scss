@@ -5,7 +5,7 @@
   bottom: 0;
 }
 
-#remote {
+.remote {
   width: 100vw;
   height: 100vh;
   max-height: $remoteHeight;
@@ -60,6 +60,22 @@
       padding: 0px 25px;
       height: 25px;
       width: auto;
+
+      &.unavailable {
+        color: #F00;
+      }
+
+      &.present {
+        color: #CC0;
+      }
+
+      &.waiting {
+        color: #F90;
+      }
+
+      &.authorized {
+        color: green;
+      }
 
       &:last-child {
         border: 1px solid #999;

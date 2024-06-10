@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Alert, Form, Button, Card } from "react-bootstrap";
 import { useAuth } from "../../context/AuthContext";
 import Layout from "./Layout";
@@ -10,7 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { onChangeEmail, onChangePassword } = getFormHandlers({ setEmail, setPassword });
 
@@ -22,9 +22,9 @@ export default function Login() {
       setLoading(true);
       await login(email, password);
       setLoading(false);
-      history.push("/");
+      navigate("/");
     } catch({ code, message }) {
-      if ( code.match(/not-found/gi)) {
+      if ( code?.match(/not-found/gi)) {
         setError("Email or password not found.");
       } else {
         setError(message);

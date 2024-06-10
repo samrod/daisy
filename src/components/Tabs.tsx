@@ -8,7 +8,7 @@ interface TabsProps {
   action: string;
 }
 
-const Tabs = ({ options, action, callback, state}: TabsProps) => {
+export const Tabs = ({ options, action, callback, state}: TabsProps) => {
 
   const tab = (label: string, index: number) => {
     const option = label.toLowerCase();
@@ -32,5 +32,3 @@ const Tabs = ({ options, action, callback, state}: TabsProps) => {
     </div>
   );
 };
-
-export default Tabs;

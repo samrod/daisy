@@ -1,5 +1,5 @@
 import { MouseEventHandler, PropsWithChildren } from 'react';
-import Icon from './Icons';
+import { Icon } from '.';
 import './Button.scss';
 
 interface ButtonProps {
@@ -10,7 +10,7 @@ interface ButtonProps {
   klass: string;
 }
 
-const Button = ({ children, leftIcon, rightIcon, action, tip, klass }: PropsWithChildren<ButtonProps>) => {
+export const Button = ({ children, leftIcon, rightIcon, action, tip, klass }: PropsWithChildren<ButtonProps>) => {
   return (
     <div className={`button ${klass}`} onClick={action}>
       <Icon name={leftIcon} />
@@ -20,5 +20,3 @@ const Button = ({ children, leftIcon, rightIcon, action, tip, klass }: PropsWith
     </div>
   );
 };
-
-export default Button;

@@ -1,9 +1,11 @@
 import { create } from "zustand";
-import { DEFAULT_PRESET_NAME, defaults, limits } from "./constants";
-import { produce } from "immer";
 import { User } from "firebase/auth";
-import { sendMessage } from "./utils";
-import { updateSetting, updateUser } from "./store";
+
+import { defaults, limits } from "./constants";
+import { updateUser } from "./store";
+import { update } from "./utils";
+
+const { volume, speed } = limits;
 
 export type StateTypes = {
   userMode: boolean;
@@ -11,6 +13,8 @@ export type StateTypes = {
   motionBarActive: boolean;
   activeSetting: string;
   activePreset: string;
+  clientLink: string;
+  clientStatus: string;
   settings: typeof defaults;
   presets: {};
 }
@@ -22,29 +26,27 @@ export type ActionsTypes = {
   speedUp: () => void;
   speedDown: () => void;
   setActivePreset: (setting: string) => void;
+  setActiveSetting: (setting: string) => void;
   setPresets: (preset: object) => void;
   setUser: (user: User) => void;
   setUserMode: (userMode: boolean) => void;
+  setClientLink: (link: string) => void;
+  setClientStatus: (state: string) => void;
 };
 
-const update = (set, func: (state: StateTypes) => void) => set(produce(func));
-const { volume, speed } = limits;
-
-export const useStore = create<StateTypes & ActionsTypes>((set) => ({
+export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   userMode: false,
   user: null,
   settings: defaults,
   motionBarActive: false,
   activeSetting: "",
   activePreset: "",
+  clientLink: "",
+  clientStatus: "",
   presets: {},
 
-  setSetting: (setting, value) => update(set, ({ settings }) => {
-    if (settings[setting] !== value) {
-      // console.log(`*** ${document.location.pathname} setSetting`, settings[setting], setting, value);
-      settings[setting] = value;
-      updateSetting(setting, value);
-    }
+  setSetting: (setting, value) => update(set, ({ settings, clientLink }) => {
+    settings[setting] = value;
   }),
 
    setActiveSetting: (setting) => update(set, (State) => {
@@ -66,6 +68,12 @@ export const useStore = create<StateTypes & ActionsTypes>((set) => ({
       State.userMode = !State.userMode;
       updateUser("userMode", State.userMode);
     }
+  }),
+  setClientLink: (link) => update(set, (State) => {
+    State.clientLink = link;
+  }),
+  setClientStatus: (status) => update(set, (State) => {
+    State.clientStatus = status;
   }),
   setPresets: (presets) => update(set, (State) => { State.presets = presets }),
   setActivePreset: (activeSetting) => update(set, (State) => { State.activePreset = activeSetting }),

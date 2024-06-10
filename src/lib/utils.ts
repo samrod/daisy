@@ -1,6 +1,8 @@
-import { noop } from 'lodash';
-import { ActionsType, StateType, useStore } from './state';
+import { produce } from 'immer';
+import { useGuideState } from './guideState';
 import { togglePlay } from "./store";
+import { defaults } from './constants';
+import { User } from 'firebase/auth';
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext
@@ -62,7 +64,7 @@ export const sendMessage = (
 };
 
 export const setKeys = ({ key }: KeyboardEvent) => {
-  const State = useStore.getState();
+  const State = useGuideState.getState();
   // console.log(`*** ${document.location.pathname} setKeys: "${key}"`, test.settings.playing, State.settings.playing);
   switch (key) {
     case "ArrowDown":
@@ -86,6 +88,12 @@ export const setKeys = ({ key }: KeyboardEvent) => {
   // callback();
 };
 
+
+type UpdateTypes = {
+  [key: string]: boolean | string | {} | typeof defaults | User;
+}
+
+export const update = (set, func: (state: UpdateTypes) => void) => set(produce(func));
 
 let AudioCtx = undefined;
 
