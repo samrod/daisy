@@ -1,3 +1,5 @@
+import "./Swatch.module.scss";
+
 export const Swatch = (setValue: () => void, color: string, index: number) => (
   <div
     key={`swatch-${index}`}

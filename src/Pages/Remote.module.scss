@@ -1,0 +1,195 @@
+@import '../components/variables.scss';
+
+.remote {
+  width: 100vw;
+  height: 100vh;
+  max-height: $remoteHeight;
+  padding: 15px;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  display: flex;
+  color: #888;
+  &:global(.popup) {
+    background-color: #111;
+  }
+
+  &:global(.userMode) {
+    max-height: $userModeHeight;
+    :global(.user-panel) {
+      top: 0;
+    }
+  }
+}
+
+.page {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.topButtons {
+  position: absolute;
+  right: 0;
+  top: -13px;
+  display: flex;
+  flex-wrap: nowrap;
+  z-index: 10;
+  justify-content: center;
+  align-items: center;
+
+}
+.button {
+  cursor: pointer;
+  box-sizing: border-box;
+  padding: 0;
+  background-color: #000;
+  border: 1px solid #999;
+  border-left: 0px;
+  color: #CCC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition:
+    background-color 0.125s ease-out,
+    color 0.125s ease-out;
+
+  &:hover {
+    color: #fff;
+    background-color: #222;
+  }
+}
+
+.standardButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 0;
+  border-right: 0;
+  padding: 0px 25px;
+  height: 25px;
+  width: auto;
+  &:global(.unavailable) {
+    color: #F00;
+  }
+
+  &:global(.present) {
+    color: #CC0;
+  }
+
+  &:global(.waiting) {
+    color: #F90;
+  }
+
+  &:global(.authorized) {
+    color: green;
+  }
+
+  &:last-child {
+    border: 1px solid #999;
+    border-radius: 0 5px 5px 0;
+  }
+}
+.playButton {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  border-radius: 100%;
+  border: 1px solid #999;
+  margin: 0px -10px;
+}
+
+.popButton {
+  position: absolute;
+  right: 0;
+  top: -13px;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 20px;
+  margin: -5px;
+  &:hover {
+    color: #999;
+  }
+}
+
+.panels {
+  display: flex;
+  flex: 5;
+  align-items: center;
+  background-color: #ffffff0C;
+  border: 1px solid #303030;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  position: relative;
+  padding: 15px 0;
+  margin-top: -10px;
+  z-index: 0;
+}
+.panel {
+  display: none;
+  flex: 1;
+  &:global(.active) {
+    display: flex;
+  }
+}
+
+.swatch, .shape {
+  transition: transform 0.25s cubic-bezier(0.12, 3.04, 0.63, -0.09);
+  cursor: pointer;
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+.swatches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  margin: 0 10px;
+}
+
+:global(.row) {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  margin: 5px 0px;
+}
+
+.shapes {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: Helvetica;
+
+  .shape {
+    min-height: 29px;
+    display: block;
+    line-height: 1ex;
+    overflow: hidden;
+    font-size: 50px;
+    color: #666;
+    margin: 0px 0;
+
+    &[data-option=diamond] {
+      font-size: 40px;
+    }    
+  }
+}
+
+
+.sliders {
+  display: flex;
+  flex: 5;
+  font-size: 0.7685rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  label {
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.5px;;
+    margin-bottom: 0.5em;
+  }
+}

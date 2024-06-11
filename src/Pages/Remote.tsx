@@ -8,7 +8,7 @@ import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
 import { CLIENT_STATES } from "../lib/constants";
 import { getUserData, getData, updateSetting } from "../lib/store";
 import { useGuideState } from "../lib/guideState";
-import "./Remote.scss";
+import Styles from "./Remote.module.scss";
 
 const Remote = () => {
   const State = useGuideState(state => state);
@@ -125,23 +125,24 @@ const Remote = () => {
   }, []);
 
   return (
-    <div className={cn("remote", { userMode })}>
-      <div className="page">
-        <div className="topButtons">
-          <Button leftIcon={!playing ? "play" : "pause"} klass="playButton" action={persistPlay} />
-          <Button leftIcon="user" klass={cn("standardButton", CLIENT_STATES[clientStatus])} action={setUserMode} />
+    <div className={cn(Styles.remote, { userMode })}>
+      <div className={Styles.page}>
+        <div className={Styles.topButtons}>
+          <Button leftIcon={!playing ? "play" : "pause"} klass={Styles.playButton} action={persistPlay} />
+          <Button leftIcon="user" klass={cn(Styles.standardButton, CLIENT_STATES[clientStatus])} action={setUserMode} />
         </div>
         <Clock playing={playing} />
+
         <Tabs 
           options={['Motion', 'Appearance', 'Sound']}
           callback={onTabClick}
           state={panel}
           action="panel"
         />
-        <div className="panels">
+        <div className={Styles.panels}>
 
-          <div className={cn('panel', { active: panel === 'motion' })}>
-            <div className="sliders">
+          <div className={cn(Styles.panel, { active: panel === 'motion' })}>
+            <div className={Styles.sliders}>
               <div className="row">
                 <Slider
                   name="speed"
@@ -160,8 +161,8 @@ const Remote = () => {
             </div>
           </div>
 
-          <div className={cn('panel', { active: panel === 'appearance' })}>
-            <div className="swatches">
+          <div className={cn(Styles.panel, { active: panel === 'appearance' })}>
+            <div className={Styles.swatches}>
               <div className="row">
                 {['white', 'red', 'orange', 'yellow'].map(Swatch.bind(null, setValue))}
               </div>
@@ -169,7 +170,7 @@ const Remote = () => {
                 {['green', 'cyan', 'blue', 'magenta'].map(Swatch.bind(null, setValue))}
               </div>
             </div>
-            <div className="sliders">
+            <div className={Styles.sliders}>
               <div className="row">
                 <Slider name="steps" value={steps} onChange={setValue} />
                 {showLightbarSlider() &&
@@ -180,15 +181,15 @@ const Remote = () => {
                 <Slider name="size" value={size} onChange={setValue} />
               </div>
             </div>
-            <div className="shapes">
-              <div className="shape" data-action="shape" data-option="circle" onClick={setValue}>&#9679;</div>
-              <div className="shape" data-action="shape" data-option="square" onClick={setValue}>&#9632;</div>
-              <div className="shape diamond" data-action="shape" data-option="diamond" onClick={setValue}>&#9670;</div>
+            <div className={Styles.shapes}>
+              <div className={Styles.shape} data-action="shape" data-option="circle" onClick={setValue}>&#9679;</div>
+              <div className={Styles.shape} data-action="shape" data-option="square" onClick={setValue}>&#9632;</div>
+              <div className={Styles.shape} data-action="shape" data-option="diamond" onClick={setValue}>&#9670;</div>
             </div>
           </div>
 
-          <div className={cn('panel', { active: panel === 'sound' })}>
-            <div className="sliders">
+          <div className={cn(Styles.panel, { active: panel === 'sound' })}>
+            <div className={Styles.sliders}>
               <div className="row">
                 <Slider name="volume" value={volume} onChange={setValue} />
                 {showAudioSliders() &&

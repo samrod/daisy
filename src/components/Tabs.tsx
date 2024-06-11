@@ -1,6 +1,8 @@
 import { MouseEventHandler } from 'react'
 import cn from 'classnames';
 
+import Styles from "./Tabs.module.scss";
+
 interface TabsProps {
   options: string[];
   callback: MouseEventHandler<HTMLDivElement>;
@@ -19,7 +21,7 @@ export const Tabs = ({ options, action, callback, state}: TabsProps) => {
         onClick={callback}
         data-action={action}
         data-option={option}
-        className={cn('tab', { active: state === option })}
+        className={cn(Styles.tab, { active: state === option })}
       >
         {label}
       </div>
@@ -27,7 +29,7 @@ export const Tabs = ({ options, action, callback, state}: TabsProps) => {
   };
 
   return (
-    <div className="tabs">
+    <div className={Styles.tabs}>
       {options.map(tab)}
     </div>
   );

@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { noop } from "lodash";
-import cn from 'classnames';
+import cn from "classnames";
 import CSS from "csstype";
 
-import { bindEvent, generateSound, setKeys, unbindEvent } from '../lib/utils';
-import { limits } from '../lib/constants';
+import { bindEvent, generateSound, setKeys, unbindEvent } from "../lib/utils";
+import { limits } from "../lib/constants";
 import { useGuideState } from "../lib/guideState";
-import './Display.scss';
+import Styles from "./Display.module.scss";
 
 export const Display = ({ children = null }) => {
   const State = useGuideState(state => state);
@@ -83,8 +83,8 @@ export const Display = ({ children = null }) => {
     const left = (distance() * 2 / (steps - 1) * index) + 'vw';
 
     return (
-      <div key={index} className="lightWrapper" style={{ left, marginLeft, width, height }}>
-        <div className="bullseye" style={{ width, height, opacity: lightbar }} />
+      <div key={index} className={Styles.lightWrapper} style={{ left, marginLeft, width, height }}>
+        <div className={Styles.bullseye} style={{ width, height, opacity: lightbar }} />
       </div>
     );
   };
@@ -154,12 +154,12 @@ export const Display = ({ children = null }) => {
   
     let levelClass = "";
     if (motionBarActive && angle === 0 && activeSetting === 'angle') {
-      levelClass = "containerLevel";
+      levelClass = Styles.containerLevel;
       hapticBump();
     };
 
     absoluteBallSize = shape !== 'diamond' ? size : Math.sqrt((size ** 2) << 1);
-    containerClass = `${levelClass} ${motionBarActive ? "containerActive" : ""}`;
+    containerClass = `${levelClass} ${motionBarActive ? Styles.containerActive : ""}`;
     targetClass = `color-${newColor} shape-${shape}`;
     displayStyle.current = { backgroundColor: `rgba(0,0,0,${background})` };  
     targetStyle = {
@@ -218,22 +218,20 @@ export const Display = ({ children = null }) => {
   updateDirectionalCalls();
 
   return (
-    <div id="display" style={displayStyle.current}>
+    <div className={Styles.display} style={displayStyle.current}>
       <div
-        id="container"
-        className={containerClass}
+        className={cn(Styles.container, containerClass)}
         style={containerStyle}
       >
-        <div id="lightbar" className={targetClass}>
+        <div className={cn(Styles.lightbar, targetClass)}>
           {lights()}
         </div>
         <div
-          id="target"
-          className={cn(targetClass, playing ? "playing" : "pause")}
+          className={cn(Styles.target, targetClass, playing ? "playing" : "pause")}
           style={targetStyle}
           onAnimationIteration={onAnimationIteration}
         >
-          <div className="bullseye"></div>
+          <div className={Styles.bullseye}></div>
         </div>
       </div>
       {children}

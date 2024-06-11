@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import { createTimeModel, useTimeModel } from "react-compound-timer";
-import './Clock.scss';
+import Styles from "./Clock.module.scss";
 
 const timer = createTimeModel({
   startImmediately: false,
@@ -24,7 +24,7 @@ export const Clock = ({ playing }) => {
     }
   }, [playing]);
 
-  return <div className="clock">
+  return <div className={Styles.clock}>
     {formatHours(h)}{m}:{formatSecs(s)}
   </div>;
 };

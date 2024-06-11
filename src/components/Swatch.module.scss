@@ -1,0 +1,16 @@
+:global(.row > .swatch) {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+
+  &[data-option=black] { background-color: black; }
+  &[data-option=white] { background-color: white; }
+  &[data-option=red] { background-color: #F00; }
+  &[data-option=orange] { background-color: #F90; }
+  &[data-option=yellow] { background-color: #FF0; }
+  &[data-option=green] { background-color: #0F0; }
+  &[data-option=cyan] { background-color: #0FF; }
+  &[data-option=blue] { background-color: #00F; }
+  &[data-option=magenta] { background-color: #F0F; }
+}

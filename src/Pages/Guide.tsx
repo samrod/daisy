@@ -5,6 +5,7 @@ import { useGuideState } from "../lib/guideState";
 import { Display } from "../components";
 import { limits } from '../lib/constants';
 import { bindEvent, receiveMessage, setKeys, unbindEvent } from '../lib/utils';
+import Styles from "./Guide.module.scss";
 
 const Guide = () => {
   const State = useGuideState(state => state);
@@ -76,7 +77,7 @@ const Guide = () => {
         src="./remote"
         name="remote"
         title="remote"
-        className={cn('toolbar', { hidden, userMode })}
+        className={cn(Styles.toolbar, { hidden, userMode })}
       />
     </Display>
   );

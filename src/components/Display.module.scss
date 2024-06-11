@@ -1,0 +1,88 @@
+@import '../components/variables.scss';
+
+.display {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition:
+    background-color .125s linear;
+
+  animation-name: wave;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+:global(.playing) {
+  animation-play-state: running;
+}
+
+:global(.pause) {
+  animation-play-state: paused;
+}
+
+.containerActive {
+  background-color: #222;
+}
+
+.containerLevel {
+  background-color: #333;
+}
+
+.target {
+  left: 0vw;
+  position: relative;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+}
+
+.bullseye {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transition:
+    background-color .5s ease-in-out,
+    border-radius .5s ease-in-out,
+    opacity .25s linear,
+    transform .5s ease-in-out;
+
+  :global(.shape-circle) & { border-radius: 50%; }
+  :global(.shape-square) & { border-radius: 0; }
+  :global(.shape-diamond) & { transform: rotateZ(45deg); }
+
+  :global(.color-black) & { background-color: black; }
+  :global(.color-white) & { background-color: white; }
+  :global(.color-red) & { background-color: #F00; }
+  :global(.color-orange) & { background-color: #F90; }
+  :global(.color-yellow) & { background-color: #FF0; }
+  :global(.color-green) & { background-color: #0F0; }
+  :global(.color-cyan) & { background-color: #0FF; }
+  :global(.color-blue) & { background-color: #00F; }
+  :global(.color-magenta) & { background-color: #F0F; }
+
+}
+
+.lightbar {
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: .5;
+  .lightWrapper {
+    position: absolute;
+    transition: margin-left .5s ease-in-out;
+  }
+  .icon {
+    position: absolute;
+  }
+}
