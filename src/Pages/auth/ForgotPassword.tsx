@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link } from "react-router-dom";
-import { Alert, Form, Button, Card } from 'react-bootstrap';
-import { useAuth } from '../../context/AuthContext';
+
 import Layout from "./Layout";
+import { useAuth } from '../../context/AuthContext';
+import { Alert, Button, Row, TextGroup } from '../../components';
 
 export default function ForgotPassword() {
   const { resetPassword, getFormHandlers } = useAuth();
@@ -10,6 +11,7 @@ export default function ForgotPassword() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [validEmail, setValidEmail] = useState(true);
 
   const { onChangeEmail } = getFormHandlers({ setEmail });
 
@@ -30,23 +32,26 @@ export default function ForgotPassword() {
 
   return (
     <Layout>
-      <Card>
-        <Card.Body>
-          <h2 className="text-center mb-4">Password Reset</h2>
-          {error && <Alert variant="danger">{error}</Alert>}
-          {message && <Alert variant="success">{message}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group id="emai">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" onChange={onChangeEmail} required />
-            </Form.Group>
-            <Button disabled={loading} className="w-100" type="submit">Reset Password</Button>
-            <div className="w-100 text-center mt-3">
-              <Link to="/login">Login</Link>
-            </div>
-          </Form>
-        </Card.Body>
-      </Card>
+      <h2 className="text-center mb-4">Password Reset</h2>
+      {error && <Alert variant="danger">{error}</Alert>}
+      {message && <Alert variant="success">{message}</Alert>}
+      <form onSubmit={handleSubmit}>
+        <TextGroup
+          label="Email"
+          textProps={{
+            type: "email",
+            error: !validEmail,
+            onChange: onChangeEmail,
+            setValid: setValidEmail,
+          }}
+        />
+        <Row>
+          <Button disabled={loading} type="submit">Reset Password</Button>
+        </Row>
+        <div className="w-100 text-center mt-3">
+          <Link to="/login">Login</Link>
+        </div>
+      </form>
       <div className="w-100 text-center mt-2">
         Need an accont? <Link to="/signup">Sign Up</Link>
       </div>

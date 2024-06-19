@@ -3,6 +3,7 @@ export const CLIENT_STATES = [
   "present",
   "waiting",
   "authorized",
+  "denied",
 ];
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";

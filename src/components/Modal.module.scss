@@ -1,0 +1,38 @@
+@import "../lib/variables.scss";
+
+.modal {
+  @apply flex flex-col absolute border-black rounded-md backdrop-blur-md opacity-0;
+  background-color: transparentize($palette-grey-light, .125);
+  box-shadow:
+    -1px -1px 0 transparentize(white, .25),
+    1px 1px 0 transparentize(white, .75);
+  
+  transform: scale(0);
+  transition: 
+    opacity 0.15s ease-in,
+    transform .375s cubic-bezier(0.5, 2, 0.58, 0.7);
+
+  &:global(._visible) {
+    @apply opacity-100;
+    transform: scale(1);
+
+  }
+  &:global(._invisible) {
+    @apply opacity-0;
+    transform: translateY(50px);
+  }
+}
+
+.head {
+  @apply m-0 px-6 py-3 overflow-hidden border-b-white text-white font-bold;
+  background-color: transparentize($palette-black, .8);
+}
+
+.body {
+  @apply p-6 overflow-hidden border-t-black text-neutral-800;
+}
+
+.foot {
+  @apply flex m-0 px-4 py-1 overflow-hidden border-t-white;
+  background-color: transparentize($palette-black, .9);
+}

@@ -1,11 +1,12 @@
 import { useState, useCallback, FormEvent } from 'react'
-import { Alert, Form, Button, Row } from "react-bootstrap";
 import { getAuth, updatePassword } from "firebase/auth";
 
 import { useAuth } from '../../context/AuthContext';
+import { Alert, Button, TextGroup, Row } from '../../components';
+import Styles from "./UserPanel.module.scss";
 
 export const Password = () => {
-  const { logout, getFormHandlers } = useAuth();
+  const { getFormHandlers } = useAuth();
   const { currentUser } = getAuth();
   const [password, setPassword] = useState(currentUser?.password);
   const [confirm, setConfirm] = useState(currentUser?.password);
@@ -18,7 +19,7 @@ export const Password = () => {
     e.preventDefault();
 
     if (password !== confirm) {
-      setError('Passwords don\'t match');
+      setError("Passwords don't match");
       return e;
     }
 
@@ -33,24 +34,33 @@ export const Password = () => {
 
   return (
     <>
-      <h4 className="text-center mt-3 mb-3">Change Your Password</h4>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit} className="accountForm">
-        <Form.Group id="password">
-          <Form.Label>Password</Form.Label>
-          <Form.Control size="sm" type="password" autoComplete="new-password" onChange={onChangePassword} placeholder="Leave blank to keep current" />
-        </Form.Group>
+      <h3 className="text-center">Change Your Password</h3>
+      <form className={Styles.form} onSubmit={handleSubmit}>
+        <input className="hidden" type="text" name="username" autoComplete="username" />
+        <Alert variant="warn">{error}</Alert>
+        <TextGroup
+          label="Password"
+          textProps={{
+            type: "password",
+            autoComplete: "new-password",
+            onChange: onChangePassword,
+            placeholder: "Leave blank to keep current",
+          }}
+        />
 
-        <Form.Group id="confirm">
-          <Form.Label>Confirm</Form.Label>
-          <Form.Control size="sm" type="password" autoComplete="new-password" onChange={onChangeConfirm} placeholder="Leave blank to keep current" />
-        </Form.Group>
-
+        <TextGroup
+          label="Confirm Password"
+          textProps={{
+            type: "password",
+            autoComplete: "new-password",
+            onChange: onChangeConfirm,
+            placeholder: "Leave blank to keep current",
+          }}
+        />
         <Row>
-          <Button size="sm" onClick={logout} variant="success">LOGOUT</Button>
-          <Button size="sm" disabled={loading} type="submit">UPDATE</Button>
+          <Button disabled={loading} type="submit">UPDATE</Button>
         </Row>
-        </Form>
+      </form>
     </>
   )
 }

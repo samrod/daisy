@@ -15,7 +15,7 @@ interface CreatePreset {
 
 interface GetData {
   key: string;
-  callback: (setting: boolean | string | object) => void;
+  callback: (setting: number | boolean | string | object) => void;
   path?: string;
   debug?: boolean;
 }

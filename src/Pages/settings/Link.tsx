@@ -1,9 +1,9 @@
 import { useState, useCallback, FormEvent, useEffect } from 'react'
-import { Alert, Form, Button, Row } from "react-bootstrap";
 import { isEmpty } from 'lodash';
 
 import { getUserData, propExists, updateClientLink } from '../../lib/store';
 import { LINK_PLACEHOLDER } from '../../lib/constants';
+import { Alert, Button, Row, TextGroup } from '../../components';
 
 export const Link = () => {
   const [clientLink, setClientLink] = useState("");
@@ -42,26 +42,21 @@ export const Link = () => {
 
   return (
     <>
-      <h4 className="text-center mt-3 mb-3">http://daisyemdr.com/{displayLink}</h4>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit} className="accountForm">
-        <Form.Group id="clientLink">
-          <Form.Label>Specify a client link for your EMDR panel.</Form.Label>
-          <Form.Control
-            size="sm"
-            type="text"
-            autoComplete="clientLink"
-            onChange={onChangeLink}
-            required
-            defaultValue={clientLink}
-            placeholder={LINK_PLACEHOLDER}
-          />
-        </Form.Group>
-
+      <h3 className="text-center">http://daisyemdr.com/{displayLink}</h3>
+      <Alert type="danger">{error}</Alert>
+      <form onSubmit={handleSubmit} className="accountForm">
+        <TextGroup
+          label="Specify a client link for your EMDR panel."
+          textProps={{          
+            autoComplete: "off",
+            onChange: onChangeLink,
+            placeholder: LINK_PLACEHOLDER,
+          }}
+        />
         <Row>
-          <Button size="sm" disabled={loading} type="submit">UPDATE</Button>
+          <Button disabled={loading} type="submit">UPDATE</Button>
         </Row>
-        </Form>
+      </form>
     </>
   )
 }

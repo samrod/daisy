@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, ChangeEvent, useRef } from "react";
 import { isEmpty } from "lodash";
 import cn from "classnames";
 
-import { Slider, Swatch ,Button, Tabs, Clock } from "../components";
+import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../components";
 import { UserPanel } from "./settings";
 import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
 import { CLIENT_STATES } from "../lib/constants";
@@ -128,20 +128,24 @@ const Remote = () => {
     <div className={cn(Styles.remote, { userMode })}>
       <div className={Styles.page}>
         <div className={Styles.topButtons}>
-          <Button leftIcon={!playing ? "play" : "pause"} klass={Styles.playButton} action={persistPlay} />
-          <Button leftIcon="user" klass={cn(Styles.standardButton, CLIENT_STATES[clientStatus])} action={setUserMode} />
+          <Button leftIcon="user" klass={cn(Styles.standardButton, CLIENT_STATES[clientStatus])} variant="black" onClick={setUserMode} />
+          <Button leftIcon={!playing ? "play" : "pause"} circle={40} klass={Styles.playButton} variant="black" onClick={persistPlay} />
         </div>
-        <Clock playing={playing} />
+        <Row nowrap stretch={false} klass={Styles.statusDisplay}>
+          <Clock playing={playing} />
+          <ClientStatus />
+        </Row>
 
-        <Tabs 
-          options={['Motion', 'Appearance', 'Sound']}
-          callback={onTabClick}
-          state={panel}
-          action="panel"
-        />
-        <div className={Styles.panels}>
+        <Tabs.Panels>
+          <Tabs 
+            options={['Motion', 'Appearance', 'Sound']}
+            callback={onTabClick}
+            state={panel}
+            action="panel"
+            size="small"
+          />
 
-          <div className={cn(Styles.panel, { active: panel === 'motion' })}>
+          <Tabs.Panel active={panel} title="motion">
             <div className={Styles.sliders}>
               <div className="row">
                 <Slider
@@ -159,9 +163,9 @@ const Remote = () => {
                 <Slider name="length" value={length} onChange={setValue} />
               </div>
             </div>
-          </div>
+          </Tabs.Panel>
 
-          <div className={cn(Styles.panel, { active: panel === 'appearance' })}>
+          <Tabs.Panel active={panel} title="appearance">
             <div className={Styles.swatches}>
               <div className="row">
                 {['white', 'red', 'orange', 'yellow'].map(Swatch.bind(null, setValue))}
@@ -186,9 +190,9 @@ const Remote = () => {
               <div className={Styles.shape} data-action="shape" data-option="square" onClick={setValue}>&#9632;</div>
               <div className={Styles.shape} data-action="shape" data-option="diamond" onClick={setValue}>&#9670;</div>
             </div>
-          </div>
+          </Tabs.Panel>
 
-          <div className={cn(Styles.panel, { active: panel === 'sound' })}>
+          <Tabs.Panel active={panel} title="sound">
             <div className={Styles.sliders}>
               <div className="row">
                 <Slider name="volume" value={volume} onChange={setValue} />
@@ -197,9 +201,9 @@ const Remote = () => {
                 }
               </div>
             </div>
-          </div>
+          </Tabs.Panel>
 
-        </div>
+        </Tabs.Panels>
       </div>
       <UserPanel toggleUserPanel={setUserMode} />
     </div>

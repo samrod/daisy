@@ -1,11 +1,9 @@
-import { Container } from 'react-bootstrap';
-
 const Layout = ({ children }) => (
-    <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-      <div className="w-100" style={{ maxWidth: '450px' }}>
+    <div className="flex mx-auto items-center justify-center h-screen">
+      <div className="w-6/12">
           {children}
       </div>
-    </Container>
+    </div>
 );
 
 export default Layout;

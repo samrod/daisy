@@ -1,0 +1,28 @@
+@import '../lib/variables.scss';
+
+.page {
+  @apply flex flex-col items-center justify-center w-screen h-screen p-4;
+  background-color: #999;
+  color: $palette-white;
+}
+
+.logo {
+  @apply w-[20vw] mb-4 blur-0;
+  fill: white;
+  :global(#Daisy_2) {
+    fill: #F90;
+  }
+}
+
+:global(.slider) {
+  opacity: 0;
+  transform: translateY(-200px);
+  transition:
+    opacity 2s ease-in,
+    transform 1s cubic-bezier(0, 0.5, 0.5, 1);
+}
+
+:global(.slideIn) { opacity: 1; transform: translateY(0px); }
+:global(.step2) { transition-delay: 0.25s; }
+:global(.step3) { transition-delay: 0.5s; }
+:global(.step4) { transition-delay: 0.75s; }

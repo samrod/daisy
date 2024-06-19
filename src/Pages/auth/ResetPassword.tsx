@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from "react-router-dom";
-import { Alert, Form, Button, Card } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
 import Layout from "./Layout";
+import { Alert, Button, Row, TextGroup } from '../../components';
 
 export default function ResetPassword() {
   const { resetPassword, getFormHandlers } = useAuth();
@@ -10,6 +10,7 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [validEmail, setValidEmail] = useState(true);
   const history = useNavigate();
 
   const { onChangeEmail, onChangePassword } = getFormHandlers({ setEmail, setPassword });
@@ -30,25 +31,32 @@ export default function ResetPassword() {
 
   return (
     <Layout>
-      <Card>
-        <Card.Body>
-          <h2 className="text-center mb-4">Reset Password</h2>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group id="emai">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" required onChange={onChangeEmail} />
-            </Form.Group>
+      <h2 className="text-center mb-4">Reset Password</h2>
+      {error && <Alert variant="danger">{error}</Alert>}
+      <form onSubmit={handleSubmit}>
+        <TextGroup
+          label="Email"
+          textProps={{
+            type: "email",
+            error: !validEmail,
+            onChange: onChangeEmail,
+            setValid: setValidEmail,
+          }}
+        />
 
-            <Form.Group id="password">
-              <Form.Label>Password</Form.Label>
-              <Form.Control type="password" required onChange={onChangePassword} />
-            </Form.Group>
+        <TextGroup
+          label="Password"
+          textProps={{
+            type: "password",
+            autoComplete: "new-password",
+            onChange: onChangePassword,
+          }}
+        />
 
-            <Button disabled={loading} className="w-100" type="submit">Login</Button>
-          </Form>
-        </Card.Body>
-      </Card>
+        <Row>
+          <Button disabled={loading} type="submit">Login</Button>
+        </Row>
+      </form>
       <div className="w-100 text-center mt-2">
         Need an accont? <Link to="/signup">Sign Up</Link>
       </div>

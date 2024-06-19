@@ -1,15 +1,20 @@
-import { useState, useCallback, FormEvent } from 'react'
-import { Alert, Form, Button, Row } from "react-bootstrap";
+import { useState, useCallback, FormEvent, useEffect } from 'react'
+import { isEmpty } from 'lodash';
 import { getAuth, updateEmail } from "firebase/auth";
+import validator from "validator";
 
 import { useAuth } from '../../context/AuthContext';
 import { createUpdateEmail as updateEmailFB } from "../../lib/store";
+import { Alert, Button, Row, TextGroup } from '../../components';
+import Styles from "./UserPanel.module.scss";
+
 
 export const Email = () => {
   const { logout, getFormHandlers } = useAuth();
   const { currentUser } = getAuth();
   const [email, setEmail] = useState(currentUser?.email);
   const [error, setError] = useState('');
+  const [validEmail, setValidEmail] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const { onChangeEmail } = getFormHandlers({ setEmail });
@@ -32,19 +37,24 @@ export const Email = () => {
 
   return (
     <>
-      <h4 className="text-center mt-3 mb-3">Update Your Email Address</h4>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit} className="accountForm">
-        <Form.Group id="email">
-          <Form.Label>Email</Form.Label>
-          <Form.Control size="sm" type="email" autoComplete="email" onChange={onChangeEmail} required defaultValue={currentUser?.email} />
-        </Form.Group>
-
-        <Row>
-          <Button size="sm" onClick={logout} variant="success">LOGOUT</Button>
-          <Button size="sm" disabled={loading} type="submit">UPDATE</Button>
+      <h3 className="text-center">Update Your Email Address</h3>
+      <form className={Styles.form} onSubmit={handleSubmit}>
+        <Alert>{error}</Alert>
+        <TextGroup
+          label="Email"
+          textProps={{
+            setValid: setValidEmail,
+            type: "email",
+            error: !validEmail,
+            onChange: onChangeEmail,
+            defaultValue: currentUser?.email,
+          }}
+        />
+        <Row justify="stretch">
+          <Button onClick={logout} variant="success">LOGOUT</Button>
+          <Button disabled={loading || !validEmail} type="submit">UPDATE</Button>
         </Row>
-        </Form>
+      </form>
     </>
   )
 }

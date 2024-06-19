@@ -1,31 +1,84 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
+import cn from "classnames";
 
-import { bindAllSettingsToValues } from "../lib/store";
+import { bindAllSettingsToValues, getData } from "../lib/store";
 import { useClientState } from '../lib/clientState';
 import { useGuideState } from "../lib/guideState";
-import { Display } from "../components";
+import { Button, Display, Row, Textfield } from "../components";
 import { bindEvent } from '../lib/utils';
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
+import Styles from "./Client.module.scss";
 
 const Guide = () => {
-  const { preset, setClientLink, status, setStatus } = useClientState(state => state);
+  const { preset, clientLink, setClientLink, status, setStatus, username, setUsername } = useClientState(state => state);
   const { setActivePreset } = useGuideState(state => state);
   const bindList = useRef<BindParams[]>();
+  const resetTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const [cta, setCta] = useState("Join");
+  const [slideIn, setSlideIn] = useState(false);
+  const [nickname, setNickname] = useState(username)
+  const [authorized, setAuthorized] = useState(false);
+
+  const onSubmit = useCallback((e) => {
+    e.preventDefault();
+    setStatus(2);
+    setUsername(nickname);
+  }, [nickname, setUsername]);
+
+  const onChange = useCallback(({ target }) => {
+    setNickname(target.value);
+  }, []);
 
   const findGuide = useCallback(async () => {
     bindAllSettingsToValues();
-    setStatus(1);
+    if (!status) {
+      setStatus(1);
+    }
   }, [setStatus]);
 
   const bindEvents = useCallback(() => {
     bindList.current = [
-      { event: 'beforeunload', element: window, handler: setStatus.bind(null, 0)},
-      { event: 'unload', element: window, handler: setStatus.bind(null, 0)},
+      { event: 'beforeunload', element: window, handler: exit},
+      { event: 'unload', element: window, handler: exit},
     ];
 
     bindList.current.forEach(bindEvent);
   }, [setStatus]);
+
+  const exit = useCallback(() => {
+    setStatus(0);
+  }, []);
+
+  const reset = (delay) => {
+    clearTimeout(resetTimer.current);
+    resetTimer.current = setTimeout(setStatus.bind(null, 1), delay);
+  };
+
+  const updateCta = useCallback(() => {
+    switch (status) {
+      case 1:
+        setCta("Join");
+        break;
+      case 2:
+        setCta("Waiting...");
+        reset(300000);
+        break;
+      case 3:
+        setCta("Authorized");
+        setTimeout(setAuthorized.bind(null, true), 3000);
+        break;
+      case 4:
+        setCta("Session Unavailable");
+        reset(5000);
+        break;;
+    }
+  }, [status]);
+
+  useEffect(() => {
+    updateCta();
+  }, [status]);
 
   useEffect(() => {
     if (!isEmpty(preset)) {
@@ -35,22 +88,62 @@ const Guide = () => {
   }, [findGuide, preset, setActivePreset]);
 
   useEffect(() => {
+    if (!isEmpty(clientLink)) {
+      getData({ path: `/clientLinks/${clientLink}`, key: "status", callback: setStatus});
+    }
+  }, [clientLink]);
+
+  useEffect(() => {
     setClientLink();
     bindEvents();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSlideIn(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (status !== 3) {
+  if (authorized) {
     return (
-      <div>
-        <Logo />
-        <h1>Welcome</h1>
-      </div>
+      <Display />
     );
   }
   return (
-    <Display />
-  )
+    <div className={Styles.page}>
+      <div className={cn("step1 slider", { slideIn })}>
+        <Logo className={Styles.logo} />
+      </div>
+      <div className={cn("step2 slider", { slideIn })}>
+        <h2>Welcome</h2>
+      </div>
+      <form onSubmit={onSubmit}>
+        <div className={cn("step3 slider", { slideIn })}>
+          <Textfield
+            type="text"
+            value={nickname}
+            onChange={onChange}
+            autoComplete="off"
+            placeholder="Pick a username"
+            maxLength={30}
+            autoFocus
+            size="lg"
+            stretch
+            name="username"
+          />
+        </div>
+          <Row justify="between" klass={cn("step4 slider", { slideIn })}>
+            {status === 2 && (
+              <Button variant="success" value="Cancel" onClick={reset} />
+            )}
+            <Button
+              type="submit"
+              value={cta}
+              onClick={onSubmit}
+              disabled={isEmpty(nickname)}
+              stretch={status!==2}
+              loading={status===2}
+            />
+        </Row>
+      </form>
+    </div>
+  );
 };
 
 export default Guide;

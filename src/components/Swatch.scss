@@ -1,0 +1,9 @@
+.swatch {
+  @apply flex w-[30px] h-[30px] rounded-full cursor-pointer;
+
+  transition: transform 0.25s cubic-bezier(0.12, 3.04, 0.63, -0.09);
+
+  &:hover {
+    transform: scale(1.2);
+  }
+}

@@ -1,23 +1,16 @@
 .tabs {
-  display: flex;
-  align-self: center;
-  border-radius: 4px;
+  @apply flex rounded justify-between overflow-hidden absolute z-10 left-1/2 -top-3;
+  transform: translateX(-50%);
   background-color: #444;
-  justify-content: space-between;
-  overflow: hidden;
-  position: relative;
-  z-index: 5;
-
 }
 
 .tab {
-  flex: 1;
+  @apply flex text-center cursor-pointer;
   font-size: 0.8125rem;
   line-height: 1em;
-  text-align: center;
   color: white;
-  padding: 4px 20px;
   margin: 0 .5px;
+  padding: 10px 40px;
   text-decoration: none;
   font-weight: 600;
   -moz-user-drag: none;
@@ -26,8 +19,11 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   box-shadow: inset 0px 1px 0px 0px #FFF3;
+  transition: background-color 75ms 0s ease-in;
+  .light & {
+    box-shadow-color: #c2c2c2b4;
+  }
   background-color: #666;
-  cursor: pointer;
   &:hover {
     background-color: #6b6b6b;
   }
@@ -43,6 +39,37 @@
     &:active {
       background-color: #CCC;
     }
+  }
+  &:global(.small) {
+    padding: 5px 20px;
+  }
+}
+
+.tabPanels {
+  @apply grid grid-cols-1 items-center relative z-0 content-stretch;
+  flex: 5;
+  border-width: 1px;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  padding: 15px 0;
+  margin-top: 10px;
+
+  &.dark {
+    background-color: #ffffff0C;
+    border-color:  #303030;
+  }
+
+  &.light {
+    background-color: #00000015;
+    border-color:  #CCC;
+  }
+}
+
+.tabPanel {
+  @apply flex-wrap justify-center content-start h-full p-2;
+  display: none;
+  &:global(.active) {
+    display: flex;
   }
 }
 

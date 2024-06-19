@@ -1,18 +1,20 @@
-import { create } from "zustand";
 import { matchPath } from 'react-router';
+import { isEmpty } from "lodash";
+import { create } from "zustand";
 
 import { readPropValue, updateData } from "./store";
 import { update } from "./utils";
-import { isEmpty } from "lodash";
 
 type ClientStateTypes = {
   status: number;
   preset: string;
   clientLink: string;
+  username: string;
 
-  setStatus: (status: number) => void;
+  setStatus: (status: number, clientLink?: string) => void;
   setPreset: (prest: string) => void;
   setClientLink: () => void;
+  setUsername: (name: string) => void;
 };
 
 const currentLinkExists = async () => {
@@ -27,14 +29,16 @@ export const useClientState = create<ClientStateTypes>((set) => ({
   status: 0,
   preset: "",
   clientLink: "",
+  username: "",
 
-  setStatus: async (status) => {
-    const validLink = await currentLinkExists();
+  setStatus: async (status, clientLink) => {
+    const validLink = clientLink ? { clientLink} : await currentLinkExists();
 
-    update(set, ({ clientLink }) => {
-      if (!isEmpty(clientLink) && validLink) {
+    update(set, (state) => {
+      if (!isEmpty(state.clientLink) || validLink.clientLink) {
         const { clientLink } = validLink;
-        updateData(`clientLinks/${clientLink}/status`, status as string);
+        state.status = status;
+        updateData(`clientLinks/${clientLink}/status`, status);
       }
     })
   },
@@ -51,4 +55,10 @@ export const useClientState = create<ClientStateTypes>((set) => ({
       }
     });
   },
+  setUsername: (name) => {
+    update(set, (State) => {
+      State.username = name;
+      updateData(`clientLinks/${State.clientLink}/username`, name);
+    })
+  }
 }));

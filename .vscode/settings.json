@@ -9,5 +9,19 @@
       "terminal.ansiGreen": "#00A600",
       "terminal.ansiBlack": "#000"
     }
-  }
+  },
+  "tailwindCSS.experimental.configFile": null,
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript",
+    "javascriptreact": "javascript",
+    "scss": "css",
+    "sass": "css",
+  },
+  "editor.quickSuggestions": {
+    "strings": true,
+  },
+  "css.validate": false,
+  "scss.validate": false,
+  "postcss.validate": false
 }

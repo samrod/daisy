@@ -1,6 +1,9 @@
-@import "~bootstrap/scss/bootstrap";
-@import "./bootstrap-custom";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import './icons';
+@import "../lib/variables.scss";
 
 @font-face {
   font-family: system;
@@ -22,15 +25,61 @@ html {
   height: 100%;
 }
 
-body, #root {
-  width: 100%;
-  height: 100vh;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-sizing: border-box;
+body {
+  width: 100vw;
   -webkit-font-smoothing: antialiased;
-  font: 16px system;
+  font: 16px "Lucida Sans", system;
+
+  --palette-black: $palette-black;
+  --palette-white: $palette-white;
+  --palette-red: $palette-red;
+  --palette-orange: $palette-orange;
+  --palette-yellow: $palette-yellow;
+  --palette-green: $palette-green;
+  --palette-cyan: $palette-cyan;
+  --palette-blue: $palette-blue;
+  --palette-magenta: $palette-magenta;
+  
+  --palette-danger: $palette-danger;
+  --palette-error: $palette-error;
+  --palette-standard: $palette-standard;
+  --palette-warn: $palette-warn;
+  --palette-success: $palette-success;
 }
+
+$colors: (
+  "black": $palette-black,
+  "white": $palette-white,
+  "grey-very-dark": $palette-grey-very-dark,
+  "grey-dark": $palette-grey-dark,
+  "grey-medium": $palette-grey-medium,
+  "grey-light": $palette-grey-light,
+  "red": $palette-red,
+  "orange": $palette-orange,
+  "yellow": $palette-yellow,
+  "green": $palette-green,
+  "cyan": $palette-cyan,
+  "blue": $palette-blue,
+  "magenta": $palette-magenta,
+  "danger": $palette-danger,
+  "error": $palette-error,
+  "standard": $palette-standard,
+  "warn": $palette-warn,
+  "success": $palette-success,
+);
+
+@each $color, $name in $colors {
+  .bg-#{$color} { background-color: #{$name}; }
+  .color-#{$color} { color: #{$name}; }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply w-full;
+}
+
+h1 { font-size: 3rem; margin-bottom: 1rem; }
+h2 { font-size: 2rem;  margin-bottom: 1rem; }
+h3 { font-size: 1.6rem; font-weight: bold; margin-bottom: 1rem; }
+h4 { font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;  }
+h5 { font-size: 1rem; }
+h6 { font-size: .8rem; }

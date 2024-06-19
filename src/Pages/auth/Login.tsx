@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom";
-import { Alert, Form, Button, Card } from "react-bootstrap";
+
 import { useAuth } from "../../context/AuthContext";
 import Layout from "./Layout";
+import { Alert, Button, TextGroup, Col, Row } from "../../components";
 
 export default function Login() {
   const { login, getFormHandlers } = useAuth();
@@ -10,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [validEmail, setValidEmail] = useState(true);
   const navigate = useNavigate();
 
   const { onChangeEmail, onChangePassword } = getFormHandlers({ setEmail, setPassword });
@@ -35,30 +37,36 @@ export default function Login() {
   
   return (
     <Layout>
-      <Card>
-        <Card.Body>
-          <h2 className="text-center mb-4">Log in</h2>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group id="emai">
-              <Form.Label>Email</Form.Label>
-              <Form.Control autoComplete="email" type="email" required onChange={onChangeEmail} />
-            </Form.Group>
+      <h2 className="text-center mb-4">Log in</h2>
+      {error && <Alert variant="danger">{error}</Alert>}
+      <form onSubmit={handleSubmit}>
+        <TextGroup
+          label="Email"
+          textProps={{
+            type: "email",
+            error: !validEmail,
+            onChange: onChangeEmail,
+            setValid: setValidEmail,
+          }}
+        />
 
-            <Form.Group id="password">
-              <Form.Label>Password</Form.Label>
-              <Form.Control autoComplete="current-password" type="password" required onChange={onChangePassword} />
-            </Form.Group>
-
-            <Button disabled={loading} className="w-100" type="submit">Login</Button>
-              <div className="w-100 text-center mt-3">
-                <Link to="forgot-password">Forgot password?</Link>
-              </div>
-          </Form>
-        </Card.Body>
-      </Card>
-        <div className="w-100 text-center mt-2">
-          Need an account? <Link to="/signup">Sign Up</Link>
+        <TextGroup
+          label="Password"
+          textProps={{
+            type: "password",
+            autoComplete: "new-password",
+            onChange: onChangePassword,
+          }}
+        />
+        <Row>
+          <Button disabled={loading} type="submit">Login</Button>
+        </Row>
+        <div className="w-100 text-center mt-3">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </div>
+      </form>
+      <div className="w-100 text-center mt-2">
+        Need an account? <Link to="/signup">Sign Up</Link>
       </div>
     </Layout>
   )

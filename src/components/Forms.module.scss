@@ -1,0 +1,115 @@
+@import "../lib/variables.scss";
+
+.formScalers {
+  @apply my-2 rounded-md overflow-hidden;
+
+  &:global(.xs) { @apply px-2 py-1 text-xs; }
+  &:global(.sm) { @apply px-3 py-1 text-sm; }
+  &:global(.md) { @apply px-4 py-2 text-base  }
+  &:global(.lg) { @apply px-6 py-2 text-xl; }
+}
+
+@mixin buttonColors($color) {  
+  background-color: $color;
+  &:hover {
+    background-color: lighten($color, 2.5);
+  }
+}
+
+.button {
+  @extend .formScalers;
+  @apply
+    flex
+    flex-1
+    items-center
+    justify-center
+    text-center
+    cursor-pointer
+    box-border
+    text-white
+    font-bold
+    blur-0
+  ;
+
+  &:global(.error) { @include buttonColors($palette-error); }
+  &:global(.warn) { @include buttonColors($palette-warn); }
+  &:global(.standard) { @include buttonColors($palette-standard); }
+  &:global(.success) { @include buttonColors($palette-success); }
+
+  .spinner {
+    @apply absolute right-0 mr-2;
+  }
+
+  transition: background-color 0.1s ease-in;
+
+  border: 1px solid #999;
+  box-shadow: 
+    inset 1px 1px 1px #FFF5,
+    inset -1px -1px 1px #0004;
+
+  &:hover {
+  }
+
+  &:active {
+    box-shadow: 
+      inset 1px 1px 1px #0004,
+      inset -1px -1px 1px #FFF4;
+  }
+
+  &:disabled, &:disabled:hover {
+    @apply shadow-none opacity-75 brightness-75 saturate-[.75];
+  }
+}
+
+.textfield {
+  @extend .formScalers;
+  @apply
+  text-neutral-900
+  border-neutral-400
+    border-2
+  ;
+
+  &:focus-visible {
+    outline-width: 0px;
+    border-color: $palette-standard;
+  }
+
+  &:global(.error) {
+    border-color: $palette-danger;
+  }
+}
+
+.label {
+  @apply mr-4;
+  &:global(.xs) { @apply text-xs; }
+  &:global(.sm) { @apply text-sm; }
+  &:global(.md) { @apply text-base  }
+  &:global(.lg) { @apply text-xl; }
+}
+
+.textGroup {
+  @apply flex mt-4;
+}
+
+@mixin alertColors($color) {  
+  color: desaturate(darken($color, 25), 20);
+  border-color: desaturate(darken($color, 0), 65);
+  background-color: transparentize($color, 0.93);
+}
+
+.alert {
+  @extend .formScalers;
+  @apply border-2 font-bold;
+
+  &:global(.error) {
+    @include alertColors($palette-error);
+  }
+
+  &:global(.warn) {
+    @include alertColors($palette-warn);
+  }
+
+  &:global(.standard) {
+    @include alertColors($palette-standard);
+  }
+}

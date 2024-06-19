@@ -1,30 +1,41 @@
-import { useState } from 'react';
-import { Card } from 'react-bootstrap';
-import Tabs from 'react-bootstrap/Tabs';
+import { MouseEventHandler, useState } from "react";
 
-import { Button as CloseButton } from '../../components';
-import { Tab } from './';
-import './UserPanel.scss';
+import { useGuideState } from "../../lib/guideState";
+import { Button as CloseButton, Tabs } from "../../components";
+import * as SettingComponents from "./";
+import Styles from "./UserPanel.module.scss";
 
 interface UserPanelProps {
-  toggleUserPanel: () => void;
+  toggleUserPanel: MouseEventHandler<HTMLButtonElement>;
 }
 
 const panels = [ "Email", "Password", "Link", "Presets"];
 
 export const UserPanel = ({ toggleUserPanel }: UserPanelProps) => {
-  const [key, setKey] = useState("email");
+  const { userMode } = useGuideState(state => state);
+  const [tab, setTab] = useState("email");
 
+  const onTabClick = ({ target }) => {
+    setTab(target.dataset.option);
+  };
+
+  if (!userMode) {
+    return null;
+  }
   return (
     <div className="user-panel">
-      <CloseButton action={toggleUserPanel} klass="close">&#10006;</CloseButton>
-      <Card>
-        <Card.Body>
-          <Tabs activeKey={key} onSelect={setKey}>
-            {panels.map(Tab)}
-          </Tabs>
-        </Card.Body>
-      </Card>
+      <CloseButton onClick={toggleUserPanel} customClass={Styles.close} variant="black" circle={33}>&#10006;</CloseButton>
+      <Tabs.Panels theme="light">
+        <Tabs options={panels} state={tab} callback={onTabClick} action="panel" />
+          {panels.map((key, index) => {
+            const PanelContent = SettingComponents[key]
+            return (
+              <Tabs.Panel key={`tab-panel-${index}`} klass={Styles.panel} active={tab} title={key}>
+                <PanelContent />
+              </Tabs.Panel>
+            );
+          })}
+      </Tabs.Panels>
     </div>
   );
 };

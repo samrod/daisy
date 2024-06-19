@@ -1,4 +1,4 @@
-@import '../components/variables.scss';
+@import '../lib/variables.scss';
 
 .display {
   width: 100vw;
@@ -59,17 +59,6 @@
   :global(.shape-circle) & { border-radius: 50%; }
   :global(.shape-square) & { border-radius: 0; }
   :global(.shape-diamond) & { transform: rotateZ(45deg); }
-
-  :global(.color-black) & { background-color: black; }
-  :global(.color-white) & { background-color: white; }
-  :global(.color-red) & { background-color: #F00; }
-  :global(.color-orange) & { background-color: #F90; }
-  :global(.color-yellow) & { background-color: #FF0; }
-  :global(.color-green) & { background-color: #0F0; }
-  :global(.color-cyan) & { background-color: #0FF; }
-  :global(.color-blue) & { background-color: #00F; }
-  :global(.color-magenta) & { background-color: #F0F; }
-
 }
 
 .lightbar {

@@ -14,7 +14,8 @@ export type StateTypes = {
   activeSetting: string;
   activePreset: string;
   clientLink: string;
-  clientStatus: string;
+  clientStatus: number;
+  clientName: string;
   settings: typeof defaults;
   presets: {};
 }
@@ -31,7 +32,8 @@ export type ActionsTypes = {
   setUser: (user: User) => void;
   setUserMode: (userMode: boolean) => void;
   setClientLink: (link: string) => void;
-  setClientStatus: (state: string) => void;
+  setClientStatus: (state: number) => void;
+  setClientName: (name: string) => void;
 };
 
 export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
@@ -42,7 +44,8 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   activeSetting: "",
   activePreset: "",
   clientLink: "",
-  clientStatus: "",
+  clientStatus: 0,
+  clientName: "",
   presets: {},
 
   setSetting: (setting, value) => update(set, ({ settings, clientLink }) => {
@@ -74,6 +77,10 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   }),
   setClientStatus: (status) => update(set, (State) => {
     State.clientStatus = status;
+  }),
+  setClientName: (name) => update(set, (State) => {
+    State.clientName = name;
+    updateUser("clientName", name);
   }),
   setPresets: (presets) => update(set, (State) => { State.presets = presets }),
   setActivePreset: (activeSetting) => update(set, (State) => { State.activePreset = activeSetting }),

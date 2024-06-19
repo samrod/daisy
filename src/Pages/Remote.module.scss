@@ -1,8 +1,7 @@
-@import '../components/variables.scss';
+@import '../lib/variables.scss';
 
 .remote {
-  width: 100vw;
-  height: 100vh;
+  @apply overflow-hidden w-screen h-screen;
   max-height: $remoteHeight;
   padding: 15px;
   padding-bottom: 0;
@@ -17,60 +16,39 @@
     max-height: $userModeHeight;
     :global(.user-panel) {
       top: 0;
+      opacity: 1;
+    }
+    .page {
+      opacity: 0;
     }
   }
 }
 
 .page {
-  flex: 1;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  @apply relative z-0 flex-1 flex flex-col items-stretch;
+  transition: opacity 0.25s linear;
 }
 
 .topButtons {
-  position: absolute;
-  right: 0;
-  top: -13px;
-  display: flex;
-  flex-wrap: nowrap;
-  z-index: 10;
-  justify-content: center;
-  align-items: center;
-
-}
-.button {
-  cursor: pointer;
-  box-sizing: border-box;
-  padding: 0;
-  background-color: #000;
-  border: 1px solid #999;
-  border-left: 0px;
-  color: #CCC;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  transition:
-    background-color 0.125s ease-out,
-    color 0.125s ease-out;
-
-  &:hover {
-    color: #fff;
-    background-color: #222;
+  @apply absolute z-20 flex right-0 flex-nowrap top-[-13px] justify-center items-center flex-row-reverse;
+  button {
+    @apply my-0 bg-black;
   }
 }
 
+.statusDisplay {
+  position: absolute;
+  top: -11px;
+  background: #aeaeae;
+}
+
 .standardButton {
-  width: 30px;
-  height: 30px;
+  @apply px-5 py-0;
   border-radius: 0;
   border-right: 0;
-  padding: 0px 25px;
   height: 25px;
   width: auto;
-  &:global(.unavailable) {
+  &:global(.unavailable, .denied) {
     color: #F00;
   }
 
@@ -86,16 +64,13 @@
     color: green;
   }
 
-  &:last-child {
+  &:first-child {
     border: 1px solid #999;
     border-radius: 0 5px 5px 0;
   }
 }
 .playButton {
-  width: 40px;
-  height: 40px;
   position: relative;
-  border-radius: 100%;
   border: 1px solid #999;
   margin: 0px -10px;
 }
@@ -113,30 +88,9 @@
   }
 }
 
-.panels {
-  display: flex;
-  flex: 5;
-  align-items: center;
-  background-color: #ffffff0C;
-  border: 1px solid #303030;
-  border-bottom: none;
-  border-radius: 5px 5px 0 0;
-  position: relative;
-  padding: 15px 0;
-  margin-top: -10px;
-  z-index: 0;
-}
-.panel {
-  display: none;
-  flex: 1;
-  &:global(.active) {
-    display: flex;
-  }
-}
-
-.swatch, .shape {
+.shape {
+  @apply cursor-pointer;
   transition: transform 0.25s cubic-bezier(0.12, 3.04, 0.63, -0.09);
-  cursor: pointer;
   &:hover {
     transform: scale(1.2);
   }

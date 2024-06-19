@@ -1,8 +1,9 @@
-@import '../components/variables.scss';
+@import '../lib/variables.scss';
 
 .toolbar {
-  width: 100%;
-  height: $remoteHeight;
+  @apply w-full h-[$remoteHeight];
+  // width: 100%;
+  // height: $remoteHeight;
   background-color: rgba(16,16,16,.85);
   backdrop-filter: blur(3px);
   border: none;
@@ -16,6 +17,7 @@
     opacity .25s ease-out;
 
   &:global(.hidden) {
+    display: unset;
     transition-duration: .75s;
     transform: translateY(100%);
     opacity: 0;

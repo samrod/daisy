@@ -25,8 +25,10 @@ export const Display = ({ children = null }) => {
     absoluteBallSize: number,
     targetClass: string,
     containerClass: string,
+    bullseyeClass: string,
     containerStyle: CSS.Properties,
-    targetStyle: CSS.Properties;
+    targetStyle: CSS.Properties
+  ;
 
   const lights = () => {
     if (steps > 1) {
@@ -160,7 +162,8 @@ export const Display = ({ children = null }) => {
 
     absoluteBallSize = shape !== 'diamond' ? size : Math.sqrt((size ** 2) << 1);
     containerClass = `${levelClass} ${motionBarActive ? Styles.containerActive : ""}`;
-    targetClass = `color-${newColor} shape-${shape}`;
+    targetClass = `shape-${shape}`;
+    bullseyeClass = `bg-${newColor}`;
     displayStyle.current = { backgroundColor: `rgba(0,0,0,${background})` };  
     targetStyle = {
       width: `${size}vw`,
@@ -231,7 +234,7 @@ export const Display = ({ children = null }) => {
           style={targetStyle}
           onAnimationIteration={onAnimationIteration}
         >
-          <div className={Styles.bullseye}></div>
+          <div className={cn(Styles.bullseye, bullseyeClass)}></div>
         </div>
       </div>
       {children}

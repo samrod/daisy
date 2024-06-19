@@ -1,3 +1,6 @@
+$remoteHeight: 150px;
+$userModeHeight: 450px;
+
 $icomoon-font-family: "Daisy" !default;
 $icomoon-font-path: "fonts" !default;
 
@@ -11,3 +14,22 @@ $i-play: "\e909";
 $i-remote-settings-fill: "\e90a";
 $i-remote-settings: "\e90b";
 
+$palette-black: black;
+$palette-white: white;
+$palette-grey-very-dark: #333;
+$palette-grey-dark: #666;
+$palette-grey-medium: #999;
+$palette-grey-light: #CCC;
+$palette-red: #F00;
+$palette-orange: #F90;
+$palette-yellow: #FF0;
+$palette-green: #0F0;
+$palette-cyan: #0FF;
+$palette-blue: #00F;
+$palette-magenta: #F0F;
+
+$palette-danger: #C00;;
+$palette-error: $palette-danger;
+$palette-standard: #06C;
+$palette-warn: #ED0;
+$palette-success: #593;

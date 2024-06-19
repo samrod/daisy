@@ -8,9 +8,10 @@ interface TabsProps {
   callback: MouseEventHandler<HTMLDivElement>;
   state: string;
   action: string;
+  size?: string;
 }
 
-export const Tabs = ({ options, action, callback, state}: TabsProps) => {
+const Tabs = ({ options, action, callback, state, size }: TabsProps) => {
 
   const tab = (label: string, index: number) => {
     const option = label.toLowerCase();
@@ -21,7 +22,7 @@ export const Tabs = ({ options, action, callback, state}: TabsProps) => {
         onClick={callback}
         data-action={action}
         data-option={option}
-        className={cn(Styles.tab, { active: state === option })}
+        className={cn(Styles.tab, size, { active: state === option })}
       >
         {label}
       </div>
@@ -34,3 +35,21 @@ export const Tabs = ({ options, action, callback, state}: TabsProps) => {
     </div>
   );
 };
+
+Tabs.Panels = ({ children, theme = "dark" }) => (
+  <div className={cn(Styles.tabPanels, Styles[theme])}>
+    {children}
+  </div>
+);
+
+const randomKey = () => Math.round(Math.random()*1000);
+
+Tabs.Panel = ({ active, title, klass = "", children }) => {
+  return (
+    <div className={cn(Styles.tabPanel, klass, { active: title.toLowerCase() === active })}>
+      {children}
+    </div>
+  )
+}
+
+export { Tabs };
