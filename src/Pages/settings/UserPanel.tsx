@@ -7,7 +7,7 @@ import Styles from "./UserPanel.module.scss";
 
 const panels = [ "Email", "Password", "Link", "Presets"];
 
-export const UserPanel = () => {
+export const UserPanel = ({ exists }) => {
   const { userMode, setUserMode } = useGuideState(state => state);
   const [tab, setTab] = useState("email");
 
@@ -15,9 +15,10 @@ export const UserPanel = () => {
     setTab(target.dataset.option);
   };
 
-  if (!userMode) {
+  if (!exists) {
     return null;
   }
+
   return (
     <div className="user-panel">
       <CloseButton onClick={setUserMode} customClass={Styles.close} variant="black" circle={33}>&#10006;</CloseButton>

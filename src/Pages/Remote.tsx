@@ -24,6 +24,7 @@ const Remote = () => {
   const [speedSliderActive, setSpeedSliderActive] = useState(false);
   const [speedSliderDragged, setSpeedSliderDragged] = useState(false);
   const [, setFakePasued] = useState(false);
+  const [userPanelExists, setUserPanelExists] = useState(false);
 
   const bindList = useRef<BindParams[]>();
 
@@ -91,6 +92,15 @@ const Remote = () => {
     setSpeedSliderActive(false);
   };
 
+  const addUserPanelToDom = useCallback((e) => {
+    setUserPanelExists(true);
+    setUserMode(e)
+  }, [userMode]);
+
+  const removeUserPanelFromDom = useCallback(() => {
+    setUserPanelExists(userMode);
+  }, [userMode]);
+
   const bindEvents = useCallback(() => {
     bindList.current = [
       { event: 'keydown', element: document.body, handler: setKeys, options: { capture: true }},
@@ -125,10 +135,10 @@ const Remote = () => {
   }, []);
 
   return (
-    <div className={cn(Styles.remote, { userMode })}>
+    <div className={cn(Styles.remote, { userMode })} onTransitionEnd={removeUserPanelFromDom}>
       <div className={Styles.page}>
         <div className={Styles.topButtons}>
-          <Button leftIcon="user" klass={cn(Styles.standardButton, CLIENT_STATES[clientStatus])} variant="black" onClick={setUserMode} />
+          <Button leftIcon="user" klass={cn(Styles.standardButton, CLIENT_STATES[clientStatus])} variant="black" onClick={addUserPanelToDom} />
           <Button leftIcon={!playing ? "play" : "pause"} circle={40} klass={Styles.playButton} variant="black" onClick={persistPlay} />
         </div>
         <Row nowrap stretch={false} klass={Styles.statusDisplay}>
@@ -205,7 +215,7 @@ const Remote = () => {
 
         </Tabs.Panels>
       </div>
-      <UserPanel />
+      <UserPanel exists={userPanelExists} />
     </div>
   );
 }
