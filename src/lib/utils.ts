@@ -1,8 +1,9 @@
 import { produce } from 'immer';
+
 import { useGuideState } from './guideState';
-import { togglePlay } from "./store";
+import { togglePlay } from "./guideStore";
 import { defaults } from './constants';
-import { User } from 'firebase/auth';
+import { User } from '../lib/firebase';
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext

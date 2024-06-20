@@ -1,9 +1,10 @@
 import { useState, useCallback, FormEvent, useEffect } from 'react'
 import { isEmpty } from 'lodash';
 
-import { getUserData, propExists, updateClientLink } from '../../lib/store';
+import { getUserData, updateClientLink } from '../../lib/guideStore';
 import { LINK_PLACEHOLDER } from '../../lib/constants';
 import { Alert, Button, Row, TextGroup } from '../../components';
+import { propExists } from '../../lib/firebase';
 
 export const Link = () => {
   const [clientLink, setClientLink] = useState("");
@@ -37,7 +38,7 @@ export const Link = () => {
   }, [clientLink]);
 
   useEffect(() => {
-    getUserData({ key: "clientLink", callback: updateLink });
+    getUserData("clientLink", updateLink);
   }, [])
 
   return (

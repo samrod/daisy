@@ -1,7 +1,72 @@
-import { initializeApp } from 'firebase/app';
+import { child, get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
+import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import { isEmpty } from "lodash";
+
+export type { User } from "firebase/auth";
+export type Object = string | number | boolean;
+export type DataType = Object | { [key: string]: Object | {}};
+export interface GetData {
+  key: string;
+  callback: (setting: number | boolean | string | object) => void;
+  path?: string;
+  debug?: boolean;
+}
+
+const executeCallback = ({ key, path, callback, debug }: GetData) => (snapshot) => {
+  const val = snapshot.val();
+  if ((typeof val).match(/undefined|null/i) ) {
+    console.warn(`*** ${key} returned "${val}" from ${path}/${key}`);
+    return;
+  }
+  if (debug) {
+    console.log(`*** ${key} returned "${val}" from ${path}`);
+  }
+  callback(val)
+};
+
+export const getData = (params: GetData) => {
+  const { path, key} = params;
+  const keyRef = ref(db, `${path}/${key}`);
+  return onValue(keyRef, executeCallback(params));
+};
+
+export const deletePropValue = async (path: string, key: string ) => {
+  const dataRef = child(ref(db), `${path}/${key}`);
+  return await remove(dataRef);
+};
+
+export const readPropValue = async (key: string, value: string) => {
+  if (!key || value === undefined || value === null) {
+    return "Invalid key or value";
+  }
+  const queryRef = child(ref(db), `${key}/${value}`);
+  const snapshot = await get(queryRef);
+  if (snapshot.exists()) {
+    return snapshot.toJSON();
+  }
+  return undefined;
+};
+
+export const propExists = async (key: string, value: string) => {
+  const response = await readPropValue(key, value);
+  return typeof response !== "undefined" ? response : false;
+};
+
+export const updateData = async (path: string, value:  DataType) => {
+  if (isEmpty(path) || !value === null) {
+    return;
+  }
+  await set(ref(db, path), value);
+};
+
+export const pushData = async(path: string, value: DataType) => {
+  const loginListRef = ref(db, path);
+  const newLoginRef = push(loginListRef)
+  await set(newLoginRef, value);
+};
+
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,

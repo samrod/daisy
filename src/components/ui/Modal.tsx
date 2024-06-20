@@ -24,7 +24,7 @@ const Modal = ({ children, title = "", active = false }) => {
     } else {
       setExists(true);
       setInvisible(false);
-      setTimeout(show, 10);
+      setTimeout(show, 100);
     }
   }, [active]);
 

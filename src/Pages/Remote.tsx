@@ -6,13 +6,13 @@ import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../compo
 import { UserPanel } from "./settings";
 import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
 import { CLIENT_STATES } from "../lib/constants";
-import { getUserData, getData, updateSetting } from "../lib/store";
+import { getUserData, updateSetting } from "../lib/guideStore";
 import { useGuideState } from "../lib/guideState";
 import Styles from "./Remote.module.scss";
+import { getClientData } from "../lib/clientStore";
 
 const Remote = () => {
-  const State = useGuideState(state => state);
-  const { clientStatus, setClientStatus, clientLink, setClientLink, settings, setSetting, userMode, setUserMode } = State;
+  const { clientStatus, setClientStatus, clientLink, setClientLink, settings, setSetting, userMode, setUserMode } = useGuideState(state => state);
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settings;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
   const localState = {
@@ -110,7 +110,7 @@ const Remote = () => {
 
   useEffect(() => {
     if (!isEmpty(clientLink)) {
-      getData({ path: `/clientLinks/${clientLink}`, key: "status", callback: setClientStatus})
+      getClientData("status", setClientStatus)
     }
   }, [clientLink, setClientStatus]);
 
@@ -119,7 +119,7 @@ const Remote = () => {
       return;
     }
     bindEvents();
-    getUserData({ key: "clientLink", callback: setClientLink });
+    getUserData("clientLink", setClientLink);
     return unbindEvents;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -205,7 +205,7 @@ const Remote = () => {
 
         </Tabs.Panels>
       </div>
-      <UserPanel toggleUserPanel={setUserMode} />
+      <UserPanel />
     </div>
   );
 }

@@ -1,14 +1,14 @@
 import { useGuideState } from "../lib/guideState";
 import { CLIENT_STATES } from "../lib/constants";
 import { useCallback, useEffect } from "react";
-import { getUserData } from "../lib/store";
+import { getUserData } from "../lib/guideStore";
 
 export const ClientStatus = () => {
   const { clientStatus, clientName, setClientName } = useGuideState(state => state);
   const status = CLIENT_STATES[clientStatus];
 
   useEffect(() => {
-    getUserData({ key: "clientName", callback: setClientName });
+    getUserData("clientName", setClientName);
   }, []);
 
   const copy = useCallback(() => {
@@ -27,10 +27,13 @@ export const ClientStatus = () => {
       
       case "denied":
         return `${clientName} was denied`;
+      
+      case "cancelled":
+        return `${clientName} cancelled request`
     }    
   }, [status]);
 
   return (
-    <div className={`font-bold px-4 color-grey-very-dark`}>{copy()}</div>
+    <div className={`font-bold pl-0 pr-5 color-grey-very-dark`}>{copy()}</div>
   )
 };

@@ -2,8 +2,9 @@ import { matchPath } from 'react-router';
 import { isEmpty } from "lodash";
 import { create } from "zustand";
 
-import { readPropValue, updateData } from "./store";
+import { readPropValue, updateData } from "./firebase";
 import { update } from "./utils";
+import { updateClientData } from './clientStore';
 
 type ClientStateTypes = {
   status: number;
@@ -36,9 +37,10 @@ export const useClientState = create<ClientStateTypes>((set) => ({
 
     update(set, (state) => {
       if (!isEmpty(state.clientLink) || validLink.clientLink) {
-        const { clientLink } = validLink;
+        // const { clientLink } = validLink;
         state.status = status;
-        updateData(`clientLinks/${clientLink}/status`, status);
+        updateClientData("status", status);
+        // updateData(`clientLinks/${clientLink}/status`, status);
       }
     })
   },

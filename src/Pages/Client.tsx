@@ -2,13 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import cn from "classnames";
 
-import { bindAllSettingsToValues, getData } from "../lib/store";
+import { bindAllSettingsToValues } from "../lib/guideStore";
 import { useClientState } from '../lib/clientState';
 import { useGuideState } from "../lib/guideState";
 import { Button, Display, Row, Textfield } from "../components";
 import { bindEvent } from '../lib/utils';
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
+import { getClientData } from '../lib/clientStore';
 
 const Guide = () => {
   const { preset, clientLink, setClientLink, status, setStatus, username, setUsername } = useClientState(state => state);
@@ -21,11 +22,16 @@ const Guide = () => {
   const [nickname, setNickname] = useState(username)
   const [authorized, setAuthorized] = useState(false);
 
+  const onCancel = useCallback((e) => {
+    e.preventDefault();
+    setStatus(5);
+  }, [setStatus]);
+
   const onSubmit = useCallback((e) => {
     e.preventDefault();
     setStatus(2);
     setUsername(nickname);
-  }, [nickname, setUsername]);
+  }, [setStatus, nickname, setUsername]);
 
   const onChange = useCallback(({ target }) => {
     setNickname(target.value);
@@ -36,16 +42,7 @@ const Guide = () => {
     if (!status) {
       setStatus(1);
     }
-  }, [setStatus]);
-
-  const bindEvents = useCallback(() => {
-    bindList.current = [
-      { event: 'beforeunload', element: window, handler: exit},
-      { event: 'unload', element: window, handler: exit},
-    ];
-
-    bindList.current.forEach(bindEvent);
-  }, [setStatus]);
+  }, [status, setStatus]);
 
   const exit = useCallback(() => {
     setStatus(0);
@@ -73,8 +70,20 @@ const Guide = () => {
         setCta("Session Unavailable");
         reset(5000);
         break;;
+      case 5:
+        setCta("Cancelled");
+        reset(5000);
     }
   }, [status]);
+
+  const bindEvents = useCallback(() => {
+    bindList.current = [
+      { event: 'beforeunload', element: window, handler: exit},
+      { event: 'unload', element: window, handler: exit},
+    ];
+
+    bindList.current.forEach(bindEvent);
+  }, [setStatus, exit]);
 
   useEffect(() => {
     updateCta();
@@ -89,7 +98,7 @@ const Guide = () => {
 
   useEffect(() => {
     if (!isEmpty(clientLink)) {
-      getData({ path: `/clientLinks/${clientLink}`, key: "status", callback: setStatus});
+      getClientData("status", setStatus);
     }
   }, [clientLink]);
 
@@ -130,7 +139,7 @@ const Guide = () => {
         </div>
           <Row justify="between" klass={cn("step4 slider", { slideIn })}>
             {status === 2 && (
-              <Button variant="success" value="Cancel" onClick={reset} />
+              <Button variant="success" value="Cancel" onClick={onCancel} />
             )}
             <Button
               type="submit"

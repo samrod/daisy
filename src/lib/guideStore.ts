@@ -1,50 +1,22 @@
-import { ref, set, onValue, push, remove, get, child } from "firebase/database";
-
-import { db } from "./firebase";
-import { User } from "firebase/auth";
+import { DataType, db, deletePropValue, getData, pushData, readPropValue, updateData } from "./firebase";
 import { DEFAULT_PRESET_NAME, defaults } from "./constants";
 import { useGuideState } from "./guideState";
 import { useClientState } from "./clientState";
 
-type Setting = string | number | boolean;
-export type DataType = Setting | { [key: string]: Setting | {}};
+export { getAuth, updateEmail, updatePassword } from "firebase/auth";
+
 interface CreatePreset {
   settings?: typeof defaults;
   name?: string;
 }
 
-interface GetData {
-  key: string;
-  callback: (setting: number | boolean | string | object) => void;
-  path?: string;
-  debug?: boolean;
-}
-
-const executeCallback = ({ key, path, callback, debug }: GetData) => (snapshot) => {
-  const val = snapshot.val();
-  if ((typeof val).match(/undefined|null/i) ) {
-    console.warn(`*** ${key} returned "${val}" from ${path}/${key}`);
-    return;
-  }
-  if (debug) {
-    console.log(`*** ${key} returned "${val}" from ${path}`);
-  }
-  callback(val)
-};
-
-export const getData = (params: GetData) => {
-  const { path, key} = params;
-  const keyRef = ref(db, `${path}/${key}`);
-  return onValue(keyRef, executeCallback(params));
-};
-
-export const getUserData = ({ key, callback, debug }: GetData) => {
+export const getUserData = (key: string, callback) => {
   const { user: { uid } } = useGuideState.getState();
   if (!uid) {
     return;
   }
   const path = `/users/${uid}`;
-  return getData({ path, key, callback, debug });
+  return getData({ path, key, callback });
 };
 
 const updateSettingFromFirebase = (key: string) => (val) => {
@@ -61,36 +33,10 @@ export const bindAllSettingsToValues = () => {
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
 
-export const deletePropValue = async (path: string, key: string ) => {
-  const dataRef = child(ref(db), `${path}/${key}`);
-  return await remove(dataRef);
-};
-
-export const readPropValue = async (key: string, value: string) => {
-  if (!key || value === undefined || value === null) {
-    return "Invalid key or value";
-  }
-  const queryRef = child(ref(db), `${key}/${value}`);
-  const snapshot = await get(queryRef);
-  if (snapshot.exists()) {
-    return snapshot.toJSON();
-  }
-  return undefined;
-};
-
-export const propExists = async (key: string, value: string) => {
-  const response = await readPropValue(key, value);
-  return typeof response !== "undefined" ? response : false;
-};
-
 export const userPropExists = async (key: string) => {
   const { user: { uid } } = useGuideState.getState();
   const response = await readPropValue(`users/${uid}/`, key);
   return typeof response !== "undefined" ? response : false;
-};
-
-export const updateData = async (path: string, value:  DataType) => {
-  await set(ref(db, path), value);
 };
 
 export const updateUser = async (key: string, value: DataType) => {
@@ -122,10 +68,9 @@ export const createUpdateEmail = async (user: User, newEmail?: string) => {
 
 export const captureLogin = async ({ user }) => {
   const { uid, metadata: { lastSignInTime } } = user;
-  const loginListRef = ref(db, `users/${uid}/logins`);
-  const newLoginRef = push(loginListRef)
-  await set(newLoginRef, lastSignInTime);
+  await pushData(`users/${uid}/logins`, lastSignInTime);
 };
+
 export const updateClientLink = async (clientLink: string) => {
   const { setClientLink, activePreset: preset } = useGuideState.getState();
   const { setPreset } = useClientState.getState();

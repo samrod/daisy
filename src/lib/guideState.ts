@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { User } from "firebase/auth";
 
+import { User } from '../lib/firebase';
 import { defaults, limits } from "./constants";
-import { updateUser } from "./store";
+import { updateUser } from "./guideStore";
 import { update } from "./utils";
 
 const { volume, speed } = limits;

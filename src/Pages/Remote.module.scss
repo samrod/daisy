@@ -134,16 +134,9 @@
 
 
 .sliders {
-  display: flex;
+  @apply flex flex-wrap items-center justify-between text-xs;
   flex: 5;
-  font-size: 0.7685rem;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: space-between;
   label {
-    font-size: 15px;
-    font-weight: bold;
-    letter-spacing: 0.5px;;
-    margin-bottom: 0.5em;
+    @apply text-sm flex-nowrap font-bold mb-3;
   }
 }

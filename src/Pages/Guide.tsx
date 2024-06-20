@@ -8,7 +8,8 @@ import { Button, Display, Modal, Row } from "../components";
 import { limits } from '../lib/constants';
 import { bindEvent, receiveMessage, setKeys, unbindEvent } from '../lib/utils';
 import Styles from "./Guide.module.scss";
-import { getData, getUserData } from '../lib/store';
+import { getUserData } from '../lib/guideStore';
+import { getClientData } from '../lib/clientStore';
 
 const Guide = () => {
   const State = useGuideState(state => state);
@@ -87,13 +88,13 @@ const Guide = () => {
 
   useEffect(() => {
     if (!isEmpty(clientLink)) {
-      getData({ path: `/clientLinks/${clientLink}`, key: "", callback: setClientStates});
+      getClientData("", setClientStates);
     }
   }, [clientLink]);
 
   useEffect(() => {
     bindEvents();
-    getUserData({ key: "clientLink", callback: setClientLink });
+    getUserData("clientLink",setClientLink);
     return unbindEvents;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -1,13 +1,9 @@
-import { useState, useCallback, FormEvent, useEffect } from 'react'
-import { isEmpty } from 'lodash';
-import { getAuth, updateEmail } from "firebase/auth";
-import validator from "validator";
+import { useState, useCallback, FormEvent } from 'react'
 
 import { useAuth } from '../../context/AuthContext';
-import { createUpdateEmail as updateEmailFB } from "../../lib/store";
+import { getAuth, updateEmail, createUpdateEmail as updateEmailFB } from "../../lib/guideStore";
 import { Alert, Button, Row, TextGroup } from '../../components';
 import Styles from "./UserPanel.module.scss";
-
 
 export const Email = () => {
   const { logout, getFormHandlers } = useAuth();
@@ -57,4 +53,4 @@ export const Email = () => {
       </form>
     </>
   )
-}
+};

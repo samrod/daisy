@@ -137,7 +137,7 @@ export const Textfield: FC<TextfieldProps> = ({
       ref={field}
       className={classes}
       type={type}
-      autoComplete={autoComplete || type==="email" ? "email" : ""}
+      autoComplete={autoComplete || (type==="email" ? "email" : "")}
       onChange={_onChange}
       {...props}
     />

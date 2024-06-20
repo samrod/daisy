@@ -1,8 +1,8 @@
 import { useState, useCallback, FormEvent } from 'react'
-import { getAuth, updatePassword } from "firebase/auth";
 
-import { useAuth } from '../../context/AuthContext';
 import { Alert, Button, TextGroup, Row } from '../../components';
+import { getAuth, updatePassword } from '../../lib/guideStore';
+import { useAuth } from '../../context/AuthContext';
 import Styles from "./UserPanel.module.scss";
 
 export const Password = () => {
