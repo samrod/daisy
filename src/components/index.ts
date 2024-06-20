@@ -1,10 +1,11 @@
 export { Clock } from "./Clock";
-export { Icon } from "./Icons";
-export { Slider } from "./Slider";
-export { Tabs } from "./Tabs";
 export { Swatch } from "./Swatch";
 export { Display } from "./Display";
 export { ClientStatus } from "./ClientStatus";
-export { Modal } from "./Modal";
-export { Row, Col } from "./Grid";
-export { Button, Textfield, TextGroup, Label, Alert } from "./Forms";
+
+export { Icon } from "./ui/Icons";
+export { Slider } from "./ui/Slider";
+export { Tabs } from "./ui/Tabs";
+export { Modal } from "./ui/Modal";
+export { Row, Col } from "./ui/Grid";
+export { Button, Textfield, TextGroup, Label, Alert } from "./ui/Forms";

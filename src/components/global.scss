@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import './icons';
+@import './ui/icons';
 @import "../lib/variables.scss";
 
 @font-face {
@@ -29,6 +29,7 @@ body {
   width: 100vw;
   -webkit-font-smoothing: antialiased;
   font: 16px "Lucida Sans", system;
+  letter-spacing: -0.025em;
 
   --palette-black: $palette-black;
   --palette-white: $palette-white;

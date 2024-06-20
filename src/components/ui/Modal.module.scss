@@ -1,4 +1,4 @@
-@import "../lib/variables.scss";
+@import "../../lib/variables.scss";
 
 .modal {
   @apply flex flex-col absolute border-black rounded-md backdrop-blur-md opacity-0;

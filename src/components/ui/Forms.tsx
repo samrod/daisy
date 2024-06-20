@@ -4,7 +4,7 @@ import { camelCase, isEmpty, noop } from "lodash";
 import cn from "classnames";
 import validator from "validator";
 
-import { Icon } from ".";
+import { Icon } from "..";
 import Styles from "./Forms.module.scss";
 
 interface FormElementProps {
