@@ -5,12 +5,14 @@ import { create } from "zustand";
 import { readPropValue, updateData } from "./firebase";
 import { update } from "./utils";
 import { updateClientData } from './clientStore';
+import { consoleLog, objDiff } from './logging';
 
 type ClientStateTypes = {
   status: number;
   preset: string;
   clientLink: string;
   username: string;
+  trigger: null | string;
 
   setStatus: (status: number, clientLink?: string) => void;
   setPreset: (prest: string) => void;
@@ -31,6 +33,7 @@ export const useClientState = create<ClientStateTypes>((set) => ({
   preset: "",
   clientLink: "",
   username: "",
+  trigger: null,
 
   setStatus: async (status, clientLink) => {
     const validLink = clientLink ? { clientLink} : await currentLinkExists();
@@ -39,13 +42,15 @@ export const useClientState = create<ClientStateTypes>((set) => ({
       if (!isEmpty(state.clientLink) || validLink.clientLink) {
         // const { clientLink } = validLink;
         state.status = status;
+        state.trigger = "setStatus";
         updateClientData("status", status);
         // updateData(`clientLinks/${clientLink}/status`, status);
       }
     })
   },
-  setPreset: (preset) => update(set, (ClientState) => {
-    ClientState.preset = preset;
+  setPreset: (preset) => update(set, (state) => {
+    state.preset = preset;
+    state.trigger = "setPreset";
   }),
   setClientLink: async () => {
     const response = await currentLinkExists();
@@ -54,13 +59,22 @@ export const useClientState = create<ClientStateTypes>((set) => ({
         const { preset, clientLink } = response;
         State.clientLink = clientLink;
         State.preset = preset;
+        State.trigger = "setClientLink";
       }
     });
   },
   setUsername: (name) => {
     update(set, (State) => {
       State.username = name;
+      State.trigger = "setUsernae";
       updateData(`clientLinks/${State.clientLink}/username`, name);
     })
   }
 }));
+
+useClientState.subscribe(({trigger, ...state }, { trigger: preTrigger, ...preState }) => {
+  const diff = objDiff(preState, state);
+  if (diff) {
+    consoleLog(trigger, diff, "warn");
+  }
+});

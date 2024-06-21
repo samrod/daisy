@@ -5,6 +5,7 @@ import { User, auth } from '../lib/firebase';
 import { useGuideState } from "../lib/guideState";
 import { getUserData, bindAllSettingsToValues } from "../lib/guideStore";
 import { useAuthHandlers } from '../lib/authHandlers';
+import { getClientData } from '../lib/clientStore';
 
 const AuthContext = createContext({});
 
@@ -21,7 +22,7 @@ export function useAuth() {
 export const AuthProvider = ({ children }) => {
   const presetsBoundToStore = useRef(false);
   const settingsBoundToStore = useRef(false);
-  const { presets, activePreset, setUserMode, setActivePreset, setPresets, setUser } = useGuideState();
+  const { presets, activePreset, setUserMode, setClientName, setActivePreset, setPresets, setUser, setClientLink } = useGuideState();
   const [currentUser, setCurrentUser] = useState<User>();
   const [loading, setLoading] = useState(true);
 
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
+    getUserData("clientLink", setClientLink);
     getUserData("activePreset", setActivePreset);
     getUserData("userMode", setUserMode);
     getUserData(`presets`, setPresets);

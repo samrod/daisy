@@ -4,6 +4,7 @@ import { User } from '../lib/firebase';
 import { defaults, limits } from "./constants";
 import { updateUser } from "./guideStore";
 import { update } from "./utils";
+import { consoleLog, objDiff } from "./logging";
 
 const { volume, speed } = limits;
 
@@ -18,6 +19,7 @@ export type StateTypes = {
   clientName: string;
   settings: typeof defaults;
   presets: {};
+  trigger: null | string;
 }
 
 export type ActionsTypes = {
@@ -47,14 +49,17 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   clientStatus: 0,
   clientName: "",
   presets: {},
+  trigger: null,
 
-  setSetting: (setting, value) => update(set, ({ settings, clientLink }) => {
-    settings[setting] = value;
+  setSetting: (setting, value) => update(set, (state) => {
+    state.settings[setting] = value;
+    state.trigger = "setSetting";
   }),
 
-   setActiveSetting: (setting) => update(set, (State) => {
-    State.activeSetting = setting;
-    State.motionBarActive = !!setting.match(/angle|length/);
+   setActiveSetting: (setting) => update(set, (state) => {
+    state.activeSetting = setting;
+    state.motionBarActive = !!setting.match(/angle|length/);
+    state.trigger = "setActiveSetting";
   }),
 
   volumeDown: () => update(set, ({ settings }) => { settings.volume = Math.max(settings.volume - volume.nudge, volume.min) }),
@@ -64,24 +69,44 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   speedDown: () => update(set, ({ settings }) => { settings.speed = Math.max(settings.speed - speed.nudge, speed.min) }),
 
   setUser: (user) => update(set, (State) => { State.user = user }),
-  setUserMode: (userMode) => update(set, (State) => {
+  setUserMode: (userMode) => update(set, (state) => {
     if (typeof userMode === "boolean") {
-      State.userMode = userMode;
+      state.userMode = userMode;
     } else {
-      State.userMode = !State.userMode;
-      updateUser("userMode", State.userMode);
+      state.userMode = !state.userMode;
+      updateUser("userMode", state.userMode);
     }
+    state.trigger = "setUserMode";
   }),
-  setClientLink: (link) => update(set, (State) => {
-    State.clientLink = link;
+  setClientLink: (link) => update(set, (state) => {
+    state.clientLink = link;
+    state.trigger = "setClientLink";
   }),
-  setClientStatus: (status) => update(set, (State) => {
-    State.clientStatus = status;
+  setClientStatus: (status) => update(set, (state) => {
+    state.clientStatus = status;
+    state.trigger = "setClientStatus";
   }),
-  setClientName: (name) => update(set, (State) => {
-    State.clientName = name;
+  setClientName: (name) => update(set, (state) => {
+    state.clientName = name;
+    state.trigger = "setClientName";
     updateUser("clientName", name);
   }),
-  setPresets: (presets) => update(set, (State) => { State.presets = presets }),
-  setActivePreset: (activeSetting) => update(set, (State) => { State.activePreset = activeSetting }),
+  setPresets: (presets) => update(set, (state) => {
+    state.presets = presets;
+    state.trigger = "setPresets";
+  }),
+  setActivePreset: (activeSetting) => update(set, (state) => {
+    state.activePreset = activeSetting;
+    state.trigger = "setActivePreset";
+  }),
 }));
+
+useGuideState.subscribe(({ user, trigger, ...state }, {user: j1 ,trigger: j2, ...preState}) => {
+  if (trigger === "setSetting") {
+    return;
+  }
+  const diff = objDiff(preState, state);
+  if (diff) {
+    consoleLog(trigger, diff );
+  }
+});

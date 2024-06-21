@@ -2,14 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import { isEmpty } from 'lodash';
 
-import { useGuideState } from "../lib/guideState";
-import { useClientState } from "../lib/clientState";
-import { Button, Display, Modal, Row } from "../components";
+import { defaultModalState, Display, Modal } from "../components";
 import { limits } from '../lib/constants';
 import { bindEvent, receiveMessage, setKeys, unbindEvent } from '../lib/utils';
-import Styles from "./Guide.module.scss";
+import { useGuideState } from "../lib/guideState";
+import { useClientState } from "../lib/clientState";
 import { getUserData } from '../lib/guideStore';
 import { getClientData } from '../lib/clientStore';
+import Styles from "./Guide.module.scss";
 
 const Guide = () => {
   const State = useGuideState(state => state);
@@ -17,6 +17,8 @@ const Guide = () => {
   const { userMode, setActiveSetting, clientLink, setClientLink, clientStatus, setClientStatus, clientName, setClientName } = State;
   
   const [hidden, setHidden] = useState(true);
+  const [modalActive, setModalActive] = useState(false);
+  const [modal, setModal] = useState(defaultModalState);
 
   const initialized = useRef(false);
   const toolbarBusy = useRef(false);
@@ -56,7 +58,7 @@ const Guide = () => {
       { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
       { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
       { event: 'mousemove', element: document.body, handler: toggleToolbar },
-      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting }) },
+      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showEndSessionModal }) },
     ];
   
     if (toolbar.current && !initialized.current) {
@@ -82,8 +84,46 @@ const Guide = () => {
     setStatus(3, clientLink);
   };
 
+  const onCancelEndSessionModal = () => {
+    setModalActive(false);
+  };
+
+  const onEndClientSession = () => {
+    setStatus(1, clientLink);
+    setModalActive(true);
+  };
+
+  const showEndSessionModal = () => {
+    setModalActive(true);
+    setModal({
+      title: `End ${clientName}'s session`,
+      body: `Are you sure you want to end this session with ${clientName}?`,
+      cancel: {
+        text: "Cancel",
+        action: onCancelEndSessionModal,
+      },
+      accept: {
+        text: "End Session",
+        action: onEndClientSession,
+      },
+    });
+  };
+
   useEffect(() => {
     setHidden(false);
+    setModalActive(clientStatus === 2);
+    setModal({
+      title: `Request from ${clientName}`,
+      body: `Allow ${clientName} to join this session?`,
+      cancel: {
+        text: "Deny",
+        action: onDenyClientRequest,
+      },
+      accept: {
+        text: "Allow",
+        action: onAcceptClientRequest,
+      },
+    });
   }, [clientStatus]);
 
   useEffect(() => {
@@ -101,18 +141,7 @@ const Guide = () => {
 
   return (
     <Display>
-      <Modal active={clientStatus === 2}>
-        <Modal.Body>
-          <h3>Request from {clientName}</h3>
-          <p>Allow {clientName} to join this session?</p>
-        </Modal.Body>
-        <Modal.Foot>
-          <Row justify="between">
-            <Button value="Deny" onClick={onDenyClientRequest} />
-            <Button value="Allow" variant="success" onClick={onAcceptClientRequest} />
-          </Row>
-        </Modal.Foot>
-      </Modal>
+      <Modal active={modalActive} {...modal} />
 
       <iframe
         ref={toolbar}

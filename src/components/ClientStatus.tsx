@@ -1,15 +1,14 @@
+import { useCallback, useEffect } from "react";
+
+import { Button as CloseButton } from "../components";
 import { useGuideState } from "../lib/guideState";
 import { CLIENT_STATES } from "../lib/constants";
-import { useCallback, useEffect } from "react";
-import { getUserData } from "../lib/guideStore";
+import { sendMessage } from "../lib/utils";
+import { getClientData } from "../lib/clientStore";
 
 export const ClientStatus = () => {
   const { clientStatus, clientName, setClientName } = useGuideState(state => state);
   const status = CLIENT_STATES[clientStatus];
-
-  useEffect(() => {
-    getUserData("clientName", setClientName);
-  }, []);
 
   const copy = useCallback(() => {
     switch (status) {
@@ -23,7 +22,10 @@ export const ClientStatus = () => {
         return `${clientName} is waiting`;
       
       case "authorized":
-        return `${clientName} is ready`;
+        return <div>
+          {`${clientName} is here`}
+          <CloseButton onClick={sendTerminationMessage} customClass={"rounded-full border"} circle={15}>&#10006;</CloseButton>
+        </div>;
       
       case "denied":
         return `${clientName} was denied`;
@@ -33,7 +35,17 @@ export const ClientStatus = () => {
     }    
   }, [status]);
 
+  const sendTerminationMessage = () => {
+    sendMessage({ action: "showEndSessionModal" }, undefined, window.top.location.href);
+  };
+
+  useEffect(() => {
+    getClientData("username", setClientName);
+  }, []);
+
   return (
-    <div className={`font-bold pl-0 pr-5 color-grey-very-dark`}>{copy()}</div>
+    <div className={`font-bold pl-0 pr-5 color-grey-very-dark`}>
+      {copy()}
+    </div>
   )
 };

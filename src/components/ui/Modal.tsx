@@ -1,9 +1,33 @@
 import cn from "classnames";
+import { noop } from "lodash";
 
 import Styles from "./Modal.module.scss";
-import { useEffect, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
+import { Button, Row } from "../";
 
-const Modal = ({ children, title = "", active = false }) => {
+interface ModalProps {
+  children?: ReactElement;
+  title?: string;
+  body?: string;
+  active: boolean;
+  cancel?: {
+    text: string;
+    action: () => void;
+  };
+  accept?: {
+    text: string;
+    action: () => void;
+  };
+}
+
+const Modal = ({
+  children,
+  title = "",
+  body = "",
+  cancel,
+  accept,
+  active = false,
+}: ModalProps) => {
   const [_visible, setVisible] = useState(false);
   const [_invisible, setInvisible] = useState(false);
   const [exists, setExists] = useState(false);
@@ -32,10 +56,27 @@ const Modal = ({ children, title = "", active = false }) => {
     return null;
   }
 
+  if (children) {
+    return (
+      <div className={cn(Styles.modal, { _visible, _invisible })}>
+        {title && <Modal.Head>{title}</Modal.Head>}
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className={cn(Styles.modal, { _visible, _invisible })}>
-      {title && <Modal.Head>{title}</Modal.Head>}
-      {children}
+        <Modal.Body>
+          <h3>{title}</h3>
+          <p>{body}</p>
+        </Modal.Body>
+        <Modal.Foot>
+          <Row justify="between">
+            <Button value={cancel.text} onClick={cancel.action} />
+            <Button value={accept.text} variant="success" onClick={accept.action} />
+          </Row>
+        </Modal.Foot>
     </div>
   );
 };
@@ -62,4 +103,17 @@ Modal.Foot = ({ children }) => {
   );
 };
 
-export { Modal };
+const defaultModalState = {
+  title: "",
+  body: "",
+  cancel: {
+    text: "",
+    action: noop,
+  },
+  accept: {
+    text: "",
+    action: noop,
+  },
+};
+
+export { Modal, defaultModalState };

@@ -9,20 +9,23 @@ const getState = (key: string) => {
   const clientState = useClientState.getState();
   const value = guideState[key] || clientState[key];
 
-  if (isEmpty(value)) {
-    console.warn(`*** getState: ${key} has no value.`);
-    return;
+  if (!isEmpty(value)) {
+    return value;
   };
-  return value;
 };
 
 export const getClientData = (key: string, callback: (params: unknown) => void) => {
   const clientLink = getState("clientLink");
-  getData({ path: `/clientLinks/${clientLink}`, key, callback});
+  if (clientLink) {
+    // console.log(`*** ${window.location.pathname} getClientData:`, key);
+    getData({ path: `/clientLinks/${clientLink}`, key, callback});
+  }
 };
 
 export const updateClientData = (key: string, value) => {
   const clientLink = getState("clientLink");
-  updateData(`clientLinks/${clientLink}/${key}`, value);
+  if (clientLink) {
+    updateData(`clientLinks/${clientLink}/${key}`, value);
+  }
 };
 

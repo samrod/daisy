@@ -7,9 +7,9 @@ import { UserPanel } from "./settings";
 import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
 import { CLIENT_STATES } from "../lib/constants";
 import { getUserData, updateSetting } from "../lib/guideStore";
+import { getClientData } from "../lib/clientStore";
 import { useGuideState } from "../lib/guideState";
 import Styles from "./Remote.module.scss";
-import { getClientData } from "../lib/clientStore";
 
 const Remote = () => {
   const { clientStatus, setClientStatus, clientLink, setClientLink, settings, setSetting, userMode, setUserMode } = useGuideState(state => state);
@@ -77,7 +77,7 @@ const Remote = () => {
       updateSetting("playing", false);
 
     }
-  }
+  };
 
   const onSpeedSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     setValue(e, false);
@@ -129,7 +129,6 @@ const Remote = () => {
       return;
     }
     bindEvents();
-    getUserData("clientLink", setClientLink);
     return unbindEvents;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
