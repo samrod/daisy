@@ -1,6 +1,6 @@
 import { useState, useCallback, FormEvent } from 'react'
 
-import { Alert, Button, TextGroup, Row } from '../../components';
+import { Alert, Button, TextGroup, Row, Col } from '../../components';
 import { getAuth, updatePassword } from '../../lib/guideStore';
 import { useAuth } from '../../context/AuthContext';
 import Styles from "./UserPanel.module.scss";
@@ -33,34 +33,32 @@ export const Password = () => {
   }, [currentUser, password, confirm]);
 
   return (
-    <>
+    <Col as="form" cols={4} klass={Styles.form} onSubmit={handleSubmit}>
       <h3 className="text-center">Change Your Password</h3>
-      <form className={Styles.form} onSubmit={handleSubmit}>
-        <input className="hidden" type="text" name="username" autoComplete="username" />
-        <Alert variant="warn">{error}</Alert>
-        <TextGroup
-          label="Password"
-          textProps={{
-            type: "password",
-            autoComplete: "new-password",
-            onChange: onChangePassword,
-            placeholder: "Leave blank to keep current",
-          }}
-        />
+      <input className="hidden" type="text" name="username" autoComplete="username" />
+      <Alert variant="warn">{error}</Alert>
+      <TextGroup
+        label="Password"
+        textProps={{
+          type: "password",
+          autoComplete: "new-password",
+          onChange: onChangePassword,
+          placeholder: "Leave blank to keep current",
+        }}
+      />
 
-        <TextGroup
-          label="Confirm Password"
-          textProps={{
-            type: "password",
-            autoComplete: "new-password",
-            onChange: onChangeConfirm,
-            placeholder: "Leave blank to keep current",
-          }}
-        />
-        <Row>
-          <Button disabled={loading} type="submit">UPDATE</Button>
-        </Row>
-      </form>
-    </>
+      <TextGroup
+        label="Confirm Password"
+        textProps={{
+          type: "password",
+          autoComplete: "new-password",
+          onChange: onChangeConfirm,
+          placeholder: "Leave blank to keep current",
+        }}
+      />
+      <Row>
+        <Button disabled={loading} type="submit">UPDATE</Button>
+      </Row>
+    </Col>
   )
 }

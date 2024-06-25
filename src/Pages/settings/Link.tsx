@@ -1,9 +1,9 @@
-import { useState, useCallback, FormEvent, useEffect } from 'react'
+import { useState, useCallback, FormEvent, useEffect, useRef } from 'react'
 import { isEmpty } from 'lodash';
 
 import { getUserData, updateClientLink } from '../../lib/guideStore';
 import { LINK_PLACEHOLDER } from '../../lib/constants';
-import { Alert, Button, Row, TextGroup } from '../../components';
+import { Alert, Button, Col, TextGroup } from '../../components';
 import { propExists } from '../../lib/firebase';
 
 export const Link = () => {
@@ -11,6 +11,9 @@ export const Link = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const displayLink = isEmpty(clientLink) ? `[${LINK_PLACEHOLDER}]` : clientLink.toLowerCase();
+
+  const linkField = useRef<HTMLInputElement>();
+  const [disabled, setDisabled] = useState(false);
 
   const onChangeLink = ({ target }) => {
     setClientLink(target.value);
@@ -24,7 +27,6 @@ export const Link = () => {
 
   const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setLoading(true);
     setError("");
     const exists = await propExists("clientLinks", clientLink);
@@ -33,31 +35,32 @@ export const Link = () => {
     } else {
       updateClientLink(clientLink);
     }
-
     setLoading(false);
   }, [clientLink]);
+
+  useEffect(() => {
+    const value = linkField.current?.value.toString();
+    setDisabled(loading || !value.length);
+  }, [loading, linkField.current?.value]);
 
   useEffect(() => {
     getUserData("clientLink", updateLink);
   }, [])
 
   return (
-    <>
-      <h3 className="text-center">http://daisyemdr.com/{displayLink}</h3>
-      <Alert type="danger">{error}</Alert>
-      <form onSubmit={handleSubmit} className="accountForm">
-        <TextGroup
-          label="Specify a client link for your EMDR panel."
-          textProps={{          
-            autoComplete: "off",
-            onChange: onChangeLink,
-            placeholder: LINK_PLACEHOLDER,
-          }}
-        />
-        <Row>
-          <Button disabled={loading} type="submit">UPDATE</Button>
-        </Row>
-      </form>
-    </>
+    <Col cols={4} as="form" justify="start" onSubmit={handleSubmit} klass="accountForm">
+      <h3 className="text-center">http://daisyemdr.com/<span className="color-standard">{displayLink}</span></h3>
+      <Alert persist>{error}</Alert>
+      <TextGroup
+        ref={linkField}
+        label="Specify a client link for your EMDR panel."
+        textProps={{          
+          autoComplete: "off",
+          onChange: onChangeLink,
+          placeholder: LINK_PLACEHOLDER,
+        }}
+      />
+      <Button stretch disabled={disabled} type="submit">UPDATE</Button>
+    </Col>
   )
 }

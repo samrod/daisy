@@ -12,12 +12,7 @@ declare global {
     event: string;
     element: HTMLElement | Window;
     handler: (e: Event) => void;
-    options?: {
-      capture?: boolean;
-      one?: boolean;
-      passive?: boolean;
-      signal?: boolean;
-    }
+    options?: AddEventListenerOptions
   }
 }
 
@@ -51,7 +46,7 @@ export function receiveMessage({ data, ...e }) {
 export const sendMessage = (
   data: { action: string, params?: unknown },
   windows: Window[] = [window.opener || window.parent],
-  target: string = window.location.href
+  targetOrigin: string = window.location.href
 ) => {
   if (!data) {
     console.warn("*** sendMessage is missing data: ", data, typeof data);
@@ -59,8 +54,12 @@ export const sendMessage = (
   }
   const message = JSON.stringify(data);
   windows.filter(n=>n).forEach(window => {
-    // console.log("*** sendMessage from ", window.self.location.pathname, data);
-    window.postMessage(message, target);
+    Promise.resolve(setTimeout(
+      () => {
+        // console.log("*** sendMessage from ", window.self.location.pathname, data);
+        window.postMessage(message, targetOrigin);
+      }
+    ))
   });
 };
 
@@ -86,7 +85,6 @@ export const setKeys = ({ key }: KeyboardEvent) => {
     default:
       break;
   }
-  // callback();
 };
 
 

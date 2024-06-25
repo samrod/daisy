@@ -12,7 +12,7 @@
 @mixin buttonColors($color) {  
   background-color: $color;
   &:hover {
-    background-color: lighten($color, 2.5);
+    background-color: lighten($color, 5);
   }
 }
 
@@ -35,6 +35,7 @@
   &:global(.warn) { @include buttonColors($palette-warn); }
   &:global(.standard) { @include buttonColors($palette-standard); }
   &:global(.success) { @include buttonColors($palette-success); }
+  &:global(.dark) { @include buttonColors($palette-grey-dark); }
 
   .spinner {
     @apply absolute right-0 mr-2;
@@ -92,14 +93,18 @@
 }
 
 @mixin alertColors($color) {  
-  color: desaturate(darken($color, 25), 20);
+  color: desaturate(darken($color, 20), 20);
   border-color: desaturate(darken($color, 0), 65);
-  background-color: transparentize($color, 0.93);
+  background-color: transparentize($color, 0.9);
 }
 
 .alert {
   @extend .formScalers;
-  @apply border-2 font-bold;
+  @apply border-2;
+
+  transition:
+    background-color 0.25s ease-in,
+    border-color 0.25s ease-in;
 
   &:global(.error) {
     @include alertColors($palette-error);
@@ -109,7 +114,15 @@
     @include alertColors($palette-warn);
   }
 
+  &:global(.success) {
+    @include alertColors($palette-success);
+  }
+
   &:global(.standard) {
     @include alertColors($palette-standard);
+  }
+
+  &:global(.persist) {
+    @include alertColors(transparent);
   }
 }

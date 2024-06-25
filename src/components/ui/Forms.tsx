@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, ButtonHTMLAttributes, FC, ReactElement, MouseEventHandler, useState, ChangeEvent, useCallback, SetStateAction, Dispatch, useRef } from "react";
+import { forwardRef, InputHTMLAttributes, ButtonHTMLAttributes, FC, ReactElement, MouseEventHandler, ChangeEvent, useCallback, SetStateAction, Dispatch, useRef, useImperativeHandle, ForwardedRef } from "react";
 import { RotatingLines } from "react-loader-spinner";
 import { camelCase, isEmpty, noop } from "lodash";
 import cn from "classnames";
@@ -90,9 +90,10 @@ export const Button: FC<ButtonProps> = ({
 
 interface TextfieldProps extends FormElementProps, Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
   setValid?: Dispatch<SetStateAction<boolean>>;
+  forwardedRef?: ForwardedRef<HTMLInputElement>;
 };
 
-export const Textfield: FC<TextfieldProps> = ({
+export const Textfield: FC<TextfieldProps> = forwardRef(({
   size = "md",
   stretch,
   customClass,
@@ -103,8 +104,11 @@ export const Textfield: FC<TextfieldProps> = ({
   autoComplete,
   error = false,
   ...props
-}) => {
+}, ref) => {
+
   const field = useRef<HTMLInputElement>();
+  useImperativeHandle(ref, () => field.current);
+
   const classes = cn(
     customClass || Styles.textfield,
     klass,
@@ -115,14 +119,7 @@ export const Textfield: FC<TextfieldProps> = ({
     }
   );
 
-  const _onChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (type === "email") {
-      checkEmail();
-    }
-    onChange(e);
-  }, []);
-
-  const checkEmail = () => {
+  const checkEmail = useCallback(() => {
     if (field.current) {
       if (isEmpty(field.current.value)) {
         setValid(true);
@@ -130,7 +127,14 @@ export const Textfield: FC<TextfieldProps> = ({
       }
       setValid(validator.isEmail(field.current.value));
     }
-  };
+  }, [setValid]);
+
+  const _onChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    if (type === "email") {
+      checkEmail();
+    }
+    onChange(e);
+  }, [onChange, checkEmail, type]);
 
   return (
     <input
@@ -142,7 +146,7 @@ export const Textfield: FC<TextfieldProps> = ({
       {...props}
     />
   );
-};
+});
 
 interface LabelProps {
   name: string;
@@ -167,32 +171,51 @@ interface TextGroupProps {
   textProps: TextfieldProps;
 }
 
-export const TextGroup: FC<TextGroupProps> = ({ name, size="md", label, inline = false, textProps, ...props }) => {
+export const TextGroup: FC<TextGroupProps> = forwardRef<HTMLInputElement, TextGroupProps>(({
+    name, size="md",
+    label,
+    inline = false,
+    textProps,
+    ...props
+  }: TextGroupProps,
+  ref,
+) => {
   const _name = name || camelCase(label);
 
   return (
     <div className={cn(Styles.textGroup, inline ? "justify-between items-center" : "flex-col")}>
       <Label klass="flex-1" name={_name} size={size}>{label}:</Label>
-      <Textfield klass={inline && "w-9/12"} id={_name} name={_name} size={size} {...textProps} />
+      <Textfield ref={ref} klass={inline && "w-9/12"} id={_name} name={_name} size={size}  {...(textProps as TextfieldProps)} />
     </div>
   );
-};
+});
 
 interface AlertProps {
   size?: string;
   variant?: string;
   title?: string;
-  children: ReactElement | string;
+  klass?: string;
+  persist?: boolean;
+  children?: ReactElement | string;
 }
 
-export const Alert = ({ size = "md", variant = "error", title, children }: AlertProps) => {
-  if (!children) {
+export const Alert = ({
+  size = "md",
+  variant = "error",
+  title,
+  klass = "",
+  persist = false,
+  children
+}: AlertProps) => {
+  if (!children && !persist) {
     return null;
   }
   return (
-    <div className={cn(Styles.alert, variant, size)}>
+    <div className={cn(Styles.alert, children && variant, size, klass, { persist: !children })}>
       {title && <h5>{title}</h5>}
-      {children}
+      <p className={`text-${size}`}>
+        {children || "&nbsp;"}
+      </p>
     </div>
   );
 };

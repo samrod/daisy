@@ -1,24 +1,27 @@
-export const Row = ({
+import { createElement } from "react";
+
+export const Row = ({ gap = 4, ...props }) => {
+  return baseGrid({ type: "row", gap, ...props });
+};
+
+export const Col = ({ gap = 0, ...props }) => {
+  return baseGrid({ type: "col", gap,  ...props });
+};
+
+const baseGrid = ({
   nowrap = false,
   justify = "start",
   content = "normal",
   stretch = true,
   klass = "",
+  gap,
+  cols = "full",
+  as = "div",
+  type,
   children,
   ...props
 }) => {
-  const classes = `flex ${stretch && "w-full"} ${nowrap ? "flex-nowrap" : "flex-wrap"} flex-row justify-${justify} content-${content} gap-4 ${klass}`
-  return (
-    <div className={classes} {...props}>
-      {children}
-    </div>
-  );
-};
-
-export const Col = ({ children, ...props}) => {
-  return (
-    <div className="flex flex-col" {...props}>
-      {children}
-    </div>
-  );
-};
+  const width = typeof cols === "string" ? `w-${cols}` : `w-${cols}/6`;
+  const className = `flex flex-${type} ${width} ${nowrap ? "flex-nowrap" : "flex-wrap"} justify-${justify} content-${content} gap-${gap} ${klass}`;
+  return createElement(as, { className, ...props }, children);
+}

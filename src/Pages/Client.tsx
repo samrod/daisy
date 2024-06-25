@@ -5,7 +5,7 @@ import cn from "classnames";
 import { bindAllSettingsToValues } from "../lib/guideStore";
 import { useClientState } from '../lib/clientState';
 import { useGuideState } from "../lib/guideState";
-import { Button, Display, Row, Textfield } from "../components";
+import { Alert, Button, Display, Row, Textfield } from "../components";
 import { bindEvent } from '../lib/utils';
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
@@ -21,6 +21,8 @@ const Guide = () => {
   const [slideIn, setSlideIn] = useState(false);
   const [nickname, setNickname] = useState(username)
   const [authorized, setAuthorized] = useState(false);
+  const [message, setMessage] = useState<string | null>();
+  const [alertVariant, setAlertVariant] = useState("standard");
 
   const onCancel = useCallback((e) => {
     e.preventDefault();
@@ -48,31 +50,46 @@ const Guide = () => {
     setStatus(0);
   }, []);
 
-  const reset = (delay) => {
+  const reset = (delay: number = 0) => {
     clearTimeout(resetTimer.current);
-    resetTimer.current = setTimeout(setStatus.bind(null, 1), delay);
+    resetTimer.current = setTimeout(() => {
+      setStatus(1);
+      setMessage(null);
+    }, delay);
   };
 
   const updateCta = useCallback(() => {
     switch (status) {
       case 1:
+        clearTimeout(resetTimer.current);
         setCta("Join");
+        setAuthorized(false);
         break;
       case 2:
+        setMessage(null);
         setCta("Waiting...");
         reset(300000);
         break;
       case 3:
-        setCta("Authorized");
+        clearTimeout(resetTimer.current);
+        setMessage("Authorized");
+        setAlertVariant("success");
+        setCta("Joined");
         setTimeout(setAuthorized.bind(null, true), 3000);
         break;
       case 4:
-        setCta("Session Unavailable");
-        reset(5000);
+        setCta("Join");
+        reset();
+        setMessage("Your guide is not ready.");
+        setAlertVariant("standard");
+        reset(10000);
         break;;
       case 5:
-        setCta("Cancelled");
-        reset(5000);
+        setMessage("Your guide ended your session.");
+        setAlertVariant("standard");
+        setAuthorized(false);
+        setCta("Join");
+        reset(30000);
     }
   }, [status]);
 
@@ -124,6 +141,7 @@ const Guide = () => {
       </div>
       <form onSubmit={onSubmit}>
         <div className={cn("step3 slider", { slideIn })}>
+          <Alert size="sm" persist variant={alertVariant} klass="my-0">{message}</Alert>
           <Textfield
             type="text"
             value={nickname}

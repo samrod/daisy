@@ -6,13 +6,13 @@ import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../compo
 import { UserPanel } from "./settings";
 import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
 import { CLIENT_STATES } from "../lib/constants";
-import { getUserData, updateSetting } from "../lib/guideStore";
+import { updateSetting } from "../lib/guideStore";
 import { getClientData } from "../lib/clientStore";
 import { useGuideState } from "../lib/guideState";
 import Styles from "./Remote.module.scss";
 
 const Remote = () => {
-  const { clientStatus, setClientStatus, clientLink, setClientLink, settings, setSetting, userMode, setUserMode } = useGuideState(state => state);
+  const { clientStatus, setClientStatus, clientLink, settings, setSetting, userMode, setUserMode } = useGuideState(state => state);
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settings;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
   const localState = {
@@ -95,7 +95,7 @@ const Remote = () => {
   const addUserPanelToDom = useCallback((e) => {
     setUserPanelExists(true);
     setUserMode(e)
-  }, [userMode]);
+  }, [setUserMode]);
 
   const removeUserPanelFromDom = useCallback(() => {
     setUserPanelExists(userMode);
@@ -140,7 +140,7 @@ const Remote = () => {
           <Button leftIcon="user" klass={cn(Styles.standardButton, CLIENT_STATES[clientStatus])} variant="black" onClick={addUserPanelToDom} />
           <Button leftIcon={!playing ? "play" : "pause"} circle={40} klass={Styles.playButton} variant="black" onClick={persistPlay} />
         </div>
-        <Row nowrap stretch={false} klass={Styles.statusDisplay}>
+        <Row nowrap cols="auto" justify="between" gap={0} klass={Styles.statusDisplay}>
           <Clock playing={playing} />
           <ClientStatus />
         </Row>

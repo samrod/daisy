@@ -1,13 +1,13 @@
 import { useCallback, useEffect } from "react";
 
-import { Button as CloseButton } from "../components";
+import { Button, Button as CloseButton } from "../components";
 import { useGuideState } from "../lib/guideState";
 import { CLIENT_STATES } from "../lib/constants";
 import { sendMessage } from "../lib/utils";
 import { getClientData } from "../lib/clientStore";
 
 export const ClientStatus = () => {
-  const { clientStatus, clientName, setClientName } = useGuideState(state => state);
+  const { clientLink, clientStatus, clientName, setClientName } = useGuideState(state => state);
   const status = CLIENT_STATES[clientStatus];
 
   const copy = useCallback(() => {
@@ -16,16 +16,13 @@ export const ClientStatus = () => {
         return "no one connected";
       
       case "present":
-        return "client is present";
+        return `someon's at ${clientLink}`;
 
       case "waiting":
         return `${clientName} is waiting`;
       
       case "authorized":
-        return <div>
-          {`${clientName} is here`}
-          <CloseButton onClick={sendTerminationMessage} customClass={"rounded-full border"} circle={15}>&#10006;</CloseButton>
-        </div>;
+        return `${clientName} is active`;
       
       case "denied":
         return `${clientName} was denied`;
@@ -36,16 +33,25 @@ export const ClientStatus = () => {
   }, [status]);
 
   const sendTerminationMessage = () => {
-    sendMessage({ action: "showEndSessionModal" }, undefined, window.top.location.href);
+    sendMessage({ action: "showEndSessionModal" });
   };
 
   useEffect(() => {
     getClientData("username", setClientName);
-  }, []);
+  });
 
   return (
-    <div className={`font-bold pl-0 pr-5 color-grey-very-dark`}>
+    <div className={`font-bold text-sm flex flex-nowrap items-center color-grey-very-dark gap-3 px-3`}>
       {copy()}
+      {status === "authorized" &&
+        <Button
+          onClick={sendTerminationMessage}
+          variant="dark"
+          size="xs"
+          value="END"
+          klass="m-0 -mr-3 rounded-none"
+        />
+      }
     </div>
-  )
+  );
 };

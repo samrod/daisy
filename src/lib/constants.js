@@ -4,11 +4,11 @@ export const CLIENT_STATES = [
   "waiting",
   "authorized",
   "denied",
-  "cancelled",
+  "done",
 ];
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";
-export const LINK_PLACEHOLDER = "your custom link";
+export const LINK_PLACEHOLDER = "custom link";
 
 export const defaults = {
   size: 3,

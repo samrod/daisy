@@ -13,14 +13,14 @@ export const Slider = ({ name, label, value, ...props }: SliderProps) => {
   const { onMouseUp, onChange } = props;
 
   const onFocus = () => {
-    sendMessage({ action: "setActiveSetting", params: name }, undefined, window.location.href);
+    sendMessage({ action: "setActiveSetting", params: name });
   };
 
   const onBlur = e => {
     e.target.blur();
     (window.opener || window.parent).focus();
     onMouseUp && onMouseUp.call(this, e);
-    sendMessage({ action: "setActiveSetting", params: "" }, undefined, window.location.href);
+    sendMessage({ action: "setActiveSetting", params: "" });
   };
 
   return (

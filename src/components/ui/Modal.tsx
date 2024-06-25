@@ -4,6 +4,7 @@ import { noop } from "lodash";
 import Styles from "./Modal.module.scss";
 import { ReactElement, useEffect, useState } from "react";
 import { Button, Row } from "../";
+import { bindEvent, unbindEvent } from "../../lib/utils";
 
 interface ModalProps {
   children?: ReactElement;
@@ -38,7 +39,18 @@ const Modal = ({
 
   const kill = () => {
     setExists(active);
-  }
+  };
+
+  const onKeydown = ({ key }: KeyboardEvent) => {
+    switch (key) {
+      case "Escape":
+        cancel.action();
+        break;
+      case "Enter":
+        accept.action();
+        break;
+    }
+  };
 
   useEffect(() => {
     if (!active) {
@@ -51,6 +63,17 @@ const Modal = ({
       setTimeout(show, 100);
     }
   }, [active]);
+
+  useEffect(() => {
+    if (cancel.action) {
+      bindEvent({ event: "keydown", element: window, handler: onKeydown });
+    }
+    return () => {
+      unbindEvent({ event: "keydown", element: window, handler: onKeydown });
+    };
+}, [cancel.action]);
+
+  useEffect(window.focus);
 
   if (!exists) {
     return null;

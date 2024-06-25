@@ -13,7 +13,7 @@ import Styles from "./Guide.module.scss";
 
 const Guide = () => {
   const State = useGuideState(state => state);
-  const { setStatus, } = useClientState(state => state);
+  const { setStatus, setUsername, } = useClientState(state => state);
   const { userMode, setActiveSetting, clientLink, setClientLink, clientStatus, setClientStatus, clientName, setClientName } = State;
   
   const [hidden, setHidden] = useState(true);
@@ -25,6 +25,7 @@ const Guide = () => {
   const toolbarTimer = useRef<NodeJS.Timeout | number>();
   const toolbar = useRef<HTMLIFrameElement>();
   const bindList = useRef<BindParams[]>();
+  const clientLinkRef = useRef(clientLink);
   
   const setToolbarBusy = () => {
     toolbarBusy.current = true;
@@ -76,24 +77,25 @@ const Guide = () => {
     setClientName(username);
   };
 
-  const onDenyClientRequest = () => {
+  const onDenyClientRequest = useCallback(() => {
     setStatus(4, clientLink);
-  };
+  }, [clientLink]);
 
-  const onAcceptClientRequest = () => {
+  const onAcceptClientRequest = useCallback(() => {
     setStatus(3, clientLink);
-  };
+  }, [clientLink]);
 
   const onCancelEndSessionModal = () => {
     setModalActive(false);
   };
 
-  const onEndClientSession = () => {
-    setStatus(1, clientLink);
-    setModalActive(true);
-  };
+  const onEndClientSession = useCallback(() => {
+    setStatus(5, clientLinkRef.current);
+    setUsername("");
+    setModalActive(false);
+  }, []);
 
-  const showEndSessionModal = () => {
+  const showEndSessionModal = useCallback(() => {
     setModalActive(true);
     setModal({
       title: `End ${clientName}'s session`,
@@ -107,11 +109,9 @@ const Guide = () => {
         action: onEndClientSession,
       },
     });
-  };
+  }, [clientLink, clientName, onEndClientSession, onCancelEndSessionModal]);
 
-  useEffect(() => {
-    setHidden(false);
-    setModalActive(clientStatus === 2);
+  const showJoinRequestModal = () => {
     setModal({
       title: `Request from ${clientName}`,
       body: `Allow ${clientName} to join this session?`,
@@ -124,9 +124,16 @@ const Guide = () => {
         action: onAcceptClientRequest,
       },
     });
-  }, [clientStatus]);
+  };
 
   useEffect(() => {
+    setHidden(false);
+    setModalActive(clientStatus === 2);
+    showJoinRequestModal();
+  }, [clientStatus, clientName]);
+
+  useEffect(() => {
+    clientLinkRef.current = clientLink;
     if (!isEmpty(clientLink)) {
       getClientData("", setClientStates);
     }
@@ -134,7 +141,7 @@ const Guide = () => {
 
   useEffect(() => {
     bindEvents();
-    getUserData("clientLink",setClientLink);
+    getUserData("clientLink", setClientLink);
     return unbindEvents;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -2,7 +2,7 @@ import { useState, useCallback, FormEvent } from 'react'
 
 import { useAuth } from '../../context/AuthContext';
 import { getAuth, updateEmail, createUpdateEmail as updateEmailFB } from "../../lib/guideStore";
-import { Alert, Button, Row, TextGroup } from '../../components';
+import { Alert, Button, Col, Row, TextGroup } from '../../components';
 import Styles from "./UserPanel.module.scss";
 
 export const Email = () => {
@@ -32,25 +32,23 @@ export const Email = () => {
   }, [currentUser, email]);
 
   return (
-    <>
+    <Col cols={4} as="form" justify="start" klass={Styles.form} onSubmit={handleSubmit}>
       <h3 className="text-center">Update Your Email Address</h3>
-      <form className={Styles.form} onSubmit={handleSubmit}>
-        <Alert>{error}</Alert>
-        <TextGroup
-          label="Email"
-          textProps={{
-            setValid: setValidEmail,
-            type: "email",
-            error: !validEmail,
-            onChange: onChangeEmail,
-            defaultValue: currentUser?.email,
-          }}
-        />
-        <Row justify="stretch">
-          <Button onClick={logout} variant="success">LOGOUT</Button>
-          <Button disabled={loading || !validEmail} type="submit">UPDATE</Button>
-        </Row>
-      </form>
-    </>
+      <Alert>{error}</Alert>
+      <TextGroup
+        label="Email"
+        textProps={{
+          setValid: setValidEmail,
+          type: "email",
+          error: !validEmail,
+          onChange: onChangeEmail,
+          defaultValue: currentUser?.email,
+        }}
+      />
+      <Row>
+        <Button onClick={logout} variant="success">LOGOUT</Button>
+        <Button disabled={loading || !validEmail} type="submit">UPDATE</Button>
+      </Row>
+    </Col>
   )
 };

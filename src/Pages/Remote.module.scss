@@ -37,8 +37,7 @@
 }
 
 .statusDisplay {
-  position: absolute;
-  top: -11px;
+  @apply absolute -top-[14px] h-[24px] rounded-r overflow-hidden;
   background: #aeaeae;
 }
 

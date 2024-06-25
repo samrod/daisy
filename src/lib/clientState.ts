@@ -21,7 +21,11 @@ type ClientStateTypes = {
 };
 
 const currentLinkExists = async () => {
-  const { params: { clientLink }} = matchPath({ path: "/:clientLink" }, window.location.pathname);
+  const match = matchPath({ path: "/:clientLink" }, window.location.pathname);
+  if (!match) {
+    return;
+  }
+  const { params: { clientLink }} = match;
   const response = await readPropValue("clientLinks", clientLink);
   if (response) {
     return { clientLink, ...response as object};
@@ -39,12 +43,10 @@ export const useClientState = create<ClientStateTypes>((set) => ({
     const validLink = clientLink ? { clientLink} : await currentLinkExists();
 
     update(set, (state) => {
-      if (!isEmpty(state.clientLink) || validLink.clientLink) {
-        // const { clientLink } = validLink;
+      if (!isEmpty(state?.clientLink) || validLink?.clientLink) {
         state.status = status;
         state.trigger = "setStatus";
         updateClientData("status", status);
-        // updateData(`clientLinks/${clientLink}/status`, status);
       }
     })
   },
@@ -67,7 +69,7 @@ export const useClientState = create<ClientStateTypes>((set) => ({
     update(set, (State) => {
       State.username = name;
       State.trigger = "setUsernae";
-      updateData(`clientLinks/${State.clientLink}/username`, name);
+      updateClientData("username", name);
     })
   }
 }));

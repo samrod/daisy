@@ -1,4 +1,4 @@
-import { DataType, db, deletePropValue, getData, pushData, readPropValue, updateData } from "./firebase";
+import { DataType, deletePropValue, getData, pushData, readPropValue, updateData } from "./firebase";
 import { DEFAULT_PRESET_NAME, defaults } from "./constants";
 import { useGuideState } from "./guideState";
 import { useClientState } from "./clientState";
