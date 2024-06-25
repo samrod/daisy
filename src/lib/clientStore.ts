@@ -1,8 +1,5 @@
 import { isEmpty } from "lodash";
-
-import { getData, updateData } from "./firebase";
-import { useGuideState } from "./guideState";
-import { useClientState } from "./clientState";
+import { getData, updateData, useGuideState, useClientState } from ".";
 
 const getState = (key: string) => {
   const guideState = useGuideState.getState();

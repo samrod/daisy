@@ -1,10 +1,5 @@
 import { create } from "zustand";
-
-import { User } from '../lib/firebase';
-import { defaults, limits } from "./constants";
-import { updateUser } from "./guideStore";
-import { update } from "./utils";
-import { consoleLog, objDiff } from "./logging";
+import { User, defaults, limits, updateUser, update, consoleLog, objDiff } from ".";
 
 const { volume, speed } = limits;
 

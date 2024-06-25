@@ -1,10 +1,8 @@
-import { useState, useCallback, FormEvent, useEffect, useRef } from 'react'
-import { isEmpty } from 'lodash';
+import { useState, useCallback, FormEvent, useEffect, useRef } from "react"
+import { isEmpty } from "lodash";
 
-import { getUserData, updateClientLink } from '../../lib/guideStore';
-import { LINK_PLACEHOLDER } from '../../lib/constants';
-import { Alert, Button, Col, TextGroup } from '../../components';
-import { propExists } from '../../lib/firebase';
+import { LINK_PLACEHOLDER, getUserData, updateClientLink, propExists } from "../../lib";
+import { Alert, Button, Col, TextGroup } from "../../components";
 
 export const Link = () => {
   const [clientLink, setClientLink] = useState("");

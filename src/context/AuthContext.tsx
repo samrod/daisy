@@ -1,11 +1,14 @@
 import { Dispatch, createContext, useContext, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 
-import { User, auth } from '../lib/firebase';
-import { useGuideState } from "../lib/guideState";
-import { getUserData, bindAllSettingsToValues } from "../lib/guideStore";
-import { useAuthHandlers } from '../lib/authHandlers';
-import { getClientData } from '../lib/clientStore';
+import {
+  User,
+  auth,
+  useGuideState,
+  getUserData,
+  bindAllSettingsToValues,
+  useAuthHandlers,
+} from '../lib';
 
 const AuthContext = createContext({});
 

@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { isEmpty } from "lodash";
+import { useGuideState } from ".";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
@@ -65,6 +66,20 @@ export const pushData = async(path: string, value: DataType) => {
   const loginListRef = ref(db, path);
   const newLoginRef = push(loginListRef)
   await set(newLoginRef, value);
+};
+
+const updateSettingFromFirebase = (key: string) => (val) => {
+  const { setSetting } = useGuideState.getState();
+   setSetting(key, val);
+};
+
+const bindSettingToValue = (activePreset: string, key: string) => {
+  getData({ path: `presets/${activePreset}`, key, callback: updateSettingFromFirebase(key) })
+};
+
+export const bindAllSettingsToValues = () => {
+  const { activePreset, settings } = useGuideState.getState();
+  Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
 
 

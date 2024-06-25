@@ -2,14 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import cn from "classnames";
 
-import { bindAllSettingsToValues } from "../lib/guideStore";
-import { useClientState } from '../lib/clientState';
-import { useGuideState } from "../lib/guideState";
+import {
+  bindAllSettingsToValues,
+  useClientState,
+  useGuideState,
+  getClientData,
+  bindEvent
+} from "../lib";
 import { Alert, Button, Display, Row, Textfield } from "../components";
-import { bindEvent } from '../lib/utils';
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
-import { getClientData } from '../lib/clientStore';
 
 const Guide = () => {
   const { preset, clientLink, setClientLink, status, setStatus, username, setUsername } = useClientState(state => state);
@@ -155,18 +157,18 @@ const Guide = () => {
             name="username"
           />
         </div>
-          <Row justify="between" klass={cn("step4 slider", { slideIn })}>
-            {status === 2 && (
-              <Button variant="success" value="Cancel" onClick={onCancel} />
-            )}
-            <Button
-              type="submit"
-              value={cta}
-              onClick={onSubmit}
-              disabled={isEmpty(nickname)}
-              stretch={status!==2}
-              loading={status===2}
-            />
+        <Row justify="between" klass={cn("step4 slider", { slideIn })}>
+          {status === 2 && (
+            <Button variant="success" value="Cancel" onClick={onCancel} />
+          )}
+          <Button
+            type="submit"
+            value={cta}
+            onClick={onSubmit}
+            disabled={isEmpty(nickname)}
+            stretch={status!==2}
+            loading={status===2}
+          />
         </Row>
       </form>
     </div>

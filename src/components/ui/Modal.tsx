@@ -4,7 +4,7 @@ import { noop } from "lodash";
 import Styles from "./Modal.module.scss";
 import { ReactElement, useEffect, useState } from "react";
 import { Button, Row } from "../";
-import { bindEvent, unbindEvent } from "../../lib/utils";
+import { bindEvent, unbindEvent } from "../../lib";
 
 interface ModalProps {
   children?: ReactElement;

@@ -46,14 +46,12 @@ export const objDiff = (obj1, obj2) => {
     const value1 = obj1[key];
     const value2 = obj2[key];
 
-    // If both values are objects, do a deep comparison
     if (typeof value1 === 'object' && value1 !== null && typeof value2 === 'object' && value2 !== null) {
       const nestedDiff = objDiff(value1, value2);
       if (Object.keys(nestedDiff).length > 0) {
         diff[key] = nestedDiff;
       }
     } else {
-      // If values are different, add to diff
       if (value1 !== value2) {
         diff[key] = `${value1} => ${value2}`;
       }

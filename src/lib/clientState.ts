@@ -2,10 +2,7 @@ import { matchPath } from 'react-router';
 import { isEmpty } from "lodash";
 import { create } from "zustand";
 
-import { readPropValue, updateData } from "./firebase";
-import { update } from "./utils";
-import { updateClientData } from './clientStore';
-import { consoleLog, objDiff } from './logging';
+import { update, readPropValue, updateClientData, consoleLog, objDiff } from ".";
 
 type ClientStateTypes = {
   status: number;

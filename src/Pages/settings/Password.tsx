@@ -1,8 +1,8 @@
-import { useState, useCallback, FormEvent } from 'react'
+import { useState, useCallback, FormEvent } from "react"
 
-import { Alert, Button, TextGroup, Row, Col } from '../../components';
-import { getAuth, updatePassword } from '../../lib/guideStore';
-import { useAuth } from '../../context/AuthContext';
+import { getAuth, updatePassword } from "../../lib";
+import { Alert, Button, TextGroup, Row, Col } from "../../components";
+import { useAuth } from "../../context/AuthContext";
 import Styles from "./UserPanel.module.scss";
 
 export const Password = () => {
@@ -10,7 +10,7 @@ export const Password = () => {
   const { currentUser } = getAuth();
   const [password, setPassword] = useState(currentUser?.password);
   const [confirm, setConfirm] = useState(currentUser?.password);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { onChangePassword, onChangeConfirm } = getFormHandlers({ setPassword, setConfirm });

@@ -1,8 +1,6 @@
 import { DataType, deletePropValue, getData, pushData, readPropValue, updateData } from "./firebase";
-import { DEFAULT_PRESET_NAME, defaults } from "./constants";
-import { useGuideState } from "./guideState";
-import { useClientState } from "./clientState";
-
+import { DEFAULT_PRESET_NAME, defaults, useGuideState, useClientState } from ".";
+// moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
 
 interface CreatePreset {
@@ -17,20 +15,6 @@ export const getUserData = (key: string, callback) => {
   }
   const path = `/users/${uid}`;
   return getData({ path, key, callback });
-};
-
-const updateSettingFromFirebase = (key: string) => (val) => {
-  const { setSetting } = useGuideState.getState();
-   setSetting(key, val);
-};
-
-const bindSettingToValue = (activePreset: string, key: string) => {
-  getData({ path: `presets/${activePreset}`, key, callback: updateSettingFromFirebase(key) })
-};
-
-export const bindAllSettingsToValues = () => {
-  const { activePreset, settings } = useGuideState.getState();
-  Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
 
 export const userPropExists = async (key: string) => {

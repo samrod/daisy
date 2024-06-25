@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom";
-
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from "../../context/AuthContext";
 import Layout from "./Layout";
-import { Alert, Button, Row, TextGroup } from '../../components';
+import { Alert, Button, Row, TextGroup } from "../../components";
 
 export default function Signup() {
   const { signup, getFormHandlers } = useAuth();

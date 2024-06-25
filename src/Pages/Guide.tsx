@@ -2,13 +2,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import { isEmpty } from 'lodash';
 
+import {
+  limits,
+  bindEvent,
+  receiveMessage,
+  setKeys,
+  unbindEvent,
+  useGuideState,
+  useClientState,
+  getUserData,
+  getClientData,
+} from "../lib";
 import { defaultModalState, Display, Modal } from "../components";
-import { limits } from '../lib/constants';
-import { bindEvent, receiveMessage, setKeys, unbindEvent } from '../lib/utils';
-import { useGuideState } from "../lib/guideState";
-import { useClientState } from "../lib/clientState";
-import { getUserData } from '../lib/guideStore';
-import { getClientData } from '../lib/clientStore';
 import Styles from "./Guide.module.scss";
 
 const Guide = () => {
