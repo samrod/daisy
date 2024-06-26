@@ -1,7 +1,7 @@
 @import "../../lib/variables.scss";
 
 .modal {
-  @apply flex flex-col absolute border-black rounded-md backdrop-blur-md opacity-0;
+  @apply flex flex-col absolute border-black rounded-md backdrop-blur-md opacity-0 z-10;
   background-color: transparentize($palette-grey-light, .125);
   box-shadow:
     -1px -1px 0 transparentize(white, .25),

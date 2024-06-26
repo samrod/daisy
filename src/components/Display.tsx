@@ -3,15 +3,21 @@ import { noop } from "lodash";
 import cn from "classnames";
 import CSS from "csstype";
 
-import { bindEvent, generateSound, setKeys, unbindEvent } from "../lib/utils";
-import { limits } from "../lib/constants";
-import { useGuideState } from "../lib/guideState";
+import {
+  bindEvent,
+  generateSound,
+  setKeys,
+  unbindEvent,
+  limits,
+  useGuideState
+} from "../lib";
 import Styles from "./Display.module.scss";
 
 export const Display = ({ children = null }) => {
   const State = useGuideState(state => state);
-  const { settings, motionBarActive, activeSetting } = State;
-  const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settings;
+  const { motionBarActive, activeSetting } = State;
+  const settingsRef = useRef(useGuideState.getState().settings);
+  const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current;
 
   const [odd, setOdd] = useState(true);
 
@@ -213,6 +219,7 @@ export const Display = ({ children = null }) => {
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
     bindEvents();
     initialized.current = true;
+    useGuideState.subscribe(state => (settingsRef.current = state.settings));
     return unbindEvents;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -103,13 +103,6 @@
   margin: 0 10px;
 }
 
-:global(.row) {
-  display: flex;
-  flex: 1;
-  justify-content: space-between;
-  margin: 5px 0px;
-}
-
 .shapes {
   display: flex;
   flex-direction: column;
@@ -133,7 +126,7 @@
 
 
 .sliders {
-  @apply flex flex-wrap items-center justify-between text-xs;
+  @apply flex-wrap items-center justify-between text-xs;
   flex: 5;
   label {
     @apply text-sm flex-nowrap font-bold mb-3;

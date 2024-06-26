@@ -2,18 +2,23 @@ import { useCallback, useEffect, useState, ChangeEvent, useRef } from "react";
 import { isEmpty } from "lodash";
 import cn from "classnames";
 
-import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../components";
+import {
+  bindEvent,
+  unbindEvent,
+  setKeys,
+  CLIENT_STATES,
+  updateSetting,
+  getClientData,
+  useGuideState
+} from "../lib";
+import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus, Col } from "../components";
 import { UserPanel } from "./settings";
-import { bindEvent, unbindEvent, setKeys } from "../lib/utils";
-import { CLIENT_STATES } from "../lib/constants";
-import { updateSetting } from "../lib/guideStore";
-import { getClientData } from "../lib/clientStore";
-import { useGuideState } from "../lib/guideState";
 import Styles from "./Remote.module.scss";
 
 const Remote = () => {
-  const { clientStatus, setClientStatus, clientLink, settings, setSetting, userMode, setUserMode } = useGuideState(state => state);
-  const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settings;
+  const { clientStatus, setClientStatus, clientLink, setSetting, userMode, setUserMode } = useGuideState(state => state);
+  const settingsRef = useRef(useGuideState.getState().settings);
+  const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settingsRef.current;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
   const localState = {
     speed: setSpeedSliderValue,
@@ -34,17 +39,17 @@ const Remote = () => {
   }, [playing, setSetting]);
 
   const showLightbarSlider = () => {
-    const { steps, wave } = settings;
+    const { steps, wave } = settingsRef.current;
     return steps > 1 && !Number(wave);
   };
 
   const showWaveSlider = () => {
-    const { lightbar } = settings;
+    const { lightbar } = settingsRef.current;
     return !Number(lightbar);
   };
 
   const showAudioSliders = () => {
-    const { volume } = settings;
+    const { volume } = settingsRef.current;
     return !!Number(volume);
   };
 
@@ -129,6 +134,7 @@ const Remote = () => {
       return;
     }
     bindEvents();
+    useGuideState.subscribe(state => (settingsRef.current = state.settings));
     return unbindEvents;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -154,46 +160,40 @@ const Remote = () => {
             size="small"
           />
 
-          <Tabs.Panel active={panel} title="motion">
-            <div className={Styles.sliders}>
-              <div className="row">
-                <Slider
-                  name="speed"
-                  value={speedSliderValue}
-                  onChange={onSpeedSliderChange}
-                  onMouseDown={onSpeedSliderMouseDown}
-                  onMouseUp={onSpeedSliderMouseUp}
-                  onMouseMove={onSpeedSliderMove}
-                />
-                {showWaveSlider() &&
-                  <Slider name="wave" value={wave} onChange={setValue} />
-                }
-                <Slider name="angle" value={angle} onChange={setValue} />
-                <Slider name="length" value={length} onChange={setValue} />
-              </div>
-            </div>
+          <Tabs.Panel active={panel} title="motion" klass={`${Styles.sliders} mx-1 content-center`}>
+            <Slider
+              name="speed"
+              value={speedSliderValue}
+              onChange={onSpeedSliderChange}
+              onMouseDown={onSpeedSliderMouseDown}
+              onMouseUp={onSpeedSliderMouseUp}
+              onMouseMove={onSpeedSliderMove}
+            />
+            {showWaveSlider() &&
+              <Slider name="wave" value={wave} onChange={setValue} />
+            }
+            <Slider name="angle" value={angle} onChange={setValue} />
+            <Slider name="length" value={length} onChange={setValue} />
           </Tabs.Panel>
 
           <Tabs.Panel active={panel} title="appearance">
-            <div className={Styles.swatches}>
-              <div className="row">
+            <Row cols={1} justify="between" klass="mr-2">
+              <Row nowrap>
                 {['white', 'red', 'orange', 'yellow'].map(Swatch.bind(null, setValue))}
-              </div>
-              <div className="row">
+              </Row>
+              <Row nowrap>
                 {['green', 'cyan', 'blue', 'magenta'].map(Swatch.bind(null, setValue))}
-              </div>
-            </div>
-            <div className={Styles.sliders}>
-              <div className="row">
-                <Slider name="steps" value={steps} onChange={setValue} />
-                {showLightbarSlider() &&
-                  <Slider name="lightbar" value={lightbar} onChange={setValue} />
-                }
-                <Slider name="background" value={background} onChange={setValue} />
-                <Slider name="opacity" value={opacity} onChange={setValue} />
-                <Slider name="size" value={size} onChange={setValue} />
-              </div>
-            </div>
+              </Row>
+            </Row>
+            <Row klass={Styles.sliders} gap={0}>
+              <Slider name="steps" value={steps} onChange={setValue} />
+              {showLightbarSlider() &&
+                <Slider name="lightbar" value={lightbar} onChange={setValue} />
+              }
+              <Slider name="background" value={background} onChange={setValue} />
+              <Slider name="opacity" value={opacity} onChange={setValue} />
+              <Slider name="size" value={size} onChange={setValue} />
+            </Row>
             <div className={Styles.shapes}>
               <div className={Styles.shape} data-action="shape" data-option="circle" onClick={setValue}>&#9679;</div>
               <div className={Styles.shape} data-action="shape" data-option="square" onClick={setValue}>&#9632;</div>
@@ -201,15 +201,13 @@ const Remote = () => {
             </div>
           </Tabs.Panel>
 
-          <Tabs.Panel active={panel} title="sound">
-            <div className={Styles.sliders}>
-              <div className="row">
-                <Slider name="volume" value={volume} onChange={setValue} />
-                {showAudioSliders() &&
-                  <Slider name="pitch" value={pitch} onChange={setValue} />
-                }
-              </div>
-            </div>
+          <Tabs.Panel active={panel} title="sound" klass={Styles.sliders}>
+            <Row>
+              <Slider name="volume" value={volume} onChange={setValue} />
+              {showAudioSliders() &&
+                <Slider name="pitch" value={pitch} onChange={setValue} />
+              }
+            </Row>
           </Tabs.Panel>
 
         </Tabs.Panels>

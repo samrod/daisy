@@ -1,4 +1,5 @@
 import { produce } from 'immer';
+import { noop } from 'lodash';
 import { useGuideState, togglePlay, defaults, User } from ".";
 declare global {
   interface Window {
@@ -91,6 +92,18 @@ type UpdateTypes = {
 export const update = (set, func: (state: UpdateTypes) => void) => set(produce(func));
 
 let AudioCtx = undefined;
+
+export const enterFullscreen = () => {
+  document.documentElement
+    .requestFullscreen({ navigationUI: "hide" })
+    .catch(noop);
+};
+
+export const exitFullscreen = () => {
+  if (document.fullscreenEnabled) {
+    document.exitFullscreen().catch(noop);
+  }
+};
 
 export const generateSound = ({ panX = 0, pitch, gain, duration }) => {
   if (!AudioCtx) {

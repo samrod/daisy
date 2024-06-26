@@ -2,7 +2,7 @@ import cn from "classnames";
 import { noop } from "lodash";
 
 import Styles from "./Modal.module.scss";
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useCallback, useEffect, useState } from "react";
 import { Button, Row } from "../";
 import { bindEvent, unbindEvent } from "../../lib";
 
@@ -33,15 +33,15 @@ const Modal = ({
   const [_invisible, setInvisible] = useState(false);
   const [exists, setExists] = useState(false);
 
-  const show = () => {
+  const show = useCallback(() => {
     setVisible(active);
-  };
+  }, [active]);
 
-  const kill = () => {
+  const kill = useCallback(() => {
     setExists(active);
-  };
+  }, [active]);
 
-  const onKeydown = ({ key }: KeyboardEvent) => {
+  const onKeydown = useCallback(({ key }: KeyboardEvent) => {
     switch (key) {
       case "Escape":
         cancel.action();
@@ -50,7 +50,7 @@ const Modal = ({
         accept.action();
         break;
     }
-  };
+  }, [cancel, accept]);
 
   useEffect(() => {
     if (!active) {
@@ -62,18 +62,21 @@ const Modal = ({
       setInvisible(false);
       setTimeout(show, 100);
     }
-  }, [active]);
+  }, [active, kill, show]);
 
   useEffect(() => {
+    if (!cancel) {
+      return;
+    }
     if (cancel.action) {
       bindEvent({ event: "keydown", element: window, handler: onKeydown });
     }
     return () => {
       unbindEvent({ event: "keydown", element: window, handler: onKeydown });
     };
-}, [cancel.action]);
+}, [cancel, onKeydown]);
 
-  useEffect(window.focus);
+  useEffect(() => window.focus(), []);
 
   if (!exists) {
     return null;
@@ -96,7 +99,7 @@ const Modal = ({
         </Modal.Body>
         <Modal.Foot>
           <Row justify="between">
-            <Button value={cancel.text} onClick={cancel.action} />
+            {cancel && <Button value={cancel.text} onClick={cancel.action} />}
             <Button value={accept.text} variant="success" onClick={accept.action} />
           </Row>
         </Modal.Foot>
@@ -139,4 +142,13 @@ const defaultModalState = {
   },
 };
 
-export { Modal, defaultModalState };
+const singleButtonModalState = {
+  title: "",
+  body: "",
+  accept: {
+    text: "",
+    action: noop,
+  },
+};
+
+export { Modal, defaultModalState, singleButtonModalState };

@@ -5,6 +5,7 @@ export const CLIENT_STATES = [
   "authorized",
   "denied",
   "done",
+  "cancelled",
 ];
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";
