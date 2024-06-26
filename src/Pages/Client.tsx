@@ -13,18 +13,16 @@ import { Alert, Button, Display, Row, Textfield } from "../components";
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
 
-const Guide = () => {
-  const { preset, clientLink, setClientLink, status, setStatus, username, setUsername } = useClientState(state => state);
-  const { setActivePreset } = useGuideState(state => state);
-  const bindList = useRef<BindParams[]>();
-  const resetTimer = useRef<ReturnType<typeof setTimeout>>();
+const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
+  const { status, setStatus, username, setUsername } = useClientState(state => state);
 
   const [cta, setCta] = useState("Join");
-  const [slideIn, setSlideIn] = useState(false);
   const [nickname, setNickname] = useState(username)
-  const [authorized, setAuthorized] = useState(false);
   const [message, setMessage] = useState<string | null>();
   const [alertVariant, setAlertVariant] = useState("standard");
+
+  const bindList = useRef<BindParams[]>();
+  const resetTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const onCancel = useCallback((e) => {
     e.preventDefault();
@@ -41,24 +39,18 @@ const Guide = () => {
     setNickname(target.value);
   }, []);
 
-  const findGuide = useCallback(async () => {
-    bindAllSettingsToValues();
-    if (!status) {
-      setStatus(1);
-    }
-  }, [status, setStatus]);
-
-  const exit = useCallback(() => {
-    setStatus(0);
-  }, []);
-
-  const reset = (delay: number = 0) => {
+  const reset = useCallback((delay: number = 0) => {
     clearTimeout(resetTimer.current);
     resetTimer.current = setTimeout(() => {
       setStatus(1);
       setMessage(null);
     }, delay);
-  };
+  }, [setStatus]);
+
+  const exit = useCallback(() => {
+    setStatus(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateCta = useCallback(() => {
     switch (status) {
@@ -93,7 +85,7 @@ const Guide = () => {
         setCta("Join");
         reset(30000);
     }
-  }, [status]);
+  }, [status, reset, setAuthorized]);
 
   const bindEvents = useCallback(() => {
     bindList.current = [
@@ -102,42 +94,20 @@ const Guide = () => {
     ];
 
     bindList.current.forEach(bindEvent);
-  }, [setStatus, exit]);
+  }, [exit]);
 
   useEffect(() => {
     updateCta();
-  }, [status]);
+  }, [status, updateCta]);
 
   useEffect(() => {
-    if (!isEmpty(preset)) {
-      setActivePreset(preset);
-      findGuide();
-    }
-  }, [findGuide, preset, setActivePreset]);
-
-  useEffect(() => {
-    if (!isEmpty(clientLink)) {
-      getClientData("status", setStatus);
-    }
-  }, [clientLink]);
-
-  useEffect(() => {
-    setClientLink();
     bindEvents();
-    setSlideIn(true);
+    onReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (authorized) {
-    return (
-      <Display />
-    );
-  }
   return (
-    <div className={Styles.page}>
-      <div className={cn("step1 slider", { slideIn })}>
-        <Logo className={Styles.logo} />
-      </div>
+    <>
       <div className={cn("step2 slider", { slideIn })}>
         <h2>Welcome</h2>
       </div>
@@ -171,6 +141,80 @@ const Guide = () => {
           />
         </Row>
       </form>
+    </>
+  );
+}
+
+const LinkMissing = ({ slideIn, onReady }) => {
+  useEffect(() => {
+    setTimeout(onReady.bind(null, true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <>
+      <div className={cn("step2 slider", { slideIn })}>
+        <h2>This page is not available</h2>
+      </div>
+      <Row className={cn("step3 slider", { slideIn })}>
+        <h5>Check with your guide for the right link.</h5>
+      </Row>
+    </>
+  )
+}
+
+const Guide = () => {
+  const { preset, clientLink, setClientLink, status, setStatus } = useClientState(state => state);
+  const { setActivePreset } = useGuideState(state => state);
+
+  const [clientLinkAvailable, setClientLinkAvailable] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
+  const [slideIn, setSlideIn] = useState(false);
+
+  const findGuide = useCallback(async () => {
+    bindAllSettingsToValues();
+    if (!status) {
+      setStatus(1);
+    }
+  }, [status, setStatus]);
+
+  useEffect(() => {
+    if (preset === null) {
+      return;
+    }
+    if (!isEmpty(preset)) {
+      setClientLinkAvailable("available");
+      setActivePreset(preset);
+      findGuide();
+    } else {
+      setTimeout(setClientLinkAvailable.bind(null, "unavailable"));
+    }
+  }, [findGuide, preset, setActivePreset]);
+
+  useEffect(() => {
+    if (!clientLinkAvailable) {
+      getClientData("status", setStatus);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientLink]);
+
+  useEffect(() => {
+    setClientLink();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (authorized) {
+    return (
+      <Display />
+    );
+  }
+  return (
+    <div className={Styles.page}>
+      <div className={cn("step1 slider", { slideIn })}>
+        <Logo className={Styles.logo} />
+      </div>
+      {clientLinkAvailable === "available" && <ClientLogin slideIn={slideIn} onReady={setSlideIn} setAuthorized={setAuthorized} />}
+      {clientLinkAvailable === "unavailable" && <LinkMissing slideIn={slideIn} onReady={setSlideIn} />}
     </div>
   );
 };

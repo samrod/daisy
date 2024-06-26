@@ -6,7 +6,7 @@ import { update, readPropValue, updateClientData, consoleLog, objDiff } from "."
 
 type ClientStateTypes = {
   status: number;
-  preset: string;
+  preset?: string;
   clientLink: string;
   username: string;
   trigger: null | string;
@@ -31,7 +31,7 @@ const currentLinkExists = async () => {
 
 export const useClientState = create<ClientStateTypes>((set) => ({
   status: 0,
-  preset: "",
+  preset: null,
   clientLink: "",
   username: "",
   trigger: null,
@@ -59,6 +59,8 @@ export const useClientState = create<ClientStateTypes>((set) => ({
         State.clientLink = clientLink;
         State.preset = preset;
         State.trigger = "setClientLink";
+      } else {
+        State.preset = "";
       }
     });
   },
