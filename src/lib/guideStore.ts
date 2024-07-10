@@ -1,5 +1,5 @@
-import { DataType, deletePropValue, getData, pushData, readPropValue, updateData } from "./firebase";
-import { DEFAULT_PRESET_NAME, defaults, useGuideState, useClientState } from ".";
+import { DataType, User, getData, pushData, readPropValue, updateData } from "./firebase";
+import { DEFAULT_PRESET_NAME, defaults, useGuideState, uuid, DB_GUIDES, DB_PRESETS, updateClientLink } from ".";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
 
@@ -13,19 +13,19 @@ export const getUserData = (key: string, callback) => {
   if (!uid) {
     return;
   }
-  const path = `/users/${uid}`;
+  const path = `/${DB_GUIDES}/${uid}`;
   return getData({ path, key, callback });
 };
 
 export const userPropExists = async (key: string) => {
   const { user: { uid } } = useGuideState.getState();
-  const response = await readPropValue(`users/${uid}/`, key);
+  const response = await readPropValue(`${DB_GUIDES}/${uid}/`, key);
   return typeof response !== "undefined" ? response : false;
 };
 
 export const updateUser = async (key: string, value: DataType) => {
   const { user } = useGuideState.getState();
-  await updateData(`users/${user.uid}/${key}`, value);
+  await updateData(`${DB_GUIDES}/${user.uid}/${key}`, value);
 };
 
 export const createUser = async (user: User) => {
@@ -39,11 +39,11 @@ export const createUser = async (user: User) => {
 };
 
 export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
-  const presetId = crypto.randomUUID();
+  const presetId = uuid();
 
   await updateUser("activePreset", presetId);
-  await updateUser(`presets/${presetId}`, name);
-  await updateData(`presets/${presetId}`, settings);
+  await updateUser(`${DB_PRESETS}/${presetId}`, name);
+  await updateData(`${DB_PRESETS}/${presetId}`, settings);
 };
 
 export const createUpdateEmail = async (user: User, newEmail?: string) => {
@@ -51,33 +51,17 @@ export const createUpdateEmail = async (user: User, newEmail?: string) => {
 };
 
 export const captureLogin = async ({ user }) => {
-  const { uid, metadata: { lastSignInTime } } = user;
-  await pushData(`users/${uid}/logins`, lastSignInTime);
-};
-
-export const updateClientLink = async (clientLink: string) => {
-  const { setClientLink, activePreset: preset } = useGuideState.getState();
-  const { setPreset } = useClientState.getState();
-  const oldClientLink = await userPropExists("clientLink");
-  deletePropValue("clientLinks", oldClientLink as string);
-  setClientLink(clientLink);
-  setPreset(preset);
-  updateUser("clientLink", clientLink);
-  updateData("clientLinks", {
-    [clientLink]: {
-      status: 0,
-      preset,
-    },
-  });
+  const { metadata: { lastSignInTime }} = user;
+  await pushGuideData("logins", lastSignInTime);
 };
 
 export const updateSetting = async (setting: string, value: DataType) => {
   const { activePreset } = useGuideState.getState();
   if (!activePreset) {
-    await updateData(`presets/${setting}`, value);
+    await updateData(`${DB_PRESETS}/${setting}`, value);
     return;
   }
-  await updateData(`presets/${activePreset}/${setting}`, value);
+  await updateData(`${DB_PRESETS}/${activePreset}/${setting}`, value);
 };
 
 export const togglePlay = () => {
@@ -85,3 +69,7 @@ export const togglePlay = () => {
   updateSetting("playing", !playing);
 };
 
+export const pushGuideData = async (key: string, value: string | number | {}) => {
+  const { user: { uid } } = useGuideState.getState();
+  await pushData(`${DB_GUIDES}/${uid}/${key}`, value);
+};

@@ -4,7 +4,7 @@ import { noop } from "lodash";
 import Styles from "./Modal.module.scss";
 import { ReactElement, useCallback, useEffect, useState } from "react";
 import { Button, Row } from "../";
-import { bindEvent, unbindEvent } from "../../lib";
+import { useEventBinder } from "../../lib";
 
 interface ModalProps {
   children?: ReactElement;
@@ -64,19 +64,7 @@ const Modal = ({
     }
   }, [active, kill, show]);
 
-  useEffect(() => {
-    if (!cancel) {
-      return;
-    }
-    if (cancel.action) {
-      bindEvent({ event: "keydown", element: window, handler: onKeydown });
-    }
-    return () => {
-      unbindEvent({ event: "keydown", element: window, handler: onKeydown });
-    };
-}, [cancel, onKeydown]);
-
-  useEffect(() => window.focus(), []);
+  useEventBinder([{ event: "keydown", element: window, handler: onKeydown }], [cancel.action, onKeydown]);
 
   if (!exists) {
     return null;
@@ -99,7 +87,7 @@ const Modal = ({
         </Modal.Body>
         <Modal.Foot>
           <Row justify="between">
-            {cancel && <Button value={cancel.text} onClick={cancel.action} />}
+            {cancel && <Button value={cancel.text} onClick={cancel.action} autoFocus={true} />}
             <Button value={accept.text} variant="success" onClick={accept.action} />
           </Row>
         </Modal.Foot>

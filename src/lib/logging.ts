@@ -1,10 +1,11 @@
 import { isEmpty } from "lodash";
 
-type LevelTypes = "info" | "warn" | "error";
+type LevelTypes = "info" | "warn" | "error" | "standard";
 const levels: { [key: string]: string } = {
   info: "#090",
   warn: "#990",
   error: "#900",
+  standard: "#069",
 };
 
 const logStyle = (level: LevelTypes) => `
@@ -24,24 +25,12 @@ const logTitleStyle = (level: LevelTypes) => `
   width: 100px;
 `;
 
-export const consoleLog = (
-    message: string,
-    extraInfo: { [key: string]: any },
-    level: LevelTypes = "info",
-    pre?: boolean,
-    post?: boolean,
-  ) => {
-    const preGap = pre ? "\n" : "";
-    const postGap = post ? "\n" : "";
-  console.log(`${preGap}%c${window.location.pathname}:%c ${message}${postGap}`, logStyle(level), logTitleStyle(level), extraInfo);
-};
-
 export const objDiff = (obj1, obj2) => {
-  const diff = {};
-  const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
   if (!obj1 || !obj2) {
     return false;
   }
+  const diff = {};
+  const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
   allKeys.forEach(key => {
     const value1 = obj1[key];
     const value2 = obj2[key];
@@ -60,3 +49,14 @@ export const objDiff = (obj1, obj2) => {
   return isEmpty(diff) ? false : diff;
 };
 
+export const consoleLog = (
+    message: string,
+    extraInfo: { [key: string]: any } | string | number,
+    level: LevelTypes = "standard",
+    pre?: boolean,
+    post?: boolean,
+  ) => {
+    const preGap = pre ? "\n" : "";
+    const postGap = post ? "\n" : "";
+  console.log(`${preGap}%c${window.location.pathname}%c ${message}${postGap}`, logStyle(level), logTitleStyle(level), extraInfo);
+};

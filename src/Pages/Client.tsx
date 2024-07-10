@@ -6,30 +6,34 @@ import {
   bindAllSettingsToValues,
   useClientState,
   useGuideState,
-  getClientData,
-  enterFullscreen,
-  exitFullscreen,
-  CLIENT_STATES
+  getLinkData,
+  CLIENT_STATES,
+  useUnloadHandler,
+  useFullscreenHandler
 } from "../lib";
 import { ClientLogin, Display, PageMissing } from "../components";
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
 
 const Client = () => {
-  const { preset, clientLink, setClientLink, status, setStatus } = useClientState(state => state);
+  const { preset, clientLink, setClientLink, status, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
   const { setActivePreset } = useGuideState(state => state);
 
-  const [clientLinkAvailable, setClientLinkAvailable] = useState(null);
-  const [authorized, setAuthorized] = useState(false);
-  const [slideIn, setSlideIn] = useState(false);
   const clientStatus = CLIENT_STATES[status];
+
+  const [clientLinkAvailable, setClientLinkAvailable] = useState(null);
+  const [authorized, setAuthorized] = useState(clientStatus === "active");
+  const [slideIn, setSlideIn] = useState(false);
+
+  useUnloadHandler();
+  useFullscreenHandler(authorized);
 
   const findGuide = useCallback(async () => {
     bindAllSettingsToValues();
     if (clientStatus === "unavailable") {
       setStatus(1);
     }
-  }, [setStatus]);
+  }, [setStatus, clientStatus]);
 
   useEffect(() => {
     if (preset === null) {
@@ -46,24 +50,16 @@ const Client = () => {
 
   useEffect(() => {
     if (!clientLinkAvailable) {
-      getClientData("status", setStatus);
+      getLinkData("status", setStatus);
+      getLinkData("guide", setGuide);
+      setTimeout(setLocalPriority.bind(null, false), 1000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientLink]);
 
   useEffect(() => {
-    if (clientStatus === "done") {
-      setAuthorized(false);
-    }
+    setAuthorized(clientStatus === "active");
   }, [clientStatus]);
-
-  useEffect(() => {
-    if (authorized) {
-      enterFullscreen();
-    } else {
-      exitFullscreen();
-    }
-  }, [authorized]);
 
   useEffect(() => {
     setClientLink();

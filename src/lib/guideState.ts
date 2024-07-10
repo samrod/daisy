@@ -63,7 +63,10 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   speedUp: () => update(set, ({ settings }) => { settings.speed = Math.min(settings.speed + speed.nudge, speed.max) }),
   speedDown: () => update(set, ({ settings }) => { settings.speed = Math.max(settings.speed - speed.nudge, speed.min) }),
 
-  setUser: (user) => update(set, (State) => { State.user = user }),
+  setUser: (user) => update(set, (State) => {
+    State.user = user;
+    State.trigger = "setUser";
+  }),
   setUserMode: (userMode) => update(set, (state) => {
     if (typeof userMode === "boolean") {
       state.userMode = userMode;
@@ -96,12 +99,12 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   }),
 }));
 
-useGuideState.subscribe(({ user, trigger, ...state }, {user: j1 ,trigger: j2, ...preState}) => {
+useGuideState.subscribe(({ trigger, user, ...state }, {user: j1 ,trigger: j2, ...preState}) => {
   if (trigger === "setSetting") {
     return;
   }
   const diff = objDiff(preState, state);
   if (diff) {
-    consoleLog(trigger, diff );
+    consoleLog(trigger, diff, "info" );
   }
 });

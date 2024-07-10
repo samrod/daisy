@@ -1,10 +1,13 @@
-import { child, get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
 import { isEmpty } from "lodash";
+import { child, get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
+import { getAnalytics } from "firebase/analytics";
+import { initializeApp } from "firebase/app";
+import firebase from "firebase/compat/app";
+import { getAuth } from "firebase/auth";
+import "firebase/compat/firestore";
 import { useGuideState } from ".";
 
+export const serverStamp = firebase.firestore.Timestamp;
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
 export type DataType = Object | { [key: string]: Object | {}};
@@ -56,7 +59,12 @@ export const propExists = async (key: string, value: string) => {
 };
 
 export const updateData = async (path: string, value:  DataType) => {
-  if (isEmpty(path) || !value === null) {
+  if (isEmpty(path)) {
+    console.warn(`*** updateData: missing path`);
+    return;
+  }
+  if (typeof value === "undefined" || value === null) {
+    console.warn(`*** updateData: value missing for ${path}`)
     return;
   }
   await set(ref(db, path), value);
@@ -65,6 +73,10 @@ export const updateData = async (path: string, value:  DataType) => {
 export const pushData = async(path: string, value: DataType) => {
   const loginListRef = ref(db, path);
   const newLoginRef = push(loginListRef)
+  if (!value) {
+    console.warn(`*** pushData: value undefined for ${path}`)
+    return;
+  }
   await set(newLoginRef, value);
 };
 
@@ -82,7 +94,6 @@ export const bindAllSettingsToValues = () => {
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
 
-
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -98,4 +109,4 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const analytics = getAnalytics(app);
-export default app;
+// export default app;

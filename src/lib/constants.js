@@ -1,15 +1,33 @@
 export const CLIENT_STATES = [
-  "unavailable",
-  "present",
-  "waiting",
-  "authorized",
-  "denied",
-  "done",
-  "cancelled",
+  "unavailable", // 0
+  "present",     // 1
+  "waiting",     // 2
+  "authorized",  // 3
+  "denied",      // 4
+  "done",        // 5
+  "cancelled",   // 6
+  "active",      // 7
 ];
+
+export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
+  unavailable: "no one connected",
+  present: `someon's at ${clientLink}`,
+  waiting: `${clientName} is waiting`,
+  authorized: `waiing for ${clientName} to join`,
+  denied: `${clientName} was denied`,
+  done: "You ended the session.",
+  cancelled: `${clientName} cancelled request`,
+  active: `${clientName} is active`,
+});
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";
 export const LINK_PLACEHOLDER = "custom link";
+
+export const DB_LINKS = "links";
+export const DB_GUIDES = "guides";
+export const DB_CLIENTS = "clients";
+export const DB_PRESETS = "presets";
+export const DB_SESSIONS = "sessions";
 
 export const defaults = {
   size: 3,

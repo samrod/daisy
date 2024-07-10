@@ -3,19 +3,20 @@ import { isEmpty } from "lodash";
 import cn from "classnames";
 
 import {
-  bindEvent,
-  unbindEvent,
   setKeys,
   CLIENT_STATES,
   updateSetting,
-  getClientData,
-  useGuideState
+  getLinkData,
+  useGuideState,
+  useEventBinder
 } from "../lib";
 import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus, Col } from "../components";
 import { UserPanel } from "./settings";
 import Styles from "./Remote.module.scss";
 
 const Remote = () => {
+  useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys, options: { capture: true }}]);
+
   const { clientStatus, setClientStatus, clientLink, setSetting, userMode, setUserMode } = useGuideState(state => state);
   const settingsRef = useRef(useGuideState.getState().settings);
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settingsRef.current;
@@ -30,8 +31,6 @@ const Remote = () => {
   const [speedSliderDragged, setSpeedSliderDragged] = useState(false);
   const [, setFakePasued] = useState(false);
   const [userPanelExists, setUserPanelExists] = useState(false);
-
-  const bindList = useRef<BindParams[]>();
 
   const persistPlay = useCallback(() => {
     setSetting("playing", !playing);
@@ -106,26 +105,13 @@ const Remote = () => {
     setUserPanelExists(userMode);
   }, [userMode]);
 
-  const bindEvents = useCallback(() => {
-    bindList.current = [
-      { event: 'keydown', element: document.body, handler: setKeys, options: { capture: true }},
-    ];
-
-    bindList.current.forEach(bindEvent);
-    window.parent["bound"] = true;
-  }, []);
-
-  const unbindEvents = useCallback(() => {
-    bindList.current.forEach(unbindEvent);
-  }, [bindList]);
-
   useEffect(() => {
     setSpeedSliderValue(speed);
   },[speed]);
 
   useEffect(() => {
     if (!isEmpty(clientLink)) {
-      getClientData("status", setClientStatus)
+      getLinkData("status", setClientStatus)
     }
   }, [clientLink, setClientStatus]);
 
@@ -133,9 +119,7 @@ const Remote = () => {
     if (window.parent["bound"]) {
       return;
     }
-    bindEvents();
     useGuideState.subscribe(state => (settingsRef.current = state.settings));
-    return unbindEvents;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

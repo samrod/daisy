@@ -1,49 +1,30 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
-import { Button, Button as CloseButton } from "../components";
-import { useGuideState } from "../lib/guideState";
-import { CLIENT_STATES } from "../lib/constants";
-import { sendMessage } from "../lib/utils";
-import { getClientData } from "../lib/clientStore";
+import {
+  useGuideState,
+  CLIENT_STATES,
+  sendMessage,
+  getLinkData,
+  CLIENT_STATE_DISPLAYS,
+} from "../lib";
+import { Button } from "../components";
 
 export const ClientStatus = () => {
   const { clientLink, clientStatus, clientName, setClientName } = useGuideState(state => state);
   const status = CLIENT_STATES[clientStatus];
-
-  const copy = useCallback(() => {
-    switch (status) {
-      case "unavailable": 
-        return "no one connected";
-      
-      case "present":
-        return `someon's at ${clientLink}`;
-
-      case "waiting":
-        return `${clientName} is waiting`;
-      
-      case "authorized":
-        return `${clientName} is active`;
-      
-      case "denied":
-        return `${clientName} was denied`;
-      
-      case "cancelled":
-        return `${clientName} cancelled request`
-    }    
-  }, [status]);
 
   const sendTerminationMessage = () => {
     sendMessage({ action: "showEndSessionModal" });
   };
 
   useEffect(() => {
-    getClientData("username", setClientName);
+    getLinkData("username", setClientName);
   });
 
   return (
     <div className={`font-bold text-sm flex flex-nowrap items-center color-grey-very-dark gap-3 px-3`}>
-      {copy()}
-      {status === "authorized" &&
+      {CLIENT_STATE_DISPLAYS(clientLink, clientName)[status]}
+      {status === "active" &&
         <Button
           onClick={sendTerminationMessage}
           variant="dark"

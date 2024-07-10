@@ -4,16 +4,17 @@ import cn from "classnames";
 import CSS from "csstype";
 
 import {
-  bindEvent,
   generateSound,
   setKeys,
-  unbindEvent,
   limits,
-  useGuideState
+  useGuideState,
+  useEventBinder
 } from "../lib";
 import Styles from "./Display.module.scss";
 
 export const Display = ({ children = null }) => {
+  useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys }]);
+
   const State = useGuideState(state => state);
   const { motionBarActive, activeSetting } = State;
   const settingsRef = useRef(useGuideState.getState().settings);
@@ -25,7 +26,6 @@ export const Display = ({ children = null }) => {
   const initialized = useRef(false);
   const playbackStarted = useRef(false);
   const displayStyle = useRef<CSS.Properties>();
-  const bindList = useRef<BindParams[]>();
 
   let
     absoluteBallSize: number,
@@ -181,22 +181,6 @@ export const Display = ({ children = null }) => {
     };
   }
 
-
-  const bindEvents = useCallback(() => {
-    bindList.current = [
-      { event: 'keydown', element: document.body, handler: setKeys },
-    ];
-  
-    if (!initialized.current) {
-      bindList.current.forEach(bindEvent);
-    }
-    initialized.current = true;
-  }, []);
-
-  const unbindEvents = useCallback(() => {
-    bindList.current.forEach(unbindEvent);
-  }, [bindList]);
-
   useEffect(() => {
     if (!initialized.current) {
       return;
@@ -217,10 +201,8 @@ export const Display = ({ children = null }) => {
 
   useEffect(() => {
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
-    bindEvents();
     initialized.current = true;
     useGuideState.subscribe(state => (settingsRef.current = state.settings));
-    return unbindEvents;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import cn from "classnames";
 
-import { useClientState, bindEvent, CLIENT_STATES } from "../lib";
+import { useClientState, useUnloadHandler, CLIENT_STATES } from "../lib";
 import { Alert, Button, Row, Textfield } from "../components";
 
 export const PageMissing = ({ slideIn, onReady }) => {
@@ -31,9 +31,10 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
   const [message, setMessage] = useState<string | null>();
   const [alertVariant, setAlertVariant] = useState("standard");
 
-  const bindList = useRef<BindParams[]>();
   const resetTimer = useRef<ReturnType<typeof setTimeout>>();
   const clientStatus = CLIENT_STATES[status];
+
+  useUnloadHandler();
 
   const onCancel = useCallback((e) => {
     e.preventDefault();
@@ -43,17 +44,18 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
   const onSubmit = useCallback((e) => {
     e.preventDefault();
     switch (clientStatus) {
+      case "unavailable":
       case "present":
       case "denied":
       case "done":
-            setStatus(2);
+        setStatus(2);
         setUsername(nickname);
         break;
       case "authorized":
-        setAuthorized(true);
+        setStatus(7);
         break;
     }
-  }, [clientStatus, setStatus, nickname, setUsername, setAuthorized]);
+  }, [clientStatus, setStatus, nickname, setUsername]);
 
   const onChange = useCallback(({ target }) => {
     setNickname(target.value);
@@ -66,13 +68,6 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
       setMessage(null);
     }, delay);
   }, [setStatus]);
-
-  const exit = useCallback(() => {
-    if (clientStatus !== "authorized") {
-      setStatus(0);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientStatus]);
 
   const updateCta = useCallback(() => {
     switch (clientStatus) {
@@ -103,7 +98,7 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
         setMessage("Your guide ended your session.");
         setAlertVariant("standard");
         setAuthorized(false);
-        setCta("Join");
+        setCta("Rejoin");
         reset(30000);
         break;;
       case "cancelled":
@@ -114,22 +109,12 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
     }
   }, [clientStatus, reset, setAuthorized]);
 
-  const bindEvents = useCallback(() => {
-    bindList.current = [
-      { event: 'beforeunload', element: window, handler: exit},
-      { event: 'unload', element: window, handler: exit},
-    ];
-
-    bindList.current.forEach(bindEvent);
-  }, [exit]);
-
   useEffect(() => {
     updateCta();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
   useEffect(() => {
-    bindEvents();
     onReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

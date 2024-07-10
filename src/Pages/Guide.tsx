@@ -4,32 +4,30 @@ import { isEmpty } from 'lodash';
 
 import {
   limits,
-  bindEvent,
   receiveMessage,
   setKeys,
-  unbindEvent,
   useGuideState,
   useClientState,
   getUserData,
-  getClientData,
+  getLinkData,
+  pushSessionData,
+  useEventBinder,
 } from "../lib";
 import { defaultModalState, Display, Modal } from "../components";
 import Styles from "./Guide.module.scss";
 
 const Guide = () => {
   const State = useGuideState(state => state);
-  const { setStatus, setUsername, } = useClientState(state => state);
-  const { userMode, setActiveSetting, clientLink, setClientLink, clientStatus, setClientStatus, clientName, setClientName } = State;
+  const { setStatus, setUsername, setGuide } = useClientState(state => state);
+  const { userMode, setActiveSetting, clientLink, setClientLink, clientStatus, setClientStatus, clientName, setClientName, user } = State;
   
   const [hidden, setHidden] = useState(true);
   const [modalActive, setModalActive] = useState(false);
   const [modal, setModal] = useState(defaultModalState);
 
-  const initialized = useRef(false);
   const toolbarBusy = useRef(false);
   const toolbarTimer = useRef<NodeJS.Timeout | number>();
   const toolbar = useRef<HTMLIFrameElement>();
-  const bindList = useRef<BindParams[]>();
   const clientLinkRef = useRef(clientLink);
   
   const setToolbarBusy = () => {
@@ -45,37 +43,18 @@ const Guide = () => {
 
   const toggleToolbar = useCallback(() => {
     clearTimeout(toolbarTimer.current);
-    if (!hidden) {
-      return;
-    } else {
+    if (hidden) {
       setHidden(false);
-    }
-    if (!toolbarBusy.current) {
-      toolbarTimer.current = setTimeout(() => {
-        setHidden(true);
-      },
-      limits.toolbarHideDelay
-      );
+    } else {
+      if (!toolbarBusy.current) {
+        toolbarTimer.current = setTimeout(() => {
+          setHidden(true);
+        },
+        limits.toolbarHideDelay
+        );
+      }
     }
   }, [hidden]);
-
-  const bindEvents = useCallback(() => {
-    bindList.current = [
-      { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
-      { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
-      { event: 'mousemove', element: document.body, handler: toggleToolbar },
-      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showEndSessionModal }) },
-    ];
-  
-    if (toolbar.current && !initialized.current) {
-      bindList.current.forEach(bindEvent);
-    }
-    initialized.current = true;
-  }, [setActiveSetting, toggleToolbar]);
-
-  const unbindEvents = useCallback(() => {
-    bindList.current.forEach(unbindEvent);
-  }, [bindList]);
 
   const setClientStates = ({ status, username }) => {
     setClientStatus(status);
@@ -87,6 +66,7 @@ const Guide = () => {
   }, [clientLink]);
 
   const onAcceptClientRequest = useCallback(() => {
+    setGuide(user.uid);
     setStatus(3, clientLink);
   }, [clientLink]);
 
@@ -132,6 +112,12 @@ const Guide = () => {
   };
 
   useEffect(() => {
+    if (clientStatus === 7) {
+      pushSessionData();
+    }
+  }, [clientStatus]);
+
+  useEffect(() => {
     setHidden(false);
     setModalActive(clientStatus === 2);
     showJoinRequestModal();
@@ -140,14 +126,22 @@ const Guide = () => {
   useEffect(() => {
     clientLinkRef.current = clientLink;
     if (!isEmpty(clientLink)) {
-      getClientData("", setClientStates);
+      getLinkData("", setClientStates);
     }
   }, [clientLink]);
 
+  useEventBinder(
+    [
+      { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
+      { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
+      { event: 'mousemove', element: document.body, handler: toggleToolbar },
+      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showEndSessionModal }) },
+    ],
+    [setActiveSetting, toggleToolbar, toolbar.current]
+  );
+
   useEffect(() => {
-    bindEvents();
     getUserData("clientLink", setClientLink);
-    return unbindEvents;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
