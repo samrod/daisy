@@ -8,7 +8,7 @@ interface CreatePreset {
   name?: string;
 }
 
-export const getUserData = (key: string, callback) => {
+export const getGuideData = (key: string, callback) => {
   const { user: { uid } } = useGuideState.getState();
   if (!uid) {
     return;
@@ -17,37 +17,41 @@ export const getUserData = (key: string, callback) => {
   return getData({ path, key, callback });
 };
 
-export const userPropExists = async (key: string) => {
+export const guidePropExists = async (key: string) => {
   const { user: { uid } } = useGuideState.getState();
   const response = await readPropValue(`${DB_GUIDES}/${uid}/`, key);
   return typeof response !== "undefined" ? response : false;
 };
 
-export const updateUser = async (key: string, value: DataType) => {
+export const updateGuide = async (key: string, value: DataType) => {
   const { user } = useGuideState.getState();
+  if (!user?.uid) {
+    return;
+  }
   await updateData(`${DB_GUIDES}/${user.uid}/${key}`, value);
 };
 
-export const createUser = async (user: User) => {
+export const createGuide = async (user: User) => {
   const initialClientLink = user.email.split("@")[0];
   const { setUser } = useGuideState.getState();
   setUser(user);
   await createUpdateEmail(user);
   await captureLogin({ user });
   await createPreset({});
+  await updateGuide("sessions", "");
   await updateClientLink(initialClientLink);
 };
 
 export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
   const presetId = uuid();
 
-  await updateUser("activePreset", presetId);
-  await updateUser(`${DB_PRESETS}/${presetId}`, name);
+  await updateGuide("activePreset", presetId);
+  await updateGuide(`${DB_PRESETS}/${presetId}`, name);
   await updateData(`${DB_PRESETS}/${presetId}`, settings);
 };
 
 export const createUpdateEmail = async (user: User, newEmail?: string) => {
-  await updateUser("email", user.email || newEmail);
+  await updateGuide("email", user.email || newEmail);
 };
 
 export const captureLogin = async ({ user }) => {
@@ -70,6 +74,11 @@ export const togglePlay = () => {
 };
 
 export const pushGuideData = async (key: string, value: string | number | {}) => {
-  const { user: { uid } } = useGuideState.getState();
+  const { user } = useGuideState.getState();
+  if (!user) {
+    console.warn("*** pushGuideData: user missing.");
+    return;
+  }
+  const { uid } = user;
   await pushData(`${DB_GUIDES}/${uid}/${key}`, value);
 };

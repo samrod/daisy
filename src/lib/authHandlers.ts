@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 
 import { auth } from "./firebase";
-import { captureLogin, createUser, createUpdateEmail as updateEmailFBRT } from "./guideStore";
+import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "./guideStore";
 
 export const useAuthHandlers = (currentUser: User) => ({
   currentUser,
@@ -21,7 +21,7 @@ export const useAuthHandlers = (currentUser: User) => ({
   },
   signup: async (email: string, password: string) => {
     const newUser = await createUserWithEmailAndPassword(auth, email, password);
-    await createUser(newUser.user);
+    await createGuide(newUser.user);
   },
   updateEmail: (email: string) => {
     updateEmail(currentUser, email);

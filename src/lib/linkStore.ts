@@ -1,5 +1,5 @@
 import { isEmpty } from "lodash";
-import { getData, updateData, useGuideState, useClientState, DB_LINKS, deletePropValue, updateUser, userPropExists } from ".";
+import { getData, updateData, useGuideState, useClientState, DB_LINKS, deletePropValue, updateGuide, guidePropExists } from ".";
 
 const getState = (key: string) => {
   const guideState = useGuideState.getState();
@@ -8,7 +8,9 @@ const getState = (key: string) => {
 
   if (!isEmpty(value)) {
     return value;
-  };
+  } else {
+    console.warn(`*** getState "${key}" empty in: `, guideState, clientState);
+  }
 };
 
 export const getLinkData = (key: string, callback: (params: unknown) => void) => {
@@ -29,11 +31,11 @@ export const updateLinkData = (key: string, value) => {
 export const updateClientLink = async (clientLink: string) => {
   const { setClientLink, activePreset: preset, user } = useGuideState.getState();
   const { uid, setPreset } = useClientState.getState();
-  const oldClientLink = await userPropExists("clientLink");
+  const oldClientLink = await guidePropExists("clientLink");
   deletePropValue(DB_LINKS, oldClientLink as string);
   setClientLink(clientLink);
   setPreset(preset);
-  updateUser("clientLink", clientLink);
+  updateGuide("clientLink", clientLink);
   updateLinkData("", { status: 0, preset, guide: user?.uid, client: uid });
 };
 

@@ -1,5 +1,6 @@
+import { MouseEvent } from "react";
 import { create } from "zustand";
-import { User, defaults, limits, updateUser, update, consoleLog, objDiff } from ".";
+import { User, defaults, limits, updateGuide, update, consoleLog, objDiff } from ".";
 
 const { volume, speed } = limits;
 
@@ -67,12 +68,13 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
     State.user = user;
     State.trigger = "setUser";
   }),
-  setUserMode: (userMode) => update(set, (state) => {
+  setUserMode: (userMode: boolean | MouseEvent<HTMLButtonElement>) => update(set, (state) => {
     if (typeof userMode === "boolean") {
       state.userMode = userMode;
-    } else {
+      updateGuide("userMode", state.userMode);
+    } else if (userMode && userMode?.type === "click") {
       state.userMode = !state.userMode;
-      updateUser("userMode", state.userMode);
+      updateGuide("userMode", state.userMode);
     }
     state.trigger = "setUserMode";
   }),
@@ -87,7 +89,7 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   setClientName: (name) => update(set, (state) => {
     state.clientName = name;
     state.trigger = "setClientName";
-    updateUser("clientName", name);
+    updateGuide("clientName", name);
   }),
   setPresets: (presets) => update(set, (state) => {
     state.presets = presets;

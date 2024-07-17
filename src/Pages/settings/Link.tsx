@@ -1,7 +1,7 @@
 import { useState, useCallback, FormEvent, useEffect, useRef } from "react"
 import { isEmpty } from "lodash";
 
-import { LINK_PLACEHOLDER, getUserData, updateClientLink, propExists, DB_LINKS } from "../../lib";
+import { LINK_PLACEHOLDER, getGuideData, updateClientLink, propExists, DB_LINKS } from "../../lib";
 import { Alert, Button, Col, TextGroup } from "../../components";
 
 export const Link = () => {
@@ -42,7 +42,7 @@ export const Link = () => {
   }, [loading, linkField.current?.value]);
 
   useEffect(() => {
-    getUserData("clientLink", updateLink);
+    getGuideData("clientLink", updateLink);
   }, [])
 
   return (

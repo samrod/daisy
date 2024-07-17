@@ -15,8 +15,7 @@ import Styles from "./Display.module.scss";
 export const Display = ({ children = null }) => {
   useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys }]);
 
-  const State = useGuideState(state => state);
-  const { motionBarActive, activeSetting } = State;
+  const { motionBarActive, activeSetting } = useGuideState(state => state);
   const settingsRef = useRef(useGuideState.getState().settings);
   const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current;
 

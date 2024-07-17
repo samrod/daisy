@@ -5,7 +5,7 @@ import {
   User,
   auth,
   useGuideState,
-  getUserData,
+  getGuideData,
   bindAllSettingsToValues,
   useAuthHandlers,
 } from '../lib';
@@ -45,10 +45,10 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    getUserData("clientLink", setClientLink);
-    getUserData("activePreset", setActivePreset);
-    getUserData("userMode", setUserMode);
-    getUserData(`presets`, setPresets);
+    getGuideData("clientLink", setClientLink);
+    getGuideData("activePreset", setActivePreset);
+    getGuideData("userMode", setUserMode);
+    getGuideData(`presets`, setPresets);
 
     presetsBoundToStore.current = true;
   }, [activePreset, currentUser, presets, setActivePreset, setPresets, setUserMode]);

@@ -105,7 +105,11 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
         setMessage("Request cancelled.");
         setCta("Join");
         reset(5000);
-        break;;
+        break;
+      case "expired":
+        setMessage("Your session expired due to inactivity.");
+        reset(5000);
+        break;
     }
   }, [clientStatus, reset, setAuthorized]);
 

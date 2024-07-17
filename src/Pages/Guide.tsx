@@ -8,7 +8,7 @@ import {
   setKeys,
   useGuideState,
   useClientState,
-  getUserData,
+  getGuideData,
   getLinkData,
   pushSessionData,
   useEventBinder,
@@ -141,7 +141,7 @@ const Guide = () => {
   );
 
   useEffect(() => {
-    getUserData("clientLink", setClientLink);
+    getGuideData("clientLink", setClientLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
