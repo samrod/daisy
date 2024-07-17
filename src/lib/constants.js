@@ -7,6 +7,7 @@ export const CLIENT_STATES = [
   "done",        // 5
   "cancelled",   // 6
   "active",      // 7
+  "expired",     // 8
 ];
 
 export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
@@ -18,10 +19,12 @@ export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
   done: "You ended the session.",
   cancelled: `${clientName} cancelled request`,
   active: `${clientName} is active`,
+  expired: `${clientName}'s session expired.`,
 });
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";
 export const LINK_PLACEHOLDER = "custom link";
+export const EXPIRE_SESSION_SECONDS = 30;
 
 export const DB_LINKS = "links";
 export const DB_GUIDES = "guides";

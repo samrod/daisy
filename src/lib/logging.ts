@@ -4,7 +4,7 @@ type LevelTypes = "info" | "warn" | "error" | "standard";
 const levels: { [key: string]: string } = {
   info: "#090",
   warn: "#990",
-  error: "#900",
+  error: "#F33",
   standard: "#069",
 };
 

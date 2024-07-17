@@ -1,4 +1,4 @@
-import { getData, updateData, useGuideState, pushData, uuid, useClientState, DB_GUIDES, DB_CLIENTS, DB_SESSIONS, serverStamp } from ".";
+import { getData, updateData, pushData, useClientState, DB_CLIENTS, serverStamp } from ".";
 
 export const getClientData = (key: string, callback: (params: unknown) => void) => {
   const { uid } = useClientState.getState();
@@ -14,13 +14,12 @@ export const updateClientData = (key: string, value) => {
 };
 
 export const createClient = async () => {
-  const { preset, username, guide, session } = useClientState.getState();
+  const { preset, username, guide } = useClientState.getState();
 
   await updateClientData(``, {
     preset, username, guide,
-    createdAt: serverStamp.now(),
+    createdAt: serverStamp(),
   });
-  await pushClientData(DB_SESSIONS, session);
 };
 
 export const pushClientData = async (key: string, value: string | number | {}) => {

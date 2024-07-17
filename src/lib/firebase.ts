@@ -5,9 +5,8 @@ import { initializeApp } from "firebase/app";
 import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import "firebase/compat/firestore";
-import { useGuideState } from ".";
+import { consoleLog, useGuideState } from ".";
 
-export const serverStamp = firebase.firestore.Timestamp;
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
 export type DataType = Object | { [key: string]: Object | {}};
@@ -60,24 +59,40 @@ export const propExists = async (key: string, value: string) => {
 
 export const updateData = async (path: string, value:  DataType) => {
   if (isEmpty(path)) {
-    console.warn(`*** updateData: missing path`);
+    consoleLog("updateData", `missing path`, "error");
     return;
   }
   if (typeof value === "undefined" || value === null) {
-    console.warn(`*** updateData: value missing for ${path}`)
+    consoleLog("updateData", `value missing for path "${path}"`, "error");
     return;
   }
-  await set(ref(db, path), value);
+  try {
+    await set(ref(db, path), value);
+    consoleLog("updateData", `${path}: ${value}`);
+  } catch(e) {
+    consoleLog("updateData", e, "error");
+  }
 };
 
 export const pushData = async(path: string, value: DataType) => {
-  const loginListRef = ref(db, path);
-  const newLoginRef = push(loginListRef)
+  const arrayRef = ref(db, path);
+  const newLoginRef = push(arrayRef)
   if (!value) {
-    console.warn(`*** pushData: value undefined for ${path}`)
+    console.warn(`*** pushData: value "${value}" empty for ${path}`)
     return;
   }
-  await set(newLoginRef, value);
+  const arrayData = await readPropValue(path, "/");
+  const valueAlreadyExists = arrayData && Object.values(arrayData).includes(value);
+  if (valueAlreadyExists) {
+    console.warn(`*** pushData: ${value} already exists in ${path}.`);
+    return;
+  }
+  try {
+    await set(newLoginRef, value);
+    consoleLog("pushData", `${path}: ${value}`);
+  } catch(e) {
+    consoleLog("pushData", e, "error");
+  }
 };
 
 const updateSettingFromFirebase = (key: string) => (val) => {
@@ -93,6 +108,8 @@ export const bindAllSettingsToValues = () => {
   const { activePreset, settings } = useGuideState.getState();
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
+
+export const serverStamp = () => firebase.firestore.Timestamp.now();
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
