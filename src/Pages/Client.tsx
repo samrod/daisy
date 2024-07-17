@@ -9,14 +9,15 @@ import {
   getLinkData,
   CLIENT_STATES,
   useUnloadHandler,
-  useFullscreenHandler
+  useFullscreenHandler,
+  sessionExpired
 } from "../lib";
 import { ClientLogin, Display, PageMissing } from "../components";
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
 
 const Client = () => {
-  const { preset, clientLink, setClientLink, status, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
+  const { preset, clientLink, setClientLink, status, sessionTime, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
   const { setActivePreset } = useGuideState(state => state);
 
   const clientStatus = CLIENT_STATES[status];
@@ -59,6 +60,9 @@ const Client = () => {
 
   useEffect(() => {
     setAuthorized(clientStatus === "active");
+    if (status === 7 && sessionExpired(sessionTime)) {
+      setStatus(8);
+    }
   }, [clientStatus]);
 
   useEffect(() => {
