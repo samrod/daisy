@@ -17,9 +17,8 @@ import { defaultModalState, Display, Modal } from "../components";
 import Styles from "./Guide.module.scss";
 
 const Guide = () => {
-  const State = useGuideState(state => state);
+  const { userMode, clientLink, clientStatus, clientName, user, setActiveSetting, setClientStatus, setClientName } = useGuideState(state => state);
   const { setStatus, setUsername, setGuide } = useClientState(state => state);
-  const { userMode, setActiveSetting, clientLink, setClientLink, clientStatus, setClientStatus, clientName, setClientName, user } = State;
   
   const [hidden, setHidden] = useState(true);
   const [modalActive, setModalActive] = useState(false);
@@ -56,11 +55,21 @@ const Guide = () => {
     }
   }, [hidden]);
 
-  const setClientStates = ({ status, username }) => {
+  const setClientStates = (data) => {
+    if (!data) {
+      return;
+    }
+    const { status, username } = data;
     setClientStatus(status);
-    setClientName(username);
+    if (username) {
+      setClientName(username);
+    }
   };
 
+  const addSession = (session) => {
+    pushSessionData(session);
+  };
+  
   const onDenyClientRequest = useCallback(() => {
     setStatus(4, clientLink);
   }, [clientLink]);
@@ -112,12 +121,6 @@ const Guide = () => {
   };
 
   useEffect(() => {
-    if (clientStatus === 7) {
-      pushSessionData();
-    }
-  }, [clientStatus]);
-
-  useEffect(() => {
     setHidden(false);
     setModalActive(clientStatus === 2);
     showJoinRequestModal();
@@ -127,8 +130,9 @@ const Guide = () => {
     clientLinkRef.current = clientLink;
     if (!isEmpty(clientLink)) {
       getLinkData("", setClientStates);
+      getLinkData("session", addSession);
     }
-  }, [clientLink]);
+  }, [clientLink, setClientStatus]);
 
   useEventBinder(
     [
@@ -139,11 +143,6 @@ const Guide = () => {
     ],
     [setActiveSetting, toggleToolbar, toolbar.current]
   );
-
-  useEffect(() => {
-    getGuideData("clientLink", setClientLink);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <Display>
