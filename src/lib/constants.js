@@ -24,7 +24,7 @@ export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";
 export const LINK_PLACEHOLDER = "custom link";
-export const EXPIRE_SESSION_SECONDS = 30;
+export const EXPIRE_SESSION_SECONDS = 7200;
 
 export const DB_LINKS = "links";
 export const DB_GUIDES = "guides";
