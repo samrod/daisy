@@ -1,8 +1,23 @@
 import { matchPath } from 'react-router';
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist, createJSONStorage, devtools } from "zustand/middleware";
+import firebase from 'firebase/compat';
 
-import { update, readPropValue, updateLinkData, consoleLog, objDiff, createSession, DB_LINKS, uuid, createClient } from ".";
+import {
+  update,
+  readPropValue,
+  updateLinkData,
+  consoleLog,
+  objDiff,
+  createSession,
+  DB_LINKS,
+  uuid,
+  createClient,
+  serverStamp,
+  sessionExpired,
+} from ".";
+import { differenceInSeconds } from 'date-fns/differenceInSeconds';
+import { isEmpty } from 'lodash';
 
 type ClientStateTypes = {
   status: number;
@@ -15,6 +30,7 @@ type ClientStateTypes = {
   session?: null | string;
   trigger: null | string;
   localPriority: boolean;
+  sessionTime: null | firebase.firestore.Timestamp;
 
   setStatus: (status: number, clientLink?: string) => void;
   setPreset: (preset: string) => void;
@@ -22,6 +38,7 @@ type ClientStateTypes = {
   setClientLink: () => void;
   setUsername: (name: string) => void;
   setLocalPriority: (flag: boolean) => void;
+  rehydrate: (ClientStateTypes) => void;
 };
 
 const currentLinkExists = async (): Promise<{ preset: string; clientLink: string } | null> => {
@@ -41,7 +58,7 @@ const currentLinkExists = async (): Promise<{ preset: string; clientLink: string
   }
 };
 
-export const useClientState = create<ClientStateTypes>()(
+export const useClientState = create<ClientStateTypes>()(devtools(
   persist((set) => ({
     status: 0,
     previousStatus: null,
@@ -53,6 +70,7 @@ export const useClientState = create<ClientStateTypes>()(
     guide: null,
     session: null,
     trigger: null,
+    sessionTime: null,
 
     setStatus: async (status, clientLink) => {
       const validLink = clientLink ? { clientLink} : await currentLinkExists();
@@ -60,7 +78,7 @@ export const useClientState = create<ClientStateTypes>()(
         if (status === state.status) {
           return;
         }
-        if (state.localPriority) {
+        if (state.localPriority && state.status) {
           updateLinkData("status", state.status);
           return;
         }
@@ -71,11 +89,14 @@ export const useClientState = create<ClientStateTypes>()(
         }
         if (status === 7) {
           state.uid ??= uuid();
-          state.session ??= uuid();
+          state.createdAd ??= serverStamp();
           updateLinkData("client", state.uid);
-          updateLinkData("session", state.session);
-          createClient()
-          createSession();
+          createClient();
+          if (sessionExpired(state.sessionTime)) {
+            state.session = uuid();
+            state.sessionTime = serverStamp();
+            createSession();
+          }
         }
         state.trigger = "setStatus";
       });
@@ -93,7 +114,9 @@ export const useClientState = create<ClientStateTypes>()(
       await update(set, (State) => {
         if (response) {
           const { preset, clientLink } = response;
-          State.clientLink = clientLink;
+          if (!isEmpty(clientLink)) {
+            State.clientLink = clientLink;
+          }
           State.preset = preset;
         } else {
           State.preset = "";
@@ -112,27 +135,46 @@ export const useClientState = create<ClientStateTypes>()(
       state.localPriority = enabled;
       state.trigger = "setLocalPriority";
     }),
-  }),
+    rehydrate: set,
+}),
   {
     name: "daisy-session",
     storage: createJSONStorage(() => localStorage),
-    partialize: ({ previousStatus, status, ...rest }) => {
-      const newStatus = status ? status : previousStatus;
-      return { status: newStatus, ...rest };
+    partialize: ({ clientLink, previousStatus, status, uid, ...rest }) => {
+      const match = matchPath({ path: "/:clientLink" }, window.location.pathname);
+      if (!match) {
+        return;
+      }
+      if (uid) {
+        const { params } = match;
+        const link = clientLink === params.clientLink ? clientLink : null;
+        const newStatus = status ? status : previousStatus;
+        return { status: newStatus, uid, clientLink: link, ...rest };
+      }
+      return {};
     },
     onRehydrateStorage: (prevState) => {
       return (state, error) => {
+        const { params } = matchPath({ path: "/:clientLink" }, window.location.pathname);
         setTimeout(() => {
           if (error) {
-            consoleLog("*** rehydration error: ", error, "error");
+            consoleLog("rehydrate", error, "error");
             return;
           }
-          consoleLog("rehydrate", objDiff(prevState, state), "standard");
+          const validClientLink = state.clientLink === params.clientLink;
+          const { rehydrate } = useClientState.getState();
+          if (validClientLink) {
+            rehydrate(state);
+            consoleLog("rehydrate", objDiff(prevState, state), "standard");
+          } else {
+            consoleLog("rehydrate", "invalid link. No rehydration.");
+            rehydrate({});
+          }
         });
       };
     },
   },
-));
+), { name: "clientState", store: "clientState" }));
 
 useClientState.subscribe(({trigger, ...state }, { trigger: preTrigger, ...preState }) => {
   const diff = objDiff(preState, state);
