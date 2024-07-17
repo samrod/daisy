@@ -25,7 +25,7 @@ export function useAuth() {
 export const AuthProvider = ({ children }) => {
   const presetsBoundToStore = useRef(false);
   const settingsBoundToStore = useRef(false);
-  const { presets, activePreset, setUserMode, setClientName, setActivePreset, setPresets, setUser, setClientLink } = useGuideState();
+  const { presets, activePreset, setUserMode, setActivePreset, setPresets, setUser, setClientLink } = useGuideState();
   const [currentUser, setCurrentUser] = useState<User>();
   const [loading, setLoading] = useState(true);
 
