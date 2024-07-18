@@ -17,7 +17,7 @@ import {
   sessionExpired,
 } from ".";
 import { differenceInSeconds } from 'date-fns/differenceInSeconds';
-import { isEmpty } from 'lodash';
+import { debounce, isEmpty } from 'lodash';
 
 type ClientStateTypes = {
   status: number;
@@ -38,6 +38,7 @@ type ClientStateTypes = {
   setClientLink: () => void;
   setUsername: (name: string) => void;
   setLocalPriority: (flag: boolean) => void;
+  setSessionTime: () => void;
   rehydrate: (ClientStateTypes) => void;
 };
 
@@ -134,6 +135,10 @@ export const useClientState = create<ClientStateTypes>()(devtools(
     setLocalPriority: (enabled) => update(set, (state) => {
       state.localPriority = enabled;
       state.trigger = "setLocalPriority";
+    }),
+    setSessionTime: () => update(set, (state) => {
+      state.sessionTime = serverStamp();
+      state.trigger = "setSessionTime";
     }),
     rehydrate: set,
 }),

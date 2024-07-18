@@ -37,11 +37,12 @@ export const useEventBinder = (bindList = [], dependencies = []) => {
 };
 
 export const useUnloadHandler = () => {
-  const { preset, setLocalPriority, setStatus } = useClientState(state => state);
+  const { preset, setSessionTime, setLocalPriority, setStatus } = useClientState(state => state);
 
   const onUnload = () => {
     updateLinkData("status", 0);
     setLocalPriority(true);
+    setSessionTime();
   };
 
   useEventBinder(isEmpty(preset) ? [] : [
