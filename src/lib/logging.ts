@@ -58,5 +58,5 @@ export const consoleLog = (
   ) => {
     const preGap = pre ? "\n" : "";
     const postGap = post ? "\n" : "";
-  console.log(`${preGap}%c${window.location.pathname}%c ${message}${postGap}`, logStyle(level), logTitleStyle(level), extraInfo);
+    console.log(`${preGap}%c${window.location.pathname}%c ${message}${postGap}`, logStyle(level), logTitleStyle(level), extraInfo);
 };

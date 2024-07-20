@@ -12,7 +12,7 @@ import {
   useFullscreenHandler,
   sessionExpired
 } from "../lib";
-import { ClientLogin, Display, PageMissing } from "../components";
+import { ClientLogin, Cloud, Display, PageMissing } from "../components";
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
 
@@ -60,7 +60,7 @@ const Client = () => {
 
   useEffect(() => {
     setAuthorized(clientStatus === "active");
-    if (status === 7 && sessionExpired(sessionTime)) {
+    if (status === 7 && sessionExpired()) {
       setStatus(8);
     }
   }, [clientStatus]);
@@ -75,13 +75,18 @@ const Client = () => {
       <Display />
     );
   }
+
   return (
     <div className={Styles.page}>
-      <div className={cn("step1 slider", { slideIn })}>
-        <Logo className={Styles.logo} />
+      <Cloud offset={-5} scaleX={1.5} />
+      <Cloud offset={90} scaleY={0.5} />
+      <div className={Styles.card}>
+        <div className={cn("step1 slider", { slideIn })}>
+          <Logo className={Styles.logo} />
+        </div>
+        {clientLinkAvailable === "available" && <ClientLogin slideIn={slideIn} onReady={setSlideIn} setAuthorized={setAuthorized} />}
+        {clientLinkAvailable === "unavailable" && <PageMissing slideIn={slideIn} onReady={setSlideIn} />}
       </div>
-      {clientLinkAvailable === "available" && <ClientLogin slideIn={slideIn} onReady={setSlideIn} setAuthorized={setAuthorized} />}
-      {clientLinkAvailable === "unavailable" && <PageMissing slideIn={slideIn} onReady={setSlideIn} />}
     </div>
   );
 };

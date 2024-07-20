@@ -1,0 +1,16 @@
+.cloud  {
+  @apply absolute rounded-full -top-[5vh];
+
+  animation-name: float;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+
+  .back { filter: url(#filter-back); }
+  .mid { filter: url(#filter-mid); }
+  .front { filter: url(#filter-front); }
+}
+
+@keyframes float {
+  0% { left: 107vw; }
+  100% { left: -35vw; }
+}
