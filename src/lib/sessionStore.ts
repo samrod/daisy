@@ -3,11 +3,11 @@ import { differenceInSeconds } from "date-fns/differenceInSeconds";
 import { getData, updateData, useGuideState, useClientState, DB_SESSIONS, serverStamp, pushGuideData, readPropValue, DB_LINKS, DB_GUIDES, EXPIRE_SESSION_SECONDS, updateLinkData, pushClientData } from ".";
 
 export const getSessionData = (key: string, callback: (params: unknown) => void) => {
-  getData({ path: `/sessions/`, key, callback});
+  getData({ path: `${DB_SESSIONS}/`, key, callback});
 };
 
-export const updateSessionData = (key: string, value: string | number | {}) => {
-  updateData(`sessions/${key}`, value);
+export const updateSessionData = async (key: string, value: string | number | {}) => {
+  await updateData(`${DB_SESSIONS}/${key}`, value);
 };
 
 export const pushSessionData = async (value) => {
@@ -23,14 +23,14 @@ export const pushSessionData = async (value) => {
   pushGuideData(DB_SESSIONS, session);
 };
 
-export const createSession = () => {
+export const createSession = async () => {
   const { status, guide, preset, username, session, sessionTime, uid: clientId } = useClientState.getState();
   if (!session) {
     return;
   }
-  pushClientData(DB_SESSIONS, session);
-  updateLinkData("session", session);
-  updateSessionData(session, {
+  await pushClientData(DB_SESSIONS, session);
+  await updateLinkData("session", session);
+  await updateSessionData(session, {
     clientId,
     guide,
     status,
@@ -40,15 +40,20 @@ export const createSession = () => {
   });
 };
 
-export const sessionExpired = (sessionTime) => {
-  if (!sessionTime) {
+export const endSession = async () => {
+  const { clientLink } = useGuideState.getState();
+  const session = await readPropValue(`${DB_LINKS}/${clientLink}`, "session");
+  updateSessionData(`${session}/endedAt`, serverStamp());
+};
+
+export const sessionExpired = () => {
+  const { sessionTime, sessionEndedAt } = useClientState.getState();
+  if (!sessionTime || sessionEndedAt) {
     return true;
   }
   const { seconds, nanoseconds } = sessionTime;
   const oldStamp = new firebase.firestore.Timestamp(seconds, nanoseconds);
-  return Math.abs(differenceInSeconds(
-    oldStamp.toDate(),
-    serverStamp().toDate())
-  ) > EXPIRE_SESSION_SECONDS;
+  const timeDelta = Math.abs(differenceInSeconds( oldStamp.toDate(), serverStamp().toDate()) );
+  return timeDelta > EXPIRE_SESSION_SECONDS;
 };
 

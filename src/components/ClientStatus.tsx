@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   useGuideState,
@@ -12,6 +12,7 @@ import { Button } from "../components";
 export const ClientStatus = () => {
   const { clientLink, clientStatus, clientName, setClientName } = useGuideState(state => state);
   const status = CLIENT_STATES[clientStatus];
+  const clientNameSet = useRef(false);
 
   const sendTerminationMessage = () => {
     sendMessage({ action: "showEndSessionModal" });
@@ -19,7 +20,7 @@ export const ClientStatus = () => {
 
   useEffect(() => {
     getLinkData("username", setClientName);
-  });
+  }, [clientStatus, clientName]);
 
   return (
     <div className={`font-bold text-sm flex flex-nowrap items-center color-grey-very-dark gap-3 px-3`}>

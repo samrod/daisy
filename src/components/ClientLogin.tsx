@@ -14,7 +14,7 @@ export const PageMissing = ({ slideIn, onReady }) => {
   return (
     <>
       <div className={cn("step2 slider", { slideIn })}>
-        <h2>This page is not available</h2>
+        <h4>This page is not available</h4>
       </div>
       <Row className={cn("step3 slider", { slideIn })}>
         <h5>Check with your guide for the right link.</h5>
@@ -24,7 +24,7 @@ export const PageMissing = ({ slideIn, onReady }) => {
 };
 
 export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
-  const { status, setStatus, username, setUsername } = useClientState(state => state);
+  const { status, setStatus, username, session, setUsername, setSessionEndedAt } = useClientState(state => state);
 
   const [cta, setCta] = useState("Join");
   const [nickname, setNickname] = useState(username)
@@ -95,6 +95,7 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
         reset(10000);
         break;;
       case "done":
+        setSessionEndedAt();
         setMessage("Your guide ended your session.");
         setAlertVariant("standard");
         setAuthorized(false);

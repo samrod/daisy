@@ -5,7 +5,7 @@ import { initializeApp } from "firebase/app";
 import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import "firebase/compat/firestore";
-import { consoleLog, useGuideState } from ".";
+import { consoleLog, objDiff, useGuideState } from ".";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;

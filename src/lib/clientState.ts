@@ -15,6 +15,8 @@ import {
   createClient,
   serverStamp,
   sessionExpired,
+  DB_SESSIONS,
+  getLinkData,
 } from ".";
 import { differenceInSeconds } from 'date-fns/differenceInSeconds';
 import { debounce, isEmpty } from 'lodash';
@@ -31,7 +33,10 @@ type ClientStateTypes = {
   trigger: null | string;
   localPriority: boolean;
   sessionTime: null | firebase.firestore.Timestamp;
+  sessionEndedAt: null | firebase.firestore.Timestamp;
+}
 
+type ClientStateActions = {
   setStatus: (status: number, clientLink?: string) => void;
   setPreset: (preset: string) => void;
   setGuide: (guide: string) => void;
@@ -59,8 +64,8 @@ const currentLinkExists = async (): Promise<{ preset: string; clientLink: string
   }
 };
 
-export const useClientState = create<ClientStateTypes>()(devtools(
-  persist((set) => ({
+export const useClientState = create<ClientStateTypes & ClientStateActions>()(devtools(
+  persist((set, get) => ({
     status: 0,
     previousStatus: null,
     localPriority: false,
@@ -72,11 +77,16 @@ export const useClientState = create<ClientStateTypes>()(devtools(
     session: null,
     trigger: null,
     sessionTime: null,
+    sessionEndedAt: null,
 
     setStatus: async (status, clientLink) => {
       const validLink = clientLink ? { clientLink} : await currentLinkExists();
+      if (!validLink?.clientLink) {
+        return;
+      }
+      const persistedStatus = await readPropValue(`${DB_LINKS}/${validLink.clientLink}`, "status");
       update(set, (state) => {
-        if (status === state.status) {
+        if (Number(persistedStatus) === status && state.status === status) {
           return;
         }
         if (state.localPriority && state.status) {
@@ -91,9 +101,10 @@ export const useClientState = create<ClientStateTypes>()(devtools(
         if (status === 7) {
           state.uid ??= uuid();
           state.createdAd ??= serverStamp();
+          state.sessionEndedAt = null;
           updateLinkData("client", state.uid);
           createClient();
-          if (sessionExpired(state.sessionTime)) {
+          if (sessionExpired()) {
             state.session = uuid();
             state.sessionTime = serverStamp();
             createSession();
@@ -137,9 +148,23 @@ export const useClientState = create<ClientStateTypes>()(devtools(
       state.trigger = "setLocalPriority";
     }),
     setSessionTime: () => update(set, (state) => {
-      state.sessionTime = serverStamp();
+      if (state.status === 7) {
+        state.sessionTime = serverStamp();
+      }
       state.trigger = "setSessionTime";
     }),
+    setSessionEndedAt :async () => {
+      const clientLink = get().clientLink;
+      const session = await readPropValue(`${DB_LINKS}/${clientLink}`, "session");
+      const endedAt = await readPropValue(`${DB_SESSIONS}/${session}`, "endedAt");
+      if (!endedAt) {
+        return;
+      }
+      update(set, (state) => {
+        state.sessionEndedAt = endedAt;
+        state.trigger = "setSessionEndedAt";
+      });
+    },
     rehydrate: set,
 }),
   {

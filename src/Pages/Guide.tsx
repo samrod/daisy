@@ -8,10 +8,10 @@ import {
   setKeys,
   useGuideState,
   useClientState,
-  getGuideData,
   getLinkData,
   pushSessionData,
   useEventBinder,
+  endSession,
 } from "../lib";
 import { defaultModalState, Display, Modal } from "../components";
 import Styles from "./Guide.module.scss";
@@ -67,7 +67,9 @@ const Guide = () => {
   };
 
   const addSession = (session) => {
-    pushSessionData(session);
+    if (session) {
+      pushSessionData(session);
+    }
   };
   
   const onDenyClientRequest = useCallback(() => {
@@ -84,6 +86,7 @@ const Guide = () => {
   };
 
   const onEndClientSession = useCallback(() => {
+    endSession();
     setStatus(5, clientLinkRef.current);
     setUsername("");
     setModalActive(false);

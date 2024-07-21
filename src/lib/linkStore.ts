@@ -13,18 +13,18 @@ const getState = (key: string) => {
   }
 };
 
-export const getLinkData = (key: string, callback: (params: unknown) => void) => {
+export const getLinkData = async (key: string, callback: (params: unknown) => void) => {
   const clientLink = getState("clientLink");
   if (clientLink) {
     // console.log(`*** ${window.location.pathname} getLinkData:`, key);
-    getData({ path: `/${DB_LINKS}/${clientLink}`, key, callback});
+    await getData({ path: `/${DB_LINKS}/${clientLink}`, key, callback});
   }
 };
 
-export const updateLinkData = (key: string, value) => {
+export const updateLinkData = async (key: string, value) => {
   const clientLink = getState("clientLink");
   if (clientLink) {
-    updateData(`${DB_LINKS}/${clientLink}/${key}`, value);
+    await updateData(`${DB_LINKS}/${clientLink}/${key}`, value);
   }
 };
 
@@ -36,6 +36,6 @@ export const updateClientLink = async (clientLink: string) => {
   setClientLink(clientLink);
   setPreset(preset);
   updateGuide("clientLink", clientLink);
-  updateLinkData("", { status: 0, preset, guide: user?.uid, client: uid });
+  updateLinkData("", { status: 0, preset, guide: user?.uid, client: uid, session: "" });
 };
 
