@@ -4,7 +4,7 @@
   @apply overflow-hidden flex flex-col items-center justify-center h-screen p-4;
   background-image:
     radial-gradient(closest-corner at 10px 10px, #FE6F 15px, #D8000011 90px, #FF990000 300px),
-    linear-gradient(#4E99D9, #243ADD);
+    linear-gradient(#243ADD, #4E99D9);
   color: $palette-white;
   will-change: transform;
 }

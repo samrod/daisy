@@ -5,7 +5,7 @@ export const Cloud = ({ scaleX = 1, scaleY = 1, offset = 0 }) => {
   const seed = useRef(Math.round(Math.random() * 1000));
   const style = {
     transform: `scale(${scaleX}, ${scaleY}) translateY(${offset}vh)`,
-    animationDuration: `${240/(scaleX*1.75)}s`,
+    animationDuration: `${240/(scaleX*2)}s`,
   };
   return (
     <div style={style} className={Styles.cloud}>
