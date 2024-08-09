@@ -8,6 +8,7 @@ export const CLIENT_STATES = [
   "cancelled",   // 6
   "active",      // 7
   "expired",     // 8
+  "hidden",      // 9
 ];
 
 export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
@@ -20,6 +21,7 @@ export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
   cancelled: `${clientName} cancelled request`,
   active: `${clientName} is active`,
   expired: `${clientName}'s session expired.`,
+  hidden: `client's window is hidden`,
 });
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";

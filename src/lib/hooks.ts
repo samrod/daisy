@@ -84,20 +84,23 @@ export const useUnloadHandler = () => {
   const { localSession, sessionStatus, setUpdatedAt } = useSessionState.getState();
   const unloadEvents = useRef([]);
 
-  const onUnload = () => {
-    if (!window["unloadEventFired"] && localSession) {
-      updateLinkData("status", 0);
+  const onSuspend = (e) => {
+    console.log("*** onSuspend: ", e.type);
+    if (!window["unloadEventFired"] && (useClientState.getState().status === 1 || localSession)) {
+      updateLinkData("status", e.type === "pagehide" ? 0 : 9);
       setLocalPriority(true);
       setUpdatedAt();
-      window["unloadEventFired"] = true;
+      if (e.type === "pagehide") {
+        window["unloadEventFired"] = true;
+      }
     }
   };
 
   const checkSessionAndDefineEvents = () => {
     if (sessionStatus === "available") {
       unloadEvents.current = [
-        { event: "beforeunload", element: window, handler: onUnload},
-        { event: "unload", element: window, handler: onUnload},
+        { event: "pagehide", element: window, handler: onSuspend },
+        { event: "visibilitychange", element: document, handler: debounce(onSuspend, 250) },
         { event: "mousemove", element: document, handler: debounce(setUpdatedAt, 1000) },
       ];
       window["unloadEventSet"] = true;

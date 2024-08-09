@@ -105,18 +105,3 @@ export const sessionExpired = () => {
   const timeDelta = Math.abs(differenceInSeconds( oldStamp.toDate(), serverStamp().toDate()) );
   return timeDelta > EXPIRE_SESSION_SECONDS;
 };
-
-export const sessionBusy = async () => {
-  const { clientLink } = await currentLinkExists();
-  if (!clientLink) {
-    return false;
-  }
-  const clientState = await readPropValue(`${DB_LINKS}/${clientLink}/`, "");
-  if (!clientState["session"]) {
-    return false;
-  }
-  const { session } = useSessionState.getState();
-  const storedSession = sessionFromStorage()
-  const busy = storedSession?.session !== session;
-  return busy;
-};
