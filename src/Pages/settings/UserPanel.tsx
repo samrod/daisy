@@ -1,6 +1,6 @@
-import { MouseEventHandler, useState } from "react";
+import { useState } from "react";
 
-import { useGuideState } from "../../lib/guideState";
+import { useGuideState } from "../../state";
 import { Button as CloseButton, Tabs } from "../../components";
 import * as SettingComponents from "./";
 import Styles from "./UserPanel.module.scss";
@@ -8,7 +8,7 @@ import Styles from "./UserPanel.module.scss";
 const panels = [ "Email", "Password", "Link", "Presets"];
 
 export const UserPanel = ({ exists }) => {
-  const { userMode, setUserMode } = useGuideState(state => state);
+  const { setUserMode } = useGuideState(state => state);
   const [tab, setTab] = useState("email");
 
   const onTabClick = ({ target }) => {

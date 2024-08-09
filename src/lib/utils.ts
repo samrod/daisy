@@ -1,5 +1,6 @@
 import { produce } from 'immer';
-import { useGuideState, togglePlay, defaults, User } from ".";
+import { defaults, User } from ".";
+import { togglePlay, useGuideState } from '../state';
 export { v4 as uuid } from "uuid";
 declare global {
   interface Window {

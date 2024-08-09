@@ -2,23 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import { isEmpty } from 'lodash';
 
-import {
-  limits,
-  receiveMessage,
-  setKeys,
-  useGuideState,
-  useClientState,
-  getLinkData,
-  pushSessionData,
-  useEventBinder,
-  endSession,
-} from "../lib";
+import { limits, receiveMessage, setKeys, useEventBinder } from "../lib";
+import { useGuideState, useClientState, pushSessionData, endSession, getLinkData } from '../state';
 import { defaultModalState, Display, Modal } from "../components";
 import Styles from "./Guide.module.scss";
 
 const Guide = () => {
   const { userMode, clientLink, clientStatus, clientName, user, setActiveSetting, setClientStatus, setClientName } = useGuideState(state => state);
-  const { setStatus, setUsername, setGuide } = useClientState(state => state);
+  const { setStatus, setGuide } = useClientState(state => state);
   
   const [hidden, setHidden] = useState(true);
   const [modalActive, setModalActive] = useState(false);
@@ -55,16 +46,16 @@ const Guide = () => {
     }
   }, [hidden]);
 
-  const setClientStates = (data) => {
+  const setClientStates = useCallback((data) => {
     if (!data) {
       return;
     }
     const { status, username } = data;
-    setClientStatus(status);
     if (username) {
-      setClientName(username);
+      setClientStatus(status);
+      setClientName(username, false);
     }
-  };
+  }, [setClientName, setClientStatus]);
 
   const addSession = (session) => {
     if (session) {
@@ -73,24 +64,22 @@ const Guide = () => {
   };
   
   const onDenyClientRequest = useCallback(() => {
-    setStatus(4, clientLink);
-  }, [clientLink]);
+    setStatus(4);
+  }, [setStatus]);
 
   const onAcceptClientRequest = useCallback(() => {
     setGuide(user.uid);
-    setStatus(3, clientLink);
-  }, [clientLink]);
+    setStatus(3);
+  }, [user.uid, setGuide, setStatus]);
 
-  const onCancelEndSessionModal = () => {
+  const onCancelEndSessionModal = useCallback(() => {
     setModalActive(false);
-  };
+  }, [setModalActive]);
 
   const onEndClientSession = useCallback(() => {
-    endSession();
-    setStatus(5, clientLinkRef.current);
-    setUsername("");
+    setStatus(5);
     setModalActive(false);
-  }, []);
+  }, [setStatus]);
 
   const showEndSessionModal = useCallback(() => {
     setModalActive(true);
@@ -106,9 +95,9 @@ const Guide = () => {
         action: onEndClientSession,
       },
     });
-  }, [clientLink, clientName, onEndClientSession, onCancelEndSessionModal]);
+  }, [clientName, onEndClientSession, onCancelEndSessionModal]);
 
-  const showJoinRequestModal = () => {
+  const showJoinRequestModal = useCallback(() => {
     setModal({
       title: `Request from ${clientName}`,
       body: `Allow ${clientName} to join this session?`,
@@ -121,13 +110,13 @@ const Guide = () => {
         action: onAcceptClientRequest,
       },
     });
-  };
+  }, [clientName, onAcceptClientRequest, onDenyClientRequest]);
 
   useEffect(() => {
     setHidden(false);
     setModalActive(clientStatus === 2);
     showJoinRequestModal();
-  }, [clientStatus, clientName]);
+  }, [clientStatus, clientName, showJoinRequestModal]);
 
   useEffect(() => {
     clientLinkRef.current = clientLink;
@@ -135,7 +124,7 @@ const Guide = () => {
       getLinkData("", setClientStates);
       getLinkData("session", addSession);
     }
-  }, [clientLink, setClientStatus]);
+  }, [clientLink, setClientStatus, setClientStates]);
 
   useEventBinder(
     [

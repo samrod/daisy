@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { Dispatch, ChangeEvent } from "react";
 import {
   User,
   signOut,
@@ -10,7 +10,13 @@ import {
 } from "firebase/auth";
 
 import { auth } from "./firebase";
-import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "./guideStore";
+import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "../state";
+
+interface FormHandlerProps {
+  setEmail?: Dispatch<React.SetStateAction<string>>;
+  setPassword?: Dispatch<React.SetStateAction<string>>;
+  setConfirm?: Dispatch<React.SetStateAction<string>>;
+}
 
 export const useAuthHandlers = (currentUser: User) => ({
   currentUser,

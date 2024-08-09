@@ -1,6 +1,48 @@
-import { useEffect, useRef } from 'react';
-import { isEmpty, noop } from 'lodash';
-import { bindEvent, unbindEvent, updateLinkData, useClientState } from '.';
+import { DependencyList, useEffect, useRef } from 'react';
+import { debounce, noop } from 'lodash';
+import { DB_LINKS, bindEvent, readPropValue, unbindEvent } from '.';
+import { useClientState, updateLinkData, sessionFromStorage, useSessionState, sessionExpired, endSession } from '../state';
+
+export const useSessionCheck = () => {
+  const { clientLink, status } = useClientState.getState();
+  const { session, localSession, setSessionStatus } = useSessionState.getState();
+  const persistedSessionRef = useRef<string | {} | null>(null);
+
+  const reinitializeSession = () => {
+    const { session, setUpdatedAt } = useSessionState.getState();
+    if (session) {
+      if (sessionExpired()) {
+        endSession();
+      } else {
+        setUpdatedAt();
+      }
+    }
+  };
+
+  const updateSessionStatus = async () => {
+    if (clientLink) {
+      persistedSessionRef.current = await readPropValue(`${DB_LINKS}/${clientLink}/`, "session");
+    }
+
+    const sessionsMatch = persistedSessionRef.current === sessionFromStorage()?.state?.session;
+
+    if (!clientLink) {
+      setSessionStatus("unavailable");
+    } else if (status === 1) {
+      setSessionStatus("available");
+    } else if (localSession && (!persistedSessionRef.current || sessionsMatch)) {
+      setSessionStatus("available");
+      reinitializeSession();
+    } else {
+      setSessionStatus("busy");
+    }
+  };
+
+  useEffect(() => {
+    updateSessionStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setSessionStatus, session, clientLink, status]);
+};
 
 export const useFullscreenHandler = (authorized) => {
   useEffect(() => {
@@ -19,7 +61,7 @@ export const useFullscreenHandler = (authorized) => {
   }, [authorized]);
 };
 
-export const useEventBinder = (bindList = [], dependencies = []) => {
+export const useEventBinder = (bindList = [], dependencies: DependencyList = []) => {
   const eventsBound = useRef(false);
 
   useEffect(() => {
@@ -33,22 +75,40 @@ export const useEventBinder = (bindList = [], dependencies = []) => {
         eventsBound.current = false;
       }
     }
-  }, dependencies);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dependencies]);
 };
 
 export const useUnloadHandler = () => {
-  const { preset, setSessionTime, setLocalPriority, setStatus } = useClientState(state => state);
+  const { setLocalPriority, setStatus } = useClientState(state => state);
+  const { localSession, sessionStatus, setUpdatedAt } = useSessionState.getState();
+  const unloadEvents = useRef([]);
 
   const onUnload = () => {
-    updateLinkData("status", 0);
-    setLocalPriority(true);
-    setSessionTime();
+    if (!window["unloadEventFired"] && localSession) {
+      updateLinkData("status", 0);
+      setLocalPriority(true);
+      setUpdatedAt();
+      window["unloadEventFired"] = true;
+    }
   };
 
-  useEventBinder(isEmpty(preset) ? [] : [
-      { event: 'beforeunload', element: window, handler: onUnload},
-      { event: 'unload', element: window, handler: onUnload},
-    ], [setStatus, setLocalPriority]
+  const checkSessionAndDefineEvents = () => {
+    if (sessionStatus === "available") {
+      unloadEvents.current = [
+        { event: "beforeunload", element: window, handler: onUnload},
+        { event: "unload", element: window, handler: onUnload},
+        { event: "mousemove", element: document, handler: debounce(setUpdatedAt, 1000) },
+      ];
+      window["unloadEventSet"] = true;
+    }
+  };
+
+  if (!window["unloadEventSet"]) {
+    checkSessionAndDefineEvents();
+  }
+
+  useEventBinder(unloadEvents.current, [setStatus, setLocalPriority, unloadEvents.current]
   );
 };
 

@@ -1,5 +1,7 @@
 import { isEmpty } from "lodash";
-import { getData, updateData, useGuideState, useClientState, DB_LINKS, deletePropValue, updateGuide, guidePropExists } from ".";
+import { matchPath } from "react-router";
+import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue } from "../lib";
+import { useClientState, useGuideState, guidePropExists, updateGuide } from ".";
 
 const getState = (key: string) => {
   const guideState = useGuideState.getState();
@@ -36,6 +38,33 @@ export const updateClientLink = async (clientLink: string) => {
   setClientLink(clientLink);
   setPreset(preset);
   updateGuide("clientLink", clientLink);
-  updateLinkData("", { status: 0, preset, guide: user?.uid, client: uid, session: "" });
+  updateLinkData("", { status: 0, preset, guide: user?.uid, client: uid });
 };
 
+export const clientLinkFromPath = () => {
+  const matchPathData = matchPath({ path: "/:clientLink" }, window.location.pathname);
+  if (!matchPathData?.params?.clientLink) {
+    return null;
+  }
+  return matchPathData.params.clientLink;
+};
+
+export const currentLinkExists = async (): Promise<{ preset?: string; clientLink: string } | null> => {
+  try {
+    const guideState = useGuideState.getState();
+    const user = guideState.user;
+    if (user) {
+      const clientLink = guideState.clientLink || await readPropValue(`${DB_GUIDES}/${user.uid}`, "clientLink") + "";
+      return { clientLink };
+    }
+    const clientLink = clientLinkFromPath();
+    const response = await readPropValue(`${DB_LINKS}/${clientLink}`, "");
+    if (response) {
+      return { clientLink, ...(response as object) };
+    }
+    return { clientLink: null };
+  } catch(e) {
+    console.log("*** ", e);
+    return null;
+  }
+};

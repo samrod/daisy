@@ -2,15 +2,9 @@ import { useCallback, useEffect, useState, ChangeEvent, useRef } from "react";
 import { isEmpty } from "lodash";
 import cn from "classnames";
 
-import {
-  setKeys,
-  CLIENT_STATES,
-  updateSetting,
-  getLinkData,
-  useGuideState,
-  useEventBinder
-} from "../lib";
-import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus, Col } from "../components";
+import { useGuideState, updateSetting, getLinkData } from "../state";
+import { setKeys, CLIENT_STATES, useEventBinder } from "../lib";
+import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../components";
 import { UserPanel } from "./settings";
 import Styles from "./Remote.module.scss";
 

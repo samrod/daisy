@@ -5,7 +5,8 @@ import { initializeApp } from "firebase/app";
 import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import "firebase/compat/firestore";
-import { consoleLog, objDiff, useGuideState } from ".";
+import { consoleLog } from ".";
+import { useGuideState } from "../state";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
@@ -37,6 +38,7 @@ export const getData = (params: GetData) => {
 
 export const deletePropValue = async (path: string, key: string ) => {
   const dataRef = child(ref(db), `${path}/${key}`);
+  consoleLog("deletePropValue", `${path}: ${key}`);
   return await remove(dataRef);
 };
 
@@ -63,7 +65,7 @@ export const updateData = async (path: string, value:  DataType) => {
     return;
   }
   if (typeof value === "undefined" || value === null) {
-    consoleLog("updateData", `value missing for path "${path}"`, "error");
+    consoleLog("updateData", `value missing for "${path}"`, "error");
     return;
   }
   try {

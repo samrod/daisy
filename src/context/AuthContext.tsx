@@ -1,22 +1,10 @@
-import { Dispatch, createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 
-import {
-  User,
-  auth,
-  useGuideState,
-  getGuideData,
-  bindAllSettingsToValues,
-  useAuthHandlers,
-} from '../lib';
+import { useGuideState, getGuideData } from '../state';
+import { User, auth, bindAllSettingsToValues, useAuthHandlers } from '../lib';
 
 const AuthContext = createContext({});
-
-interface FormHandlerProps {
-  setEmail?: Dispatch<React.SetStateAction<string>>;
-  setPassword?: Dispatch<React.SetStateAction<string>>;
-  setConfirm?: Dispatch<React.SetStateAction<string>>;
-}
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -47,11 +35,11 @@ export const AuthProvider = ({ children }) => {
 
     getGuideData("clientLink", setClientLink);
     getGuideData("activePreset", setActivePreset);
-    getGuideData("userMode", setUserMode);
+    getGuideData("userMode", (value: boolean) => setUserMode(value, false));
     getGuideData(`presets`, setPresets);
 
     presetsBoundToStore.current = true;
-  }, [activePreset, currentUser, presets, setActivePreset, setPresets, setUserMode]);
+  }, [activePreset, currentUser, presets, setActivePreset, setPresets, setUserMode, setClientLink]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {

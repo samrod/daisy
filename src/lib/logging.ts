@@ -1,6 +1,6 @@
 import { isEmpty } from "lodash";
 
-type LevelTypes = "info" | "warn" | "error" | "standard";
+type LevelTypes = "info" | "warn" | "error" | "standard" | string;
 const levels: { [key: string]: string } = {
   info: "#090",
   warn: "#990",
@@ -9,7 +9,7 @@ const levels: { [key: string]: string } = {
 };
 
 const logStyle = (level: LevelTypes) => `
-  background-color: ${levels[level]};
+  background-color: ${levels[level] || level};
   color: black;
   padding: 5px;
   margin-: 5px 0;
@@ -18,8 +18,8 @@ const logStyle = (level: LevelTypes) => `
 const logTitleStyle = (level: LevelTypes) => `
   font-weight: bold;
   font-size: 11px;
-  color: ${levels[level]};
-  border: 2px solid ${levels[level]};
+  color: ${levels[level] || level};
+  border: 2px solid ${levels[level] || level};
   padding: 3px 5px;
   border-left: 0;
   width: 100px;
@@ -52,7 +52,7 @@ export const objDiff = (obj1, obj2) => {
 export const consoleLog = (
     message: string,
     extraInfo: { [key: string]: any } | string | number,
-    level: LevelTypes = "standard",
+    level: string | LevelTypes = "standard",
     pre?: boolean,
     post?: boolean,
   ) => {

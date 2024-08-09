@@ -1,6 +1,7 @@
 import { MouseEvent } from "react";
 import { create } from "zustand";
-import { User, defaults, limits, updateGuide, update, consoleLog, objDiff } from ".";
+import { User, defaults, limits, update, consoleLog, objDiff } from "../lib";
+import { updateGuide } from ".";
 
 const { volume, speed } = limits;
 
@@ -10,7 +11,7 @@ export type StateTypes = {
   motionBarActive: boolean;
   activeSetting: string;
   activePreset: string;
-  clientLink: string;
+  clientLink: string | null;
   clientStatus: number;
   clientName: string;
   settings: typeof defaults;
@@ -31,7 +32,7 @@ export type ActionsTypes = {
   setUserMode: (userMode: boolean) => void;
   setClientLink: (link: string) => void;
   setClientStatus: (state: number) => void;
-  setClientName: (name: string) => void;
+  setClientName: (name: string, persist?: boolean) => void;
 };
 
 export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
@@ -41,7 +42,7 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   motionBarActive: false,
   activeSetting: "",
   activePreset: "",
-  clientLink: "",
+  clientLink: null,
   clientStatus: 0,
   clientName: "",
   presets: {},
@@ -68,15 +69,20 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
     State.user = user;
     State.trigger = "setUser";
   }),
-  setUserMode: (userMode: boolean | MouseEvent<HTMLButtonElement>) => update(set, (state) => {
+  setUserMode: (userMode: boolean | MouseEvent<HTMLButtonElement>, persist = true) => update(set, (state) => {
+    let newUserMode: boolean;
     if (typeof userMode === "boolean") {
-      state.userMode = userMode;
-      updateGuide("userMode", state.userMode);
+      newUserMode = userMode;
     } else if (userMode && userMode?.type === "click") {
-      state.userMode = !state.userMode;
-      updateGuide("userMode", state.userMode);
+      newUserMode = !state.userMode;
     }
-    state.trigger = "setUserMode";
+    if (state.userMode !== newUserMode) {
+      state.userMode = newUserMode;
+      if (persist) {
+        updateGuide("userMode", newUserMode);
+      }
+      state.trigger = "setUserMode";
+    }
   }),
   setClientLink: (link) => update(set, (state) => {
     state.clientLink = link;
@@ -86,10 +92,12 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
     state.clientStatus = status;
     state.trigger = "setClientStatus";
   }),
-  setClientName: (name) => update(set, (state) => {
+  setClientName: (name, persist = true) => update(set, (state) => {
     state.clientName = name;
     state.trigger = "setClientName";
-    updateGuide("clientName", name);
+    if (persist) {
+      updateGuide("clientName", name);
+    }
   }),
   setPresets: (presets) => update(set, (state) => {
     state.presets = presets;

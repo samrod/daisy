@@ -1,34 +1,25 @@
-import { useCallback, useEffect, useState } from 'react';
-import { isEmpty } from 'lodash';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from "classnames";
 
-import {
-  bindAllSettingsToValues,
-  useClientState,
-  useGuideState,
-  getLinkData,
-  CLIENT_STATES,
-  useUnloadHandler,
-  useFullscreenHandler,
-  sessionBusy,
-} from "../lib";
+import { bindAllSettingsToValues, CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, } from "../lib";
+import { useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState } from '../state';
 import { ClientLogin, Cloud, Display, NotAvailable } from "../components";
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
 
 const Client = () => {
-  const { preset, clientLink, status, username, setUsername, setClientLink, setStatus, setGuide, setLocalPriority, setSession } = useClientState(state => state);
-  const { setActivePreset } = useGuideState(state => state);
+  const { uid, preset, status, username, clientLink, setUsername, setClientLink, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
+  const { sessionStatus, setLocalSession, setUpdatedAt } = useSessionState(state => state);
+  const { setActivePreset } = useGuideState(state => state);  
+  const [nickname, setNickname] = useState(username)
+  const [slideIn, setSlideIn] = useState(false);
+  const sessionBusyRef = useRef<boolean>();
 
   const clientStatus = CLIENT_STATES[status];
 
-  const [clientLinkAvailable, setClientLinkAvailable] = useState(null);
-  const [authorized, setAuthorized] = useState(clientStatus === "active");
-  const [nickname, setNickname] = useState(username)
-  const [slideIn, setSlideIn] = useState(false);
-
+  useSessionCheck();
   useUnloadHandler();
-  useFullscreenHandler(authorized);
+  useFullscreenHandler(clientStatus === "active");
 
   const findGuide = useCallback(async () => {
     bindAllSettingsToValues();
@@ -37,10 +28,6 @@ const Client = () => {
     }
   }, [setStatus, clientStatus]);
 
-  const checkIfBusy = async () => {
-    sessionBusyRef.current = await sessionBusy();
-  };
-
   const onSubmit = useCallback((e) => {
     e.preventDefault();
     switch (clientStatus) {
@@ -48,8 +35,12 @@ const Client = () => {
       case "present":
       case "denied":
       case "done":
+        setLocalSession(true);
         setStatus(2);
         setUsername(nickname);
+        break;
+      case "cancelled":
+        setLocalSession(false);
         break;
       case "authorized":
         setStatus(7);
@@ -61,37 +52,31 @@ const Client = () => {
     if (preset === null) {
       return;
     }
-    if (!isEmpty(preset)) {
-      setClientLinkAvailable("available");
+    if (sessionStatus === "available") {
+      if (clientStatus === "active") {
+        createClient();
+        createSession();
+      }
       setActivePreset(preset);
       findGuide();
-    } else {
-      setTimeout(setClientLinkAvailable.bind(null, "unavailable"));
     }
-  }, [findGuide, preset, setActivePreset]);
+  }, [clientLink, clientStatus, sessionStatus, preset, uid, setUpdatedAt, findGuide, setActivePreset]);
 
   useEffect(() => {
-    if (!clientLinkAvailable) {
-      getLinkData("status", setStatus);
+    if (clientLink && !sessionBusyRef.current) {
+      getLinkData("status", (status: number) => setStatus(status, false));
       getLinkData("guide", setGuide);
-      setTimeout(setLocalPriority.bind(null, false), 1000);
+      setTimeout(setLocalPriority.bind(null, false), 500);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientLink]);
-
-  useEffect(() => {
-    setAuthorized(clientStatus === "active");
-    if (status === 7 && sessionExpired()) {
-      setStatus(8);
-    }
-  }, [clientStatus]);
 
   useEffect(() => {
     setClientLink();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (authorized) {
+  if (clientStatus === "active" && sessionStatus === "available") {
     return (
       <Display />
     );
@@ -101,13 +86,14 @@ const Client = () => {
     <div className={Styles.page}>
       <Cloud offset={-5} scaleX={1.5} />
       <Cloud offset={90} scaleY={0.5} />
-      <div className={Styles.card}>
-        <div className={cn("step1 slider", { slideIn })}>
+      <form className={cn(Styles.card, "slider", { slideIn })} onSubmit={onSubmit}>
+        <div className="step">
           <Logo className={Styles.logo} />
         </div>
-        {clientLinkAvailable === "available" && <ClientLogin slideIn={slideIn} onReady={setSlideIn} setAuthorized={setAuthorized} />}
-        {clientLinkAvailable === "unavailable" && <PageMissing slideIn={slideIn} onReady={setSlideIn} />}
-      </div>
+        {sessionStatus === "busy" && <NotAvailable onReady={setSlideIn} state={sessionStatus} />}
+        {sessionStatus === "available" && <ClientLogin onReady={setSlideIn} onSubmit={onSubmit} nickname={nickname} setNickname={setNickname} />}
+        {sessionStatus === "unavailable" && <NotAvailable onReady={setSlideIn} state={sessionStatus} />}
+      </form>
     </div>
   );
 };

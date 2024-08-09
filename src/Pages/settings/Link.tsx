@@ -1,7 +1,8 @@
 import { useState, useCallback, FormEvent, useEffect, useRef } from "react"
 import { isEmpty } from "lodash";
 
-import { LINK_PLACEHOLDER, getGuideData, updateClientLink, propExists, DB_LINKS } from "../../lib";
+import { updateClientLink, getGuideData } from "../../state";
+import { LINK_PLACEHOLDER, propExists, DB_LINKS } from "../../lib";
 import { Alert, Button, Col, TextGroup } from "../../components";
 
 export const Link = () => {

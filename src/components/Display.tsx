@@ -3,13 +3,8 @@ import { noop } from "lodash";
 import cn from "classnames";
 import CSS from "csstype";
 
-import {
-  generateSound,
-  setKeys,
-  limits,
-  useGuideState,
-  useEventBinder
-} from "../lib";
+import { generateSound, setKeys, limits, useEventBinder } from "../lib";
+import { useGuideState } from '../state';
 import Styles from "./Display.module.scss";
 
 export const Display = ({ children = null }) => {

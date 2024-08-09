@@ -1,33 +1,49 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
-import cn from "classnames";
 
-import { useClientState, useUnloadHandler, CLIENT_STATES } from "../lib";
+import { useUnloadHandler, CLIENT_STATES } from "../lib";
+import { useClientState, endSession, useSessionState } from '../state';
 import { Alert, Button, Row, Textfield } from "../components";
 
-export const PageMissing = ({ slideIn, onReady }) => {
+const UNAVAILABLE_STATES = {
+  "unavailable": {
+    title: "This page is not available",
+    body: "Check with your guide for the right link.",
+  },
+  "busy": {
+    title: "Link busy.",
+    body: "There's an active session at this link. Please try later."
+  }
+}
+
+export const NotAvailable = ({ onReady, state }) => {
+  const copy = useRef(UNAVAILABLE_STATES[state])
   useEffect(() => {
     setTimeout(onReady.bind(null, true));
+    onReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  if (!state) {
+    return;
+  }
   return (
     <>
-      <div className={cn("step2 slider", { slideIn })}>
-        <h4>This page is not available</h4>
+      <div className="step">
+        <h4>{copy.current.title}</h4>
       </div>
-      <Row className={cn("step3 slider", { slideIn })}>
-        <h5>Check with your guide for the right link.</h5>
+      <Row className="step">
+        <h5>{copy.current.body}</h5>
       </Row>
     </>
   )
 };
 
-export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
-  const { status, setStatus, username, session, setUsername, setSessionEndedAt } = useClientState(state => state);
+export const ClientLogin = ({ onReady, onSubmit, nickname, setNickname }) => {
+  const { uid, status, setStatus } = useClientState(state => state);
+  const { setUpdatedAt } = useSessionState(state => state);
 
   const [cta, setCta] = useState("Join");
-  const [nickname, setNickname] = useState(username)
   const [message, setMessage] = useState<string | null>();
   const [alertVariant, setAlertVariant] = useState("standard");
 
@@ -41,25 +57,9 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
     setStatus(6);
   }, [setStatus]);
 
-  const onSubmit = useCallback((e) => {
-    e.preventDefault();
-    switch (clientStatus) {
-      case "unavailable":
-      case "present":
-      case "denied":
-      case "done":
-        setStatus(2);
-        setUsername(nickname);
-        break;
-      case "authorized":
-        setStatus(7);
-        break;
-    }
-  }, [clientStatus, setStatus, nickname, setUsername]);
-
   const onChange = useCallback(({ target }) => {
     setNickname(target.value);
-  }, []);
+  }, [setNickname]);
 
   const reset = useCallback((delay: number = 0) => {
     clearTimeout(resetTimer.current);
@@ -69,12 +69,14 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
     }, delay);
   }, [setStatus]);
 
-  const updateCta = useCallback(() => {
+  const onStateUpdate = useCallback(() => {
     switch (clientStatus) {
       case "unavailable":
         clearTimeout(resetTimer.current);
         setCta("Join");
-        setAuthorized(false);
+        break;
+      case "present":
+        setCta("Join");
         break;
       case "waiting":
         setMessage(null);
@@ -95,11 +97,10 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
         reset(10000);
         break;;
       case "done":
-        setSessionEndedAt();
         setMessage("Your guide ended your session.");
         setAlertVariant("standard");
-        setAuthorized(false);
         setCta("Rejoin");
+        endSession(true);
         reset(30000);
         break;;
       case "cancelled":
@@ -109,57 +110,52 @@ export const ClientLogin = ({ setAuthorized, slideIn, onReady }) => {
         break;
       case "expired":
         setMessage("Your session expired due to inactivity.");
+        endSession();
         reset(5000);
         break;
     }
-  }, [clientStatus, reset, setAuthorized]);
+  }, [clientStatus, reset, setUpdatedAt, uid]);
 
   useEffect(() => {
-    updateCta();
+    onStateUpdate();
+    onReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
-  useEffect(() => {
-    onReady(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <>
-      <div className={cn("step2 slider", { slideIn })}>
+      <div className="step">
         <h2>Welcome</h2>
       </div>
-      <form onSubmit={onSubmit}>
-        <div className={cn("step3 slider", { slideIn })}>
-          <Alert size="sm" persist variant={alertVariant} klass="my-0">{message}</Alert>
-          <Textfield
-            type="text"
-            value={nickname}
-            onChange={onChange}
-            autoComplete="off"
-            placeholder="Pick a username"
-            maxLength={30}
-            autoFocus
-            size="lg"
-            stretch
-            name="username"
-          />
-        </div>
-        <Row justify="between" klass={cn("step4 slider", { slideIn })}>
-          {status === 2 && (
-            <Button variant="success" value="Cancel" onClick={onCancel} />
-          )}
-          <Button
-            type="submit"
-            value={cta}
-            onClick={onSubmit}
-            variant={status === 3 ? "success" : "standard"}
-            disabled={isEmpty(nickname)}
-            stretch={status!==2}
-            loading={status===2}
-          />
-        </Row>
-      </form>
+      <div className="step">
+        <Alert size="sm" persist variant={alertVariant} klass="my-0">{message}</Alert>
+        <Textfield
+          type="text"
+          value={nickname}
+          onChange={onChange}
+          autoComplete="off"
+          placeholder="Pick a username"
+          maxLength={30}
+          autoFocus
+          size="lg"
+          stretch
+          name="username"
+        />
+      </div>
+      <Row justify="between" klass="step">
+        {status === 2 && (
+          <Button variant="success" value="Cancel" onClick={onCancel} />
+        )}
+        <Button
+          type="submit"
+          value={cta}
+          onClick={onSubmit}
+          variant={status === 3 ? "success" : "standard"}
+          disabled={isEmpty(nickname)}
+          stretch={status !== 2}
+          loading={status === 2}
+        />
+      </Row>
     </>
   );
 }

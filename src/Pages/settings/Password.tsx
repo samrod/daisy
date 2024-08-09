@@ -1,6 +1,6 @@
 import { useState, useCallback, FormEvent } from "react"
 
-import { getAuth, updatePassword } from "../../lib";
+import { getAuth, updatePassword } from "../../state";
 import { Alert, Button, TextGroup, Row, Col } from "../../components";
 import { useAuth } from "../../context/AuthContext";
 import Styles from "./UserPanel.module.scss";
