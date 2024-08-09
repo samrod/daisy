@@ -10,7 +10,7 @@
 }
 
 .logo {
-  @apply w-[20vw] mb-4 blur-0;
+  @apply w-[20vw] mb-4 blur-0 mx-auto;
   fill: white;
   :global(#Daisy_2) {
     fill: #F90;
@@ -18,22 +18,35 @@
 }
 
 .card {
-  @apply flex items-center flex-col rounded-xl p-8 w-1/3 min-w-[375px] backdrop-blur ;
+  @apply flex flex-col items-stretch text-center rounded-xl p-8 w-1/3 min-w-[375px] backdrop-blur ;
   background-color: transparentize($palette-white, 0.9);
   box-shadow:
     inset 1px 1px 0px #FFF4,
     inset -1px -1px 0px #0004;
 }
 
-:global(.slider) {
-  opacity: 0;
-  transform: translateY(-200px);
-  transition:
-    opacity 2s ease-in,
-    transform 1s cubic-bezier(0, 0.5, 0.5, 1);
+@mixin child($count) {
+  $staggerDelay: .25;
+  @for $n from 0 to $count {
+    &:nth-child(#{$n}) {
+      transition-delay: #{$n * $staggerDelay}s;
+    }
+  }
 }
 
-:global(.slideIn) { opacity: 1; transform: translateY(0px); }
-:global(.step2) { transition-delay: 0.25s; }
-:global(.step3) { transition-delay: 0.5s; }
-:global(.step4) { transition-delay: 0.75s; }
+:global {
+  .slider {
+    .step {
+      opacity: 0;
+      transform: translateY(-200px);
+      transition:
+        opacity 2s ease-in,
+        transform 1s cubic-bezier(0, 0.5, 0.5, 1);
+    }
+    &.slideIn .step {
+      opacity: 1;
+      transform: translateY(0px);
+      @include child(10);
+    }
+  }
+}

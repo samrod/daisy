@@ -10,20 +10,21 @@ import {
   CLIENT_STATES,
   useUnloadHandler,
   useFullscreenHandler,
-  sessionExpired
+  sessionBusy,
 } from "../lib";
-import { ClientLogin, Cloud, Display, PageMissing } from "../components";
+import { ClientLogin, Cloud, Display, NotAvailable } from "../components";
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
 
 const Client = () => {
-  const { preset, clientLink, setClientLink, status, sessionTime, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
+  const { preset, clientLink, status, username, setUsername, setClientLink, setStatus, setGuide, setLocalPriority, setSession } = useClientState(state => state);
   const { setActivePreset } = useGuideState(state => state);
 
   const clientStatus = CLIENT_STATES[status];
 
   const [clientLinkAvailable, setClientLinkAvailable] = useState(null);
   const [authorized, setAuthorized] = useState(clientStatus === "active");
+  const [nickname, setNickname] = useState(username)
   const [slideIn, setSlideIn] = useState(false);
 
   useUnloadHandler();
@@ -35,6 +36,26 @@ const Client = () => {
       setStatus(1);
     }
   }, [setStatus, clientStatus]);
+
+  const checkIfBusy = async () => {
+    sessionBusyRef.current = await sessionBusy();
+  };
+
+  const onSubmit = useCallback((e) => {
+    e.preventDefault();
+    switch (clientStatus) {
+      case "unavailable":
+      case "present":
+      case "denied":
+      case "done":
+        setStatus(2);
+        setUsername(nickname);
+        break;
+      case "authorized":
+        setStatus(7);
+        break;
+    }
+  }, [clientStatus, setStatus, nickname, setUsername]);
 
   useEffect(() => {
     if (preset === null) {
