@@ -18,7 +18,6 @@ import {
   updateLinkData,
   currentLinkExists,
   useSessionState,
-  getLinkData
 } from '.';
 
 export const getSessionData = (key: string, callback: (params: unknown) => void) => {

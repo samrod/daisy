@@ -3,7 +3,12 @@ export const content = [
   "./src/**/*.tsx",
 ];
 export const theme = {
-  extend: {},
+  extend: {
+    saturate: {
+      25: '.25',
+      75: '.75'
+    }
+  },
 };
 export const safelist = [
   "justify-start",

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 
 import { useUnloadHandler, CLIENT_STATES } from "../lib";
-import { useClientState, endSession, useSessionState } from '../state';
+import { useClientState, endSession } from '../state';
 import { Alert, Button, Row, Textfield } from "../components";
 
 const UNAVAILABLE_STATES = {
@@ -40,8 +40,7 @@ export const NotAvailable = ({ onReady, state }) => {
 };
 
 export const ClientLogin = ({ onReady, onSubmit, nickname, setNickname }) => {
-  const { uid, status, setStatus } = useClientState(state => state);
-  const { setUpdatedAt } = useSessionState(state => state);
+  const { status, setStatus } = useClientState(state => state);
 
   const [cta, setCta] = useState("Join");
   const [message, setMessage] = useState<string | null>();
@@ -114,7 +113,7 @@ export const ClientLogin = ({ onReady, onSubmit, nickname, setNickname }) => {
         reset(5000);
         break;
     }
-  }, [clientStatus, reset, setUpdatedAt, uid]);
+  }, [clientStatus, reset]);
 
   useEffect(() => {
     onStateUpdate();

@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { isEmpty } from 'lodash';
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "../lib";
-import { useGuideState, useClientState, pushSessionData, endSession, getLinkData } from '../state';
+import { useGuideState, useClientState, pushSessionData, getLinkData } from '../state';
 import { defaultModalState, Display, Modal } from "../components";
 import Styles from "./Guide.module.scss";
 

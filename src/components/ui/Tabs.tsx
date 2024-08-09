@@ -42,8 +42,6 @@ Tabs.Panels = ({ children, theme = "dark" }) => (
   </div>
 );
 
-const randomKey = () => Math.round(Math.random()*1000);
-
 Tabs.Panel = ({ active, title, klass = "", children }) => {
   return (
     <div className={cn(Styles.tabPanel, klass, { active: title.toLowerCase() === active })}>

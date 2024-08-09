@@ -51,9 +51,6 @@
     inset 1px 1px 1px #FFF5,
     inset -1px -1px 1px #0004;
 
-  &:hover {
-  }
-
   &:active {
     box-shadow: 
       inset 1px 1px 1px #0004,
@@ -61,7 +58,7 @@
   }
 
   &:disabled, &:disabled:hover {
-    @apply shadow-none opacity-75 brightness-75 saturate-[.75];
+    @apply shadow-none opacity-75 brightness-75 saturate-75;
   }
 }
 

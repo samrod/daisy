@@ -46,7 +46,7 @@ const Client = () => {
         setStatus(7);
         break;
     }
-  }, [clientStatus, setStatus, nickname, setUsername]);
+  }, [clientStatus, nickname, setStatus, setLocalSession, setUsername]);
 
   useEffect(() => {
     if (preset === null) {
