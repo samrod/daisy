@@ -20,7 +20,7 @@
 .card {
   @apply flex flex-col items-stretch text-center rounded-xl p-8 w-1/3 min-w-[375px] backdrop-blur opacity-0;
   background-color: transparentize($palette-white, 0.9);
-  transition: opacity 0.25s ease-in;
+  transition: opacity 0.25s 0.25s ease-in;
   &:global(.slideIn) {
     @apply opacity-100;
   }

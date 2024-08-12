@@ -98,17 +98,19 @@ export const useUnloadHandler = () => {
     }
   };
 
-  const onVisibilitychange = async () => {
-    if (presentOrLocalSession()) {
-      if (document.visibilityState === "hidden") {
-        setSupressCallback(true);
-        await updateLinkData("status", 9);
-      } else {
-        setSupressCallback(false);
-        await updateLinkData("status", useClientState.getState().status);
-        setUpdatedAt();
+  const onVisibilitychange = () => {
+    setTimeout(async () => {
+      if (presentOrLocalSession()) {
+        if (document.visibilityState === "hidden") {
+          setSupressCallback(true);
+          await updateLinkData("status", 9);
+        } else {
+          setSupressCallback(false);
+          await updateLinkData("status", useClientState.getState().status);
+          setUpdatedAt();
+        }
       }
-    }
+    });
   };
 
   const checkSessionAndDefineEvents = () => {

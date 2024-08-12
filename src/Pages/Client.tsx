@@ -3,9 +3,14 @@ import cn from "classnames";
 
 import { bindAllSettingsToValues, CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, } from "../lib";
 import { useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState } from '../state';
-import { ClientLogin, Cloud, Display, NotAvailable } from "../components";
+import { ClientLogin, Clouds, Display, NotAvailable } from "../components";
 import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
+
+const cloudSettings = [
+  { offset: -5, scaleX: 1.5 },
+  { offset: 90, scaleY: 0.5 },
+];
 
 const Client = () => {
   const { uid, preset, status, username, clientLink, setUsername, setClientLink, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
@@ -84,8 +89,7 @@ const Client = () => {
 
   return (
     <div className={Styles.page}>
-      <Cloud offset={-5} scaleX={1.5} />
-      <Cloud offset={90} scaleY={0.5} />
+      <Clouds delay={3} cloudData={cloudSettings} />
       <form className={cn(Styles.card, "slider", { slideIn })} onSubmit={onSubmit}>
         <div className="step">
           <Logo className={Styles.logo} />

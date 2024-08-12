@@ -47,21 +47,6 @@
   border-right: 0;
   height: 25px;
   width: auto;
-  &:global(.unavailable, .denied) {
-    color: #F00;
-  }
-
-  &:global(.present) {
-    color: #CC0;
-  }
-
-  &:global(.waiting) {
-    color: #F90;
-  }
-
-  &:global(.authorized) {
-    color: green;
-  }
 
   &:first-child {
     border: 1px solid #999;

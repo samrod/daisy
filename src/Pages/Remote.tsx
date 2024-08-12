@@ -3,7 +3,7 @@ import { isEmpty } from "lodash";
 import cn from "classnames";
 
 import { useGuideState, updateSetting, getLinkData } from "../state";
-import { setKeys, CLIENT_STATES, useEventBinder } from "../lib";
+import { setKeys, useEventBinder } from "../lib";
 import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../components";
 import { UserPanel } from "./settings";
 import Styles from "./Remote.module.scss";
@@ -11,7 +11,7 @@ import Styles from "./Remote.module.scss";
 const Remote = () => {
   useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys, options: { capture: true }}]);
 
-  const { clientStatus, setClientStatus, clientLink, setSetting, userMode, setUserMode } = useGuideState(state => state);
+  const { setClientStatus, clientLink, setSetting, userMode, setUserMode } = useGuideState(state => state);
   const settingsRef = useRef(useGuideState.getState().settings);
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settingsRef.current;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
@@ -121,7 +121,7 @@ const Remote = () => {
     <div className={cn(Styles.remote, { userMode })} onTransitionEnd={removeUserPanelFromDom}>
       <div className={Styles.page}>
         <div className={Styles.topButtons}>
-          <Button leftIcon="user" klass={cn(Styles.standardButton, CLIENT_STATES[clientStatus])} variant="black" onClick={addUserPanelToDom} />
+          <Button leftIcon="user" klass={Styles.standardButton} variant="black" onClick={addUserPanelToDom} />
           <Button leftIcon={!playing ? "play" : "pause"} circle={40} klass={Styles.playButton} variant="black" onClick={persistPlay} />
         </div>
         <Row nowrap cols="auto" justify="between" gap={0} klass={Styles.statusDisplay}>

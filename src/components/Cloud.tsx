@@ -1,7 +1,13 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Styles from "./Cloud.module.scss";
 
-export const Cloud = ({ scaleX = 1, scaleY = 1, offset = 0 }) => {
+interface CloudProps {
+  scaleX?: number;
+  scaleY?: number;
+  offset?: number;
+}
+
+export const Cloud = ({ scaleX = 1, scaleY = 1, offset = 0 }: CloudProps) => {
   const seed = useRef(Math.round(Math.random() * 1000));
   const style = {
     transform: `scale(${scaleX}, ${scaleY}) translateY(${offset}vh)`,
@@ -49,5 +55,25 @@ export const Cloud = ({ scaleX = 1, scaleY = 1, offset = 0 }) => {
         </filter>
       </svg>
     </div>
+  );
+};
+
+interface CloudsProps {
+  cloudData: CloudProps[]
+  delay?: number;
+}
+
+export const Clouds = ({ cloudData, delay = 0 }: CloudsProps) => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(setReady.bind(null, true), delay * 1000);
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [setReady, delay])
+
+  return !ready ? null : (
+    cloudData.map((datum, index) => <Cloud key={`cloud-${index}`} {...datum} />)
   );
 };
