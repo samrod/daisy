@@ -30,7 +30,7 @@ export const useSessionCheck = () => {
       setSessionStatus("unavailable");
     } else if (status === 1) {
       setSessionStatus("available");
-    } else if (localSession && (!persistedSessionRef.current || sessionsMatch)) {
+    } else if (localSession || (!persistedSessionRef.current || sessionsMatch)) {
       setSessionStatus("available");
       reinitializeSession();
     } else {
@@ -80,27 +80,43 @@ export const useEventBinder = (bindList = [], dependencies: DependencyList = [])
 };
 
 export const useUnloadHandler = () => {
-  const { setLocalPriority, setStatus } = useClientState(state => state);
-  const { localSession, sessionStatus, setUpdatedAt } = useSessionState.getState();
+  const { setSupressCallback, setLocalPriority, setStatus } = useClientState(state => state);
+  const { setUpdatedAt } = useSessionState.getState();
   const unloadEvents = useRef([]);
 
-  const onSuspend = (e) => {
-    console.log("*** onSuspend: ", e.type);
-    if (!window["unloadEventFired"] && (useClientState.getState().status === 1 || localSession)) {
-      updateLinkData("status", e.type === "pagehide" ? 0 : 9);
+  const presentOrLocalSession = () => {
+    const { localSession } = useSessionState.getState();
+    const { status } = useClientState.getState();
+    return status === 1 || localSession
+  };
+
+  const onPageHide = async () => {
+    if (presentOrLocalSession()) {
       setLocalPriority(true);
+      await updateLinkData("status", 0);
       setUpdatedAt();
-      if (e.type === "pagehide") {
-        window["unloadEventFired"] = true;
+    }
+  };
+
+  const onVisibilitychange = async () => {
+    if (presentOrLocalSession()) {
+      if (document.visibilityState === "hidden") {
+        setSupressCallback(true);
+        await updateLinkData("status", 9);
+      } else {
+        setSupressCallback(false);
+        await updateLinkData("status", useClientState.getState().status);
+        setUpdatedAt();
       }
     }
   };
 
   const checkSessionAndDefineEvents = () => {
+    const { sessionStatus } = useSessionState.getState();
     if (sessionStatus === "available") {
       unloadEvents.current = [
-        { event: "pagehide", element: window, handler: onSuspend },
-        { event: "visibilitychange", element: document, handler: debounce(onSuspend, 250) },
+        { event: "pagehide", element: window, handler: onPageHide },
+        { event: "visibilitychange", element: document, handler: onVisibilitychange },
         { event: "mousemove", element: document, handler: debounce(setUpdatedAt, 1000) },
       ];
       window["unloadEventSet"] = true;

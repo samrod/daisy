@@ -16,7 +16,6 @@ import {
   useGuideState,  
   pushGuideData,
   updateLinkData,
-  currentLinkExists,
   useSessionState,
 } from '.';
 
@@ -79,7 +78,7 @@ export const createSession = async () => {
 };
 
 export const endSession = async (explicit = false) => {
-  const { clientLink, setStatus, setUsername } = useClientState.getState();
+  const { clientLink, setStatus, setUsername, setSupressCallback } = useClientState.getState();
 
   await deletePropValue(`${DB_LINKS}/${clientLink}`, "session");
   await updateSessionData("endedAt", serverStamp());
@@ -91,6 +90,7 @@ export const endSession = async (explicit = false) => {
   });
 
   setUsername("");
+  setSupressCallback(false);
   setStatus(explicit ? 5 : 8);
 };
 

@@ -11,8 +11,8 @@ export const CLIENT_STATES = [
   "hidden",      // 9
 ];
 
-export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
-  unavailable: "no one connected",
+export const CLIENT_STATE_DISPLAYS = (clientLink, clientName, session) => ({
+  unavailable: session ? `${clientName || "client"} is not connected` : "waiting for client",
   present: `someon's at ${clientLink}`,
   waiting: `${clientName} is waiting`,
   authorized: `waiing for ${clientName} to join`,
@@ -21,7 +21,7 @@ export const CLIENT_STATE_DISPLAYS = (clientLink, clientName) => ({
   cancelled: `${clientName} cancelled request`,
   active: `${clientName} is active`,
   expired: `${clientName}'s session expired.`,
-  hidden: `client's window is hidden`,
+  hidden: `${clientName || "client"}'s window is hidden`,
 });
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";

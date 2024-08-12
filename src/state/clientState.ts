@@ -23,6 +23,7 @@ type ClientStateTypes = {
   guide: null | string;
   trigger: null | string;
   localPriority: boolean;
+  suppressCallback: boolean;
 }
 
 type ClientStateActions = {
@@ -32,6 +33,7 @@ type ClientStateActions = {
   setClientLink: () => void;
   setUsername: (name?: string, persist?: boolean) => void;
   setLocalPriority: (flag: boolean) => void;
+  setSupressCallback: (flag: boolean) => void;
   setCreatedAt: () => void;
   setUid: (uid?: string) => void;
 };
@@ -40,6 +42,7 @@ const clientStates = {
   status: 0,
   previousStatus: null,
   localPriority: false,
+  suppressCallback: false,
   preset: null,
   clientLink: null,
   username: "",
@@ -50,6 +53,9 @@ const clientStates = {
 
 const clientStateActions = (set, get) => ({
   setStatus: async (status, persist = true) => {
+    if (get().suppressCallback) {
+      return;
+    }
     const validLink = await currentLinkExists();
     if (!validLink?.clientLink) {
       return;
@@ -115,6 +121,10 @@ const clientStateActions = (set, get) => ({
   setUid: (uid = uuid()) => update(set, (state) => {
     state.uid ??= uid;
     state.trigger = "setUid";
+  }),
+  setSupressCallback: (enabled) => update(set, (state) => {
+    state.suppressCallback = enabled;
+    state.trigger = "setSupressCallback";
   }),
 });
 
