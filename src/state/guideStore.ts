@@ -1,4 +1,4 @@
-import { DataType, User, getData, pushData, readPropValue, updateData, DEFAULT_PRESET_NAME, defaults, uuid, DB_GUIDES, DB_PRESETS, DB_SESSIONS } from "../lib";
+import { DataType, User, getData, pushData, readPropValue, updateData, DEFAULT_PRESET_NAME, defaults, uuid, DB_GUIDES, DB_PRESETS, DB_SESSIONS } from "lib";
 import { updateClientLink, useGuideState } from ".";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";

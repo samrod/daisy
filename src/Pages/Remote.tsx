@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState, ChangeEvent, useRef } from "react";
+import { useCallback, useEffect, useState, ChangeEvent, useRef, MouseEventHandler } from "react";
 import { isEmpty } from "lodash";
 import cn from "classnames";
 
-import { useGuideState, updateSetting, getLinkData } from "../state";
-import { setKeys, useEventBinder } from "../lib";
+import { useGuideState, updateSetting, getLinkData } from "state";
+import { setKeys, useEventBinder } from "lib";
 import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../components";
 import { UserPanel } from "./settings";
 import Styles from "./Remote.module.scss";
@@ -50,7 +50,7 @@ const Remote = () => {
     setPanel(target.dataset.option);
   };
 
-  const setValue = ({ target }: ChangeEvent<HTMLInputElement>, execute = true) => {
+  const setValue = ({ target }, execute = true) => {
     const { value, dataset: { action, option } } = target;
     const data = option || Number(value);
     if (localState[action]) {
@@ -81,7 +81,7 @@ const Remote = () => {
     setValue(e, false);
   };
 
-  const onSpeedSliderMouseUp = (e: ChangeEvent<HTMLInputElement>) => {
+  const onSpeedSliderMouseUp: MouseEventHandler<HTMLInputElement> = (e) => {
     setValue(e);
     if (lastPlayingState && speedSliderDragged) {
       setFakePasued(false);

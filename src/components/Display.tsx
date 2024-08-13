@@ -3,8 +3,8 @@ import { noop } from "lodash";
 import cn from "classnames";
 import CSS from "csstype";
 
-import { generateSound, setKeys, limits, useEventBinder } from "../lib";
-import { useGuideState } from '../state';
+import { generateSound, setKeys, limits, useEventBinder } from "lib";
+import { useGuideState } from 'state';
 import Styles from "./Display.module.scss";
 
 export const Display = ({ children = null }) => {
@@ -81,7 +81,7 @@ export const Display = ({ children = null }) => {
 
   const light = (item, index) => {
     const { width, height } = targetStyle;
-    const marginLeft = (absoluteBallSize - parseInt(width)) / 2 + 'vw';
+    const marginLeft = (absoluteBallSize - parseInt(width + "")) / 2 + 'vw';
     const left = (distance() * 2 / (steps - 1) * index) + 'vw';
 
     return (

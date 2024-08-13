@@ -9,7 +9,7 @@ import {
   DB_LINKS,
   EXPIRE_SESSION_SECONDS,
   deletePropValue
-} from "../lib";
+} from "lib";
 import {
   useClientState,
   pushClientData,
@@ -37,7 +37,7 @@ export const updateSessionData = async (key: string, value: string | number | {}
   await updateData(`${DB_SESSIONS}/${session}/${key}`, value);
 };
 
-export const pushSessionData = async () => {
+export const pushSessionData = async (session) => {
   const { clientLink, user } = useGuideState.getState();
   if (!clientLink) {
     console.warn(`*** pushSessionData: clientLink is "${clientLink}"`);
@@ -46,7 +46,7 @@ export const pushSessionData = async () => {
   if (!user) {
     console.warn(`*** pushSessionData: user is "${user}"`);
   }
-  const session = await readPropValue(`${DB_LINKS}/${clientLink}/`, "session");
+  // const session = await readPropValue(`${DB_LINKS}/${clientLink}/`, "session");
   pushGuideData(DB_SESSIONS, session);
 };
 

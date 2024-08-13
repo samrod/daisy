@@ -1,6 +1,6 @@
 import { MouseEvent } from "react";
 import { create } from "zustand";
-import { User, defaults, limits, update, consoleLog, objDiff } from "../lib";
+import { User, defaults, limits, update, consoleLog, objDiff } from "lib";
 import { updateGuide } from ".";
 
 const { volume, speed } = limits;
@@ -29,7 +29,7 @@ export type ActionsTypes = {
   setActiveSetting: (setting: string) => void;
   setPresets: (preset: object) => void;
   setUser: (user: User) => void;
-  setUserMode: (userMode: boolean) => void;
+  setUserMode: (userMode: boolean | MouseEvent<HTMLButtonElement>) => void;
   setClientLink: (link: string) => void;
   setClientStatus: (state: number) => void;
   setClientName: (name: string, persist?: boolean) => void;
@@ -59,12 +59,27 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
     state.trigger = "setActiveSetting";
   }),
 
-  volumeDown: () => update(set, ({ settings }) => { settings.volume = Math.max(settings.volume - volume.nudge, volume.min) }),
-  volumeUp: () => update(set, ({ settings }) => { settings.volume = Math.min(settings.volume + volume.nudge, volume.max) }),
-
-  speedUp: () => update(set, ({ settings }) => { settings.speed = Math.min(settings.speed + speed.nudge, speed.max) }),
-  speedDown: () => update(set, ({ settings }) => { settings.speed = Math.max(settings.speed - speed.nudge, speed.min) }),
-
+  volumeDown: () => update(set, ({ settings }) => { 
+    if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
+      settings.volume = Math.max(settings.volume - volume.nudge, volume.min);
+    }
+  }),
+  volumeUp: () => update(set, ({ settings }) => {
+    if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
+      settings.volume = Math.min(settings.volume + volume.nudge, volume.max);
+    }
+  }),
+  speedUp: () => update(set, ({ settings }) => { 
+    if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
+      settings.speed = Math.min(settings.speed + speed.nudge, speed.max);
+    }
+  }),
+  speedDown: () => update(set, ({ settings }) => {
+    if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
+      settings.speed = Math.max(settings.speed - speed.nudge, speed.min);
+    }
+  }),
+  
   setUser: (user) => update(set, (State) => {
     State.user = user;
     State.trigger = "setUser";

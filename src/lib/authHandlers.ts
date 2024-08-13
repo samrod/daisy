@@ -10,15 +10,21 @@ import {
 } from "firebase/auth";
 
 import { auth } from "./firebase";
-import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "../state";
+import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "state";
 
-interface FormHandlerProps {
+export interface FormHandlerProps {
   setEmail?: Dispatch<React.SetStateAction<string>>;
   setPassword?: Dispatch<React.SetStateAction<string>>;
   setConfirm?: Dispatch<React.SetStateAction<string>>;
 }
 
-export const useAuthHandlers = (currentUser: User) => ({
+export interface FormEventHandlers {
+  onChangeEmail: (event: ChangeEvent<HTMLInputElement>) => void;
+  onChangePassword: (event: ChangeEvent<HTMLInputElement>) => void;
+  onChangeConfirm: (event: ChangeEvent<HTMLInputElement>) => void;
+}
+
+export const useAuthHandlers = (currentUser: User | null) => ({
   currentUser,
   logout: () => signOut(auth),
   login: async (email: string, password: string) => {
@@ -33,10 +39,10 @@ export const useAuthHandlers = (currentUser: User) => ({
     updateEmail(currentUser, email);
     updateEmailFBRT(currentUser);
   },
-  resetPassword: (email: string) => sendPasswordResetEmail(auth, email),
+  resetPassword: async (email: string) => await sendPasswordResetEmail(auth, email),
   updatePassword: (password: string) => updatePassword(currentUser, password),
 
-  getFormHandlers: ({ setEmail, setPassword, setConfirm }: FormHandlerProps) => ({
+  getFormHandlers: ({ setEmail, setPassword, setConfirm }: FormHandlerProps): FormEventHandlers => ({
     onChangeEmail: ({ target }: ChangeEvent<HTMLInputElement>) => {
       setEmail(target.value);
     },

@@ -32,12 +32,14 @@ export function receiveMessage({ data, ...e }) {
     }
     return;
   }
-  const { action, params } = parsedData;
-  if (this[action]) {
-    // console.log("*** receiveMessage:", window.name, action, data);
-    this[action].call(this, params);
-  } else {
-    console.warn(`*** receivedMessage "${action}" is not available at ${window.self.location.pathname}`);
+  if (typeof parsedData !== "string") {
+    const { action, params } = parsedData;
+    if (this[action]) {
+      // console.log("*** receiveMessage:", window.name, action, data);
+      this[action].call(this, params);
+    } else {
+      console.warn(`*** receivedMessage "${action}" is not available at ${window.self.location.pathname}`);
+    }
   }
 };
 

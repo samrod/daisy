@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from "classnames";
 
-import { bindAllSettingsToValues, CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, } from "../lib";
-import { useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState } from '../state';
-import { ClientLogin, Clouds, Display, NotAvailable } from "../components";
-import { ReactComponent as Logo } from "../assets/daisy-logo.svg"
+import { bindAllSettingsToValues, CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, } from "lib";
+import { useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState } from 'state';
+import { ClientLogin, Clouds, Display, NotAvailable } from "components";
+import { ReactComponent as Logo } from "assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
 
 const cloudSettings = [

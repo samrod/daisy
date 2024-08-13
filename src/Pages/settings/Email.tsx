@@ -1,7 +1,7 @@
 import { useState, useCallback, FormEvent } from 'react'
 
 import { useAuth } from '../../context/AuthContext';
-import { getAuth, updateEmail, createUpdateEmail as updateEmailFB } from "../../state";
+import { getAuth, updateEmail, createUpdateEmail as updateEmailFB } from "state";
 import { Alert, Button, Col, Row, TextGroup } from '../../components';
 import Styles from "./UserPanel.module.scss";
 

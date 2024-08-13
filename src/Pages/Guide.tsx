@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import cn from 'classnames';
-import { isEmpty } from 'lodash';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { isEmpty } from "lodash";
+import cn from "classnames";
 
-import { limits, receiveMessage, setKeys, useEventBinder } from "../lib";
-import { useGuideState, useClientState, pushSessionData, getLinkData } from '../state';
-import { defaultModalState, Display, Modal } from "../components";
+import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
+import { useGuideState, useClientState, getLinkData } from "state";
+import { defaultModalState, Display, Modal } from "components";
 import Styles from "./Guide.module.scss";
 
 const Guide = () => {
@@ -57,12 +57,6 @@ const Guide = () => {
     }
   }, [setClientName, setClientStatus]);
 
-  const addSession = (session) => {
-    if (session) {
-      pushSessionData(session);
-    }
-  };
-  
   const onDenyClientRequest = useCallback(() => {
     setStatus(4);
   }, [setStatus]);
@@ -122,7 +116,6 @@ const Guide = () => {
     clientLinkRef.current = clientLink;
     if (!isEmpty(clientLink)) {
       getLinkData("", setClientStates);
-      getLinkData("session", addSession);
     }
   }, [clientLink, setClientStatus, setClientStates]);
 

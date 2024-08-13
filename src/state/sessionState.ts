@@ -10,7 +10,7 @@ import {
   uuid,
   serverStamp,
   EXPIRE_SESSION_SECONDS,
-} from "../lib";
+} from "lib";
 import { isNull } from "lodash";
 
 type SessionStateTypes = {

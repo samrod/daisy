@@ -1,10 +1,22 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 
-import { useGuideState, getGuideData } from '../state';
-import { User, auth, bindAllSettingsToValues, useAuthHandlers } from '../lib';
+import { useGuideState, getGuideData } from 'state';
+import { FormEventHandlers, FormHandlerProps, User, auth, bindAllSettingsToValues, useAuthHandlers } from 'lib';
 
-const AuthContext = createContext({});
+interface AuthContextType {
+  currentUser: User | null;
+  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  updateEmail: (email: string) => void;
+  resetPassword: (email: string) => void;
+  updatePassword: (password: string) => void;
+  getFormHandlers: (props: FormHandlerProps) => FormEventHandlers;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -35,7 +47,7 @@ export const AuthProvider = ({ children }) => {
 
     getGuideData("clientLink", setClientLink);
     getGuideData("activePreset", setActivePreset);
-    getGuideData("userMode", (value: boolean) => setUserMode(value, false));
+    getGuideData("userMode", (value: boolean) => setUserMode(value));
     getGuideData(`presets`, setPresets);
 
     presetsBoundToStore.current = true;

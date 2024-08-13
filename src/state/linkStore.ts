@@ -1,6 +1,6 @@
 import { isEmpty } from "lodash";
 import { matchPath } from "react-router";
-import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue } from "../lib";
+import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue } from "lib";
 import { useClientState, useGuideState, guidePropExists, updateGuide } from ".";
 
 const getState = (key: string) => {

@@ -1,5 +1,5 @@
 import { updateLinkData, useClientState } from ".";
-import { getData, updateData, pushData, DB_CLIENTS, serverStamp } from "../lib";
+import { getData, updateData, pushData, DB_CLIENTS, serverStamp } from "lib";
 
 export const getClientData = (key: string, callback: (params: unknown) => void) => {
   const { uid } = useClientState.getState();

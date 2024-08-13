@@ -1,17 +1,17 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "context/AuthContext";
 import Layout from "./Layout";
-import { Alert, Button, Row, TextGroup } from "../../components";
+import { Alert, Button, Row, TextGroup } from "components";
 
 export default function ResetPassword() {
   const { resetPassword, getFormHandlers } = useAuth();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [, setPassword] = useState("");
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [validEmail, setValidEmail] = useState(true);
-  const history = useNavigate();
+  const navigate = useNavigate();
 
   const { onChangeEmail, onChangePassword } = getFormHandlers({ setEmail, setPassword });
 
@@ -21,8 +21,8 @@ export default function ResetPassword() {
     try {
       setError('');
       setLoading(true);
-      await resetPassword(email, password);
-      history.push('/app');
+      await resetPassword(email);
+      navigate('/app');
     } catch(e) {
       setError('Password reset failed');
     }

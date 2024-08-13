@@ -74,6 +74,8 @@ export const Clouds = ({ cloudData, delay = 0 }: CloudsProps) => {
   }, [setReady, delay])
 
   return !ready ? null : (
-    cloudData.map((datum, index) => <Cloud key={`cloud-${index}`} {...datum} />)
+    <>
+      {cloudData.map((datum, index) => <Cloud key={`cloud-${index}`} {...datum} />)}
+    </>
   );
 };

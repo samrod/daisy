@@ -11,7 +11,7 @@ import {
   DB_LINKS,
   uuid,
   serverStamp,
-} from "../lib";
+} from "lib";
 
 type ClientStateTypes = {
   status: number;

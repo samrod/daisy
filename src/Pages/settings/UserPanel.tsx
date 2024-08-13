@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useGuideState } from "../../state";
+import { useGuideState } from "state";
 import { Button as CloseButton, Tabs } from "../../components";
 import * as SettingComponents from "./";
 import Styles from "./UserPanel.module.scss";

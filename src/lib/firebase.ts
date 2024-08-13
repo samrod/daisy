@@ -6,7 +6,7 @@ import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import "firebase/compat/firestore";
 import { consoleLog } from ".";
-import { useGuideState } from "../state";
+import { useGuideState } from "state";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;

@@ -12,6 +12,7 @@ import {
   InputHTMLAttributes,
   useImperativeHandle,
   ButtonHTMLAttributes,
+  Ref,
 } from "react";
 import { RotatingLines } from "react-loader-spinner";
 import { camelCase, isEmpty, noop } from "lodash";
@@ -106,7 +107,7 @@ interface TextfieldProps extends FormElementProps, Omit<InputHTMLAttributes<HTML
   forwardedRef?: ForwardedRef<HTMLInputElement>;
 };
 
-export const Textfield: FC<TextfieldProps> = forwardRef(({
+export const Textfield = forwardRef(({
   size = "md",
   stretch,
   customClass,
@@ -117,7 +118,7 @@ export const Textfield: FC<TextfieldProps> = forwardRef(({
   autoComplete,
   error = false,
   ...props
-}, ref) => {
+}: TextfieldProps, ref: Ref<HTMLInputElement>) => {
 
   const field = useRef<HTMLInputElement>();
   useImperativeHandle(ref, () => field.current);
@@ -184,20 +185,20 @@ interface TextGroupProps {
   textProps: TextfieldProps;
 }
 
-export const TextGroup: FC<TextGroupProps> = forwardRef<HTMLInputElement, TextGroupProps>(({
+export const TextGroup = forwardRef<HTMLInputElement, TextGroupProps>(({
     name, size="md",
     label,
     inline = false,
     textProps,
     ...props
   }: TextGroupProps,
-  ref,
+  ref: Ref<HTMLInputElement>,
 ) => {
   const _name = name || camelCase(label);
 
   return (
     <div className={cn(Styles.textGroup, inline ? "justify-between items-center" : "flex-col")}>
-      <Label klass="flex-1" name={_name} size={size}>{label}:</Label>
+      <Label klass="flex-1" name={_name} size={size}><>{label}:</></Label>
       <Textfield ref={ref} klass={inline && "w-9/12"} id={_name} name={_name} size={size}  {...(textProps as TextfieldProps)} />
     </div>
   );
