@@ -1,5 +1,9 @@
-import { DataType, User, getData, pushData, readPropValue, updateData, DEFAULT_PRESET_NAME, defaults, uuid, DB_GUIDES, DB_PRESETS, DB_SESSIONS } from "lib";
-import { updateClientLink, useGuideState } from ".";
+import { uniqueClientLink, updateClientLink, useGuideState } from "state";
+import {
+  DataType, User, getData, pushData, readPropValue, updateData,
+  DEFAULT_PRESET_NAME, defaults, uuid, DB_GUIDES, DB_PRESETS,
+  DB_SESSIONS
+} from "lib";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
 
@@ -32,7 +36,7 @@ export const updateGuide = async (key: string, value: DataType) => {
 };
 
 export const createGuide = async (user: User) => {
-  const initialClientLink = user.email.split("@")[0];
+  const initialClientLink = await uniqueClientLink(user.email.split("@")[0]);
   const { setUser } = useGuideState.getState();
   setUser(user);
   await createUpdateEmail(user);

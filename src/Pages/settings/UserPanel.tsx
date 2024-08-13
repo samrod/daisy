@@ -1,13 +1,14 @@
 import { useState } from "react";
 
-import { useGuideState } from "state";
-import { Button as CloseButton, Tabs } from "../../components";
+import { Button as CloseButton, Tabs } from "components";
+import { getAuth, useGuideState } from "state";
 import * as SettingComponents from "./";
 import Styles from "./UserPanel.module.scss";
 
 const panels = [ "Email", "Password", "Link", "Presets"];
 
 export const UserPanel = ({ exists }) => {
+  const { currentUser } = getAuth();
   const { setUserMode } = useGuideState(state => state);
   const [tab, setTab] = useState("email");
 
@@ -15,7 +16,7 @@ export const UserPanel = ({ exists }) => {
     setTab(target.dataset.option);
   };
 
-  if (!exists) {
+  if (!exists || !currentUser) {
     return null;
   }
 

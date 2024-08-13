@@ -1,9 +1,9 @@
 import { useState, useCallback, FormEvent, useEffect, useRef } from "react"
 import { isEmpty } from "lodash";
 
-import { updateClientLink, getGuideData } from "state";
-import { LINK_PLACEHOLDER, propExists, DB_LINKS } from "lib";
-import { Alert, Button, Col, TextGroup } from "../../components";
+import { updateClientLink, getGuideData, uniqueClientLink } from "state";
+import { Alert, Button, Col, TextGroup } from "components";
+import { LINK_PLACEHOLDER } from "lib";
 
 export const Link = () => {
   const [clientLink, setClientLink] = useState("");
@@ -28,7 +28,7 @@ export const Link = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const exists = await propExists(DB_LINKS, clientLink);
+    const exists = await uniqueClientLink(clientLink, true);
     if (exists) {
       setError(`"${clientLink}" is already used. Please try a different client link.`);
     } else {

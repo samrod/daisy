@@ -64,7 +64,7 @@ const Guide = () => {
   const onAcceptClientRequest = useCallback(() => {
     setGuide(user.uid);
     setStatus(3);
-  }, [user.uid, setGuide, setStatus]);
+  }, [user, setGuide, setStatus]);
 
   const onCancelEndSessionModal = useCallback(() => {
     setModalActive(false);

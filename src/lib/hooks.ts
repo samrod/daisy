@@ -83,18 +83,23 @@ export const useUnloadHandler = () => {
   const { setSupressCallback, setLocalPriority, setStatus } = useClientState(state => state);
   const { setUpdatedAt } = useSessionState.getState();
   const unloadEvents = useRef([]);
+  const tickleTime = useRef(noop);
 
   const presentOrLocalSession = () => {
     const { localSession } = useSessionState.getState();
     const { status } = useClientState.getState();
+    if (localSession) {
+      tickleTime.current = setUpdatedAt;
+    }
     return status === 1 || localSession
   };
 
   const onPageHide = async () => {
     if (presentOrLocalSession()) {
       setLocalPriority(true);
+      setSupressCallback(false);
       await updateLinkData("status", 0);
-      setUpdatedAt();
+      tickleTime.current();
     }
   };
 
@@ -107,10 +112,10 @@ export const useUnloadHandler = () => {
         } else {
           setSupressCallback(false);
           await updateLinkData("status", useClientState.getState().status);
-          setUpdatedAt();
+          tickleTime.current();
         }
       }
-    });
+    }, 250);
   };
 
   const checkSessionAndDefineEvents = () => {

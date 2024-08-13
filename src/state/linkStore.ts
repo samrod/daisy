@@ -1,6 +1,6 @@
 import { isEmpty } from "lodash";
 import { matchPath } from "react-router";
-import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue } from "lib";
+import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue, propExists, uuid } from "lib";
 import { useClientState, useGuideState, guidePropExists, updateGuide } from ".";
 
 const getState = (key: string) => {
@@ -67,4 +67,15 @@ export const currentLinkExists = async (): Promise<{ preset?: string; clientLink
     console.log("*** ", e);
     return null;
   }
+};
+
+export function uniqueClientLink(value: string, checkOnly: true): Promise<boolean>;
+export function uniqueClientLink(value: string, checkOnly?: false): Promise<string>;
+
+export async function uniqueClientLink(value: string, checkOnly = false): Promise<boolean | string> {
+  const exists = await propExists(DB_LINKS, value);
+  if (checkOnly) {
+    return exists as boolean;
+  }
+  return exists ? `${value}-${uuid().substring(0, 3)}` : value as string;
 };

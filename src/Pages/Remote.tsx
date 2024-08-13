@@ -4,7 +4,7 @@ import cn from "classnames";
 
 import { useGuideState, updateSetting, getLinkData } from "state";
 import { setKeys, useEventBinder } from "lib";
-import { Slider, Swatch ,Button, Tabs, Clock, Row, ClientStatus } from "../components";
+import { Slider, Swatch, Button, Tabs, Clock, Row, ClientStatus } from "components";
 import { UserPanel } from "./settings";
 import Styles from "./Remote.module.scss";
 

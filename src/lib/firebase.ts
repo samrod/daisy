@@ -5,8 +5,9 @@ import { initializeApp } from "firebase/app";
 import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import "firebase/compat/firestore";
-import { consoleLog } from ".";
+
 import { useGuideState } from "state";
+import { consoleLog } from ".";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
@@ -69,8 +70,8 @@ export const updateData = async (path: string, value:  DataType) => {
     return;
   }
   try {
-    await set(ref(db, path), value);
     consoleLog("updateData", `${path}: ${value}`);
+    await set(ref(db, path), value);
   } catch(e) {
     consoleLog("updateData", e, "error");
   }
