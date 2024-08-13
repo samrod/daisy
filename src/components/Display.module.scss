@@ -1,4 +1,4 @@
-@import '../lib/variables.scss';
+@import 'lib/variables.scss';
 
 .display {
   width: 100vw;
@@ -53,7 +53,7 @@
   transition:
     background-color .5s ease-in-out,
     border-radius .5s ease-in-out,
-    opacity .25s linear,
+    opacity .125s linear,
     transform .5s ease-in-out;
 
   :global(.shape-circle) & { border-radius: 50%; }

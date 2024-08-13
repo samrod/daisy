@@ -86,7 +86,7 @@ export const Display = ({ children = null }) => {
 
     return (
       <div key={index} className={Styles.lightWrapper} style={{ left, marginLeft, width, height }}>
-        <div className={Styles.bullseye} style={{ width, height, opacity: lightbar }} />
+        <div className={cn(Styles.bullseye, bullseyeClass)} style={{ width, height, opacity: lightbar }} />
       </div>
     );
   };
