@@ -50,6 +50,7 @@ const Guide = () => {
     if (!data) {
       return;
     }
+    toggleToolbar();
     const { status, username } = data;
     if (username) {
       setClientStatus(status);
@@ -107,7 +108,6 @@ const Guide = () => {
   }, [clientName, onAcceptClientRequest, onDenyClientRequest]);
 
   useEffect(() => {
-    setHidden(false);
     setModalActive(clientStatus === 2);
     showJoinRequestModal();
   }, [clientStatus, clientName, showJoinRequestModal]);
