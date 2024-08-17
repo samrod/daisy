@@ -4,7 +4,7 @@ type LevelTypes = "info" | "warn" | "error" | "standard" | string;
 const levels: { [key: string]: string } = {
   info: "#090",
   warn: "#990",
-  error: "#F33",
+  error: "#C00",
   standard: "#069",
 };
 
@@ -49,6 +49,11 @@ export const objDiff = (obj1, obj2) => {
   return isEmpty(diff) ? false : diff;
 };
 
+const pretty = (value: unknown) => {
+  const hasObjects = Object.values(value).some(x => typeof x === "object" && typeof x !== null);
+  return !hasObjects ? value : JSON.stringify(value);
+};
+
 export const consoleLog = (
     message: string,
     extraInfo: { [key: string]: any } | string | number,
@@ -56,7 +61,10 @@ export const consoleLog = (
     pre?: boolean,
     post?: boolean,
   ) => {
+    if (process.env.NODE_ENV === "production") {
+      return;
+    }
     const preGap = pre ? "\n" : "";
     const postGap = post ? "\n" : "";
-    console.log(`${preGap}%c${window.location.pathname}%c ${message}${postGap}`, logStyle(level), logTitleStyle(level), extraInfo);
+    console.log(`${preGap}%c${window.location.pathname}%c ${pretty(message)}${postGap}`, logStyle(level), logTitleStyle(level), extraInfo);
 };
