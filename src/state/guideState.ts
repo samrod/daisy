@@ -35,7 +35,7 @@ export type ActionsTypes = {
   setClientName: (name: string, persist?: boolean) => void;
 };
 
-export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
+const guideStates = {
   userMode: false,
   user: null,
   settings: defaults,
@@ -47,7 +47,9 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
   clientName: "",
   presets: {},
   trigger: null,
+};
 
+const guideActions = (set) => ({
   setSetting: (setting, value) => update(set, (state) => {
     state.settings[setting] = value;
     state.trigger = "setSetting";
@@ -122,6 +124,11 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
     state.activePreset = activeSetting;
     state.trigger = "setActivePreset";
   }),
+});
+
+export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
+  ...guideStates,
+  ...guideActions(set),
 }));
 
 useGuideState.subscribe(({ trigger, user, ...state }, {user: j1 ,trigger: j2, ...preState}) => {

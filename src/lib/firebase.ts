@@ -1,5 +1,5 @@
-import { isEmpty } from "lodash";
-import { child, get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
+import { isEmpty, isEqual } from "lodash";
+import { child, get, getDatabase, onValue, ref, remove, set } from "firebase/database";
 import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import firebase from "firebase/compat/app";
@@ -11,7 +11,7 @@ import { consoleLog } from ".";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
-export type DataType = Object | { [key: string]: Object | {}};
+export type DataType = Object | { [key: string]: Object | {}} | object[];
 export interface GetData {
   key: string;
   callback: (setting: number | boolean | string | object) => void;
@@ -73,28 +73,29 @@ export const updateData = async (path: string, value:  DataType) => {
     consoleLog("updateData", `${path}: ${value}`);
     await set(ref(db, path), value);
   } catch(e) {
-    consoleLog("updateData", e, "error");
+    consoleLog(`updateData: ${path}/${value}`, e, "error");
   }
 };
 
-export const pushData = async(path: string, value: DataType) => {
-  const arrayRef = ref(db, path);
-  const newLoginRef = push(arrayRef)
-  if (!value) {
-    console.warn(`*** pushData: value "${value}" empty for ${path}`)
-    return;
-  }
-  const arrayData = await readPropValue(path, "/");
-  const valueAlreadyExists = arrayData && Object.values(arrayData).includes(value);
+export const pushData = async (path: string, value: DataType) => {
+  const data = (await readPropValue(path, "/")) || [];
+  const array = Object.values(data);
+  const valueAlreadyExists = array.some((item) => {
+    return typeof value === 'object' && typeof item === 'object'
+      ? isEqual(item, value)
+      : item === value;
+  });
   if (valueAlreadyExists) {
-    console.warn(`*** pushData: ${value} already exists in ${path}.`);
+    console.warn(`*** pushData: ${JSON.stringify(value)} already exists in ${path}.`);
     return;
   }
+  array.push(value);
+  await updateData(path, array);
   try {
-    await set(newLoginRef, value);
     consoleLog("pushData", `${path}: ${value}`);
+    await set(ref(db, path), array);
   } catch(e) {
-    consoleLog("pushData", e, "error");
+    consoleLog(`pushData: ${path}`, e, "error");
   }
 };
 
@@ -129,4 +130,3 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const analytics = getAnalytics(app);
-// export default app;

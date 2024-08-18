@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from "classnames";
 
-import { bindAllSettingsToValues, CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, } from "lib";
+import { bindAllSettingsToValues, CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, useRehydrate, } from "lib";
 import { useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState } from 'state';
 import { ClientLogin, Clouds, Display, NotAvailable } from "components";
 import { ReactComponent as Logo } from "assets/daisy-logo.svg"
@@ -22,6 +22,7 @@ const Client = () => {
 
   const clientStatus = CLIENT_STATES[status];
 
+  useRehydrate();
   useSessionCheck();
   useUnloadHandler();
   useFullscreenHandler(clientStatus === "active");

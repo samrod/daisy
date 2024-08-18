@@ -17,6 +17,7 @@ import {
   pushGuideData,
   updateLinkData,
   useSessionState,
+  clientLinkFromPath,
 } from '.';
 
 export const getSessionData = (key: string, callback: (params: unknown) => void) => {
@@ -55,9 +56,18 @@ export const sessionFromStorage = () => {
   return JSON.parse(stateString);
 };
 
+export const sessionFromStore = async () => {
+  const clientLink = clientLinkFromPath();
+  const session = await readPropValue(`${DB_LINKS}/${clientLink}`, "session");
+  return session;
+};
+
 export const createSession = async () => {
   const { setUpdatedAt, setSession } = useSessionState.getState();
-  if (useSessionState.getState().session) {
+  const existingSession = await sessionFromStore();
+
+  if (existingSession) {
+    console.warn(`*** createSession: session ${existingSession} already exists.`);
     return;
   }
   setUpdatedAt();

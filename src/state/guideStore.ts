@@ -2,7 +2,7 @@ import { uniqueClientLink, updateClientLink, useGuideState } from "state";
 import {
   DataType, User, getData, pushData, readPropValue, updateData,
   DEFAULT_PRESET_NAME, defaults, uuid, DB_GUIDES, DB_PRESETS,
-  DB_SESSIONS
+  DB_SESSIONS,
 } from "lib";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
@@ -42,15 +42,19 @@ export const createGuide = async (user: User) => {
   await createUpdateEmail(user);
   await captureLogin({ user });
   await createPreset({});
-  await updateGuide(DB_SESSIONS, "");
+  await updateGuide(DB_SESSIONS, []);
   await updateClientLink(initialClientLink);
 };
 
 export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
+  const { user } = useGuideState.getState();
+  if (!user?.uid ) {
+    return;
+  }
   const presetId = uuid();
 
   await updateGuide("activePreset", presetId);
-  await updateGuide(`${DB_PRESETS}/${presetId}`, name);
+  await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name })
   await updateData(`${DB_PRESETS}/${presetId}`, settings);
 };
 

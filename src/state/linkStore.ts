@@ -49,6 +49,14 @@ export const clientLinkFromPath = () => {
   return matchPathData.params.clientLink;
 };
 
+export const clientFromStore = async () => {
+  const clientLink = clientLinkFromPath();
+  const response = await readPropValue(`${DB_LINKS}/${clientLink}`, "");
+  if (response) {
+    return { clientLink, ...(response as object) };
+  }
+};
+
 export const currentLinkExists = async (): Promise<{ preset?: string; clientLink: string } | null> => {
   try {
     const guideState = useGuideState.getState();
@@ -57,12 +65,7 @@ export const currentLinkExists = async (): Promise<{ preset?: string; clientLink
       const clientLink = guideState.clientLink || await readPropValue(`${DB_GUIDES}/${user.uid}`, "clientLink") + "";
       return { clientLink };
     }
-    const clientLink = clientLinkFromPath();
-    const response = await readPropValue(`${DB_LINKS}/${clientLink}`, "");
-    if (response) {
-      return { clientLink, ...(response as object) };
-    }
-    return { clientLink: null };
+    return await clientFromStore();
   } catch(e) {
     console.log("*** ", e);
     return null;

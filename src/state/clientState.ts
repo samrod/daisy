@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { create } from "zustand";
+import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage, devtools } from "zustand/middleware";
 
 import { currentLinkExists, updateLinkData, clientLinkFromPath } from './';
@@ -138,11 +138,20 @@ const persistOptions = {
     }
     if (uid && link) {
       const newStatus = status ? status : previousStatus;
-      return { status: newStatus, uid, clientLink: link, ...rest };
+      const newPersist = { status: newStatus, uid, clientLink: link, ...rest };
+      try {
+        const prevState = JSON.parse(localStorage.getItem("daisy-data"))?.state;
+        const diff = objDiff(newPersist, prevState);
+        if (diff) {
+          consoleLog("persist client", diff, "#09C");
+        }
+      } catch (e) {}
+
+      return newPersist;
     }
     return null;
   },
-  // skipHydration: true,
+  skipHydration: true,
   onRehydrateStorage: (prevState: ClientStateTypes) => {
     return (state, error) => {
       const clientLink = clientLinkFromPath();
@@ -153,7 +162,7 @@ const persistOptions = {
         }
         const validClientLink = state.clientLink === clientLink;
         if (validClientLink) {
-          consoleLog("rehydrate client", objDiff(prevState, state), "standard");
+          consoleLog("rehydrate client", objDiff(prevState, state));
         } else {
           consoleLog("rehydrate client", "invalid link. No rehydration.");
         }
@@ -162,16 +171,17 @@ const persistOptions = {
   },
 };
 
+const clientStateCreator: StateCreator<ClientStateTypes & ClientStateActions> = (set, get) => ({
+  ...clientStates,
+  ...clientStateActions(set, get),
+});
+
 export const useClientState = create<ClientStateTypes & ClientStateActions>()(
   devtools(
-    persist((set, get) => ({
-      ...clientStates,
-      ...clientStateActions(set, get),
-    }),
-    persistOptions,
-  ),
-  { name: "clientState", store: "clientState" }
-));
+    persist(clientStateCreator, persistOptions),
+    { name: "clientState", store: "clientState" }
+  )
+);
 
 useClientState.subscribe(({trigger, ...state }, { trigger: preTrigger, ...preState }) => {
   const diff = objDiff(preState, state);

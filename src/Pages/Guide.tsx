@@ -56,7 +56,7 @@ const Guide = () => {
       setClientStatus(status);
       setClientName(username, false);
     }
-  }, [setClientName, setClientStatus]);
+  }, [setClientName, toggleToolbar, setClientStatus]);
 
   const onDenyClientRequest = useCallback(() => {
     setStatus(4);

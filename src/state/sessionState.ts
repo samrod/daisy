@@ -78,8 +78,9 @@ const persistOptions = {
       let prevState: SessionStateTypes;
       try {
         prevState = sessionFromStorage()?.state;
-        if (objDiff(newState, prevState)) {
-          consoleLog("persist session", newState, "#09C");
+        const diff = objDiff(newState, prevState);
+        if (diff) {
+          consoleLog("persist session", diff, "#09C");
         }
       } catch (e) {}
       return newState;
