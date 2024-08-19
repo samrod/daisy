@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isEmpty } from "lodash";
+import { debounce, isEmpty } from "lodash";
 import cn from "classnames";
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
@@ -19,6 +19,7 @@ const Guide = () => {
   const toolbarTimer = useRef<NodeJS.Timeout | number>();
   const toolbar = useRef<HTMLIFrameElement>();
   const clientLinkRef = useRef(clientLink);
+  const linkDataBound = useRef(false);
   
   const setToolbarBusy = () => {
     toolbarBusy.current = true;
@@ -35,14 +36,9 @@ const Guide = () => {
     clearTimeout(toolbarTimer.current);
     if (hidden) {
       setHidden(false);
-    } else {
-      if (!toolbarBusy.current) {
-        toolbarTimer.current = setTimeout(() => {
-          setHidden(true);
-        },
-        limits.toolbarHideDelay
-        );
-      }
+    }
+    if (!toolbarBusy.current) {
+      toolbarTimer.current = setTimeout(setHidden.bind(null, true), limits.toolbarHideDelay);
     }
   }, [hidden]);
 
@@ -114,8 +110,9 @@ const Guide = () => {
 
   useEffect(() => {
     clientLinkRef.current = clientLink;
-    if (!isEmpty(clientLink)) {
+    if (!isEmpty(clientLink) && !linkDataBound.current) {
       getLinkData("", setClientStates);
+      linkDataBound.current = true;
     }
   }, [clientLink, setClientStatus, setClientStates]);
 
@@ -123,7 +120,7 @@ const Guide = () => {
     [
       { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
       { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
-      { event: 'mousemove', element: document.body, handler: toggleToolbar },
+      { event: 'mousemove', element: document.body, handler: debounce(toggleToolbar, 250, { leading: true }) },
       { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showEndSessionModal }) },
     ],
     [setActiveSetting, toggleToolbar, toolbar.current]

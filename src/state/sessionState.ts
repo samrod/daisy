@@ -68,6 +68,11 @@ const sessionStateActions = (set, get) => ({
   }),
 });
 
+const sessionStateCreator = (set, get) => ({
+  ...sessionStates,
+  ...sessionStateActions(set, get),
+});
+
 const persistOptions = {
   name: "daisy-session",
   storage: createJSONStorage(() => localStorage),
@@ -84,6 +89,9 @@ const persistOptions = {
         }
       } catch (e) {}
       return newState;
+    }
+    if (localSession) {
+      return { localSession };
     }
   },
   onRehydrateStorage: (prevState: SessionStateTypes) => {
@@ -104,12 +112,7 @@ const persistOptions = {
 
 export const useSessionState = create<SessionStateTypes & SessionStateActions>()(
   devtools(
-    persist((set, get) => ({
-      ...sessionStates,
-      ...sessionStateActions(set, get),
-    }),
-    persistOptions,
-  ),
+    persist(sessionStateCreator, persistOptions),
   { name: "sessionState", store: "sessionState" }
 ));
 

@@ -13,11 +13,12 @@ import {
 
 export const useRehydrate = () => {
   const { rehydrate, hasHydrated } = useClientState.persist;
+  const { localSession } = useSessionState.getState();
 
   const checkAndRehydrate = useCallback(async () => {
     const response = await clientFromStore();
 
-    if (!hasHydrated() && response?.clientLink) {
+    if (!hasHydrated() && localSession && response?.clientLink) {
       rehydrate();
     }
   }, [hasHydrated, rehydrate]);
@@ -54,11 +55,9 @@ export const useSessionCheck = () => {
   
       if (!response?.clientLink) {
         setSessionStatus("unavailable");
-      } else if (status === 1) {
+      } else if (status === 1 || localSession) {
         setSessionStatus("available");
-      } else if (localSession || (!persistedSessionRef.current || sessionsMatch)) {
-        setSessionStatus("available");
-        reinitializeSession();
+        if (localSession) reinitializeSession();
       } else {
         setSessionStatus("busy");
       }
