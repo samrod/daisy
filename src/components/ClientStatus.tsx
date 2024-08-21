@@ -1,11 +1,12 @@
 import { useCallback, useEffect } from "react";
 
-import { useGuideState, getLinkData, useSessionState, pushSessionData } from "state";
+import { useGuideState, getLinkData, useSessionState, pushSessionData, useClientState } from "state";
 import { CLIENT_STATES, sendMessage, CLIENT_STATE_DISPLAYS } from "lib";
 import { Button } from "components";
 
 export const ClientStatus = () => {
-  const { clientLink, clientStatus, clientName, setClientName } = useGuideState(state => state);
+  const { clientStatus, clientName, setClientName } = useGuideState(state => state);
+  const { clientLink } = useClientState(state => state);
   const { session, setSession } = useSessionState(state => state);
   const status = CLIENT_STATES[clientStatus];
 

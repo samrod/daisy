@@ -1,23 +1,12 @@
 import firebase from 'firebase/compat/app';
 import { differenceInSeconds } from "date-fns/differenceInSeconds";
 import {
-  getData,
-  updateData,
-  DB_SESSIONS,
-  serverStamp,
-  readPropValue,
-  DB_LINKS,
-  EXPIRE_SESSION_SECONDS,
-  deletePropValue
+  getData, updateData, DB_SESSIONS, serverStamp, readPropValue,
+  DB_LINKS, EXPIRE_SESSION_SECONDS, deletePropValue
 } from "lib";
 import {
-  useClientState,
-  pushClientData,
-  useGuideState,  
-  pushGuideData,
-  updateLinkData,
-  useSessionState,
-  clientLinkFromPath,
+  useClientState, pushClientData, useGuideState, pushGuideData,
+  updateLinkData, useSessionState, clientLinkFromPath, useLinkState,
 } from '.';
 
 export const getSessionData = (key: string, callback: (params: unknown) => void) => {
@@ -25,7 +14,7 @@ export const getSessionData = (key: string, callback: (params: unknown) => void)
 };
 
 export const updateSessionData = async (key: string, value: string | number | {}) => {
-  const clientLink = useGuideState.getState().clientLink || useClientState.getState().clientLink;
+  const clientLink = useLinkState.getState().clientLink || useClientState.getState().clientLink;
   if (!clientLink) {
     console.warn(`*** updateSessionData: clientLink is "${clientLink}"`);
     return;
@@ -39,7 +28,8 @@ export const updateSessionData = async (key: string, value: string | number | {}
 };
 
 export const pushSessionData = async (session) => {
-  const { clientLink, user } = useGuideState.getState();
+  const { clientLink } = useLinkState.getState();
+  const { user } = useGuideState.getState();
   if (!clientLink) {
     console.warn(`*** pushSessionData: clientLink is "${clientLink}"`);
     return;

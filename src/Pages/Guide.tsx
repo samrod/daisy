@@ -3,12 +3,13 @@ import { debounce, isEmpty } from "lodash";
 import cn from "classnames";
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
-import { useGuideState, useClientState, getLinkData } from "state";
+import { useGuideState, useClientState, getLinkData, useLinkState } from "state";
 import { defaultModalState, Display, Modal } from "components";
 import Styles from "./Guide.module.scss";
 
 const Guide = () => {
-  const { userMode, clientLink, clientStatus, clientName, user, setActiveSetting, setClientStatus, setClientName } = useGuideState(state => state);
+  const { userMode, clientStatus, clientName, user, setClientStatus, setClientName } = useGuideState(state => state);
+  const { clientLink, setActiveSetting } = useLinkState(state => state);
   const { setStatus, setGuide } = useClientState(state => state);
   
   const [hidden, setHidden] = useState(true);

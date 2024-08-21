@@ -6,7 +6,6 @@ import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import "firebase/compat/firestore";
 
-import { useGuideState } from "state";
 import { consoleLog } from ".";
 
 export type { User } from "firebase/auth";
@@ -97,20 +96,6 @@ export const pushData = async (path: string, value: DataType) => {
   } catch(e) {
     consoleLog(`pushData: ${path}`, e, "error");
   }
-};
-
-const updateSettingFromFirebase = (key: string) => (val) => {
-  const { setSetting } = useGuideState.getState();
-   setSetting(key, val);
-};
-
-const bindSettingToValue = (activePreset: string, key: string) => {
-  getData({ path: `presets/${activePreset}`, key, callback: updateSettingFromFirebase(key) })
-};
-
-export const bindAllSettingsToValues = () => {
-  const { activePreset, settings } = useGuideState.getState();
-  Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
 
 export const serverStamp = () => firebase.firestore.Timestamp.now();

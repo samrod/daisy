@@ -4,14 +4,14 @@ import cn from "classnames";
 import CSS from "csstype";
 
 import { generateSound, setKeys, limits, useEventBinder } from "lib";
-import { useGuideState } from 'state';
+import { useLinkState } from 'state';
 import Styles from "./Display.module.scss";
 
 export const Display = ({ children = null }) => {
   useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys }]);
 
-  const { motionBarActive, activeSetting } = useGuideState(state => state);
-  const settingsRef = useRef(useGuideState.getState().settings);
+  const { settings, motionBarActive, activeSetting } = useLinkState(state => state);
+  const settingsRef = useRef(settings);
   const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current;
 
   const [odd, setOdd] = useState(true);
@@ -196,7 +196,7 @@ export const Display = ({ children = null }) => {
   useEffect(() => {
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
     initialized.current = true;
-    useGuideState.subscribe(state => (settingsRef.current = state.settings));
+    useLinkState.subscribe(state => (settingsRef.current = state.settings));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

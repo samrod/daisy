@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 
-import { useGuideState, getGuideData } from 'state';
-import { FormEventHandlers, FormHandlerProps, User, auth, bindAllSettingsToValues, useAuthHandlers } from 'lib';
+import { useGuideState, getGuideData, bindAllSettingsToValues, useLinkState } from 'state';
+import { FormEventHandlers, FormHandlerProps, User, auth, useAuthHandlers } from 'lib';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -25,7 +25,8 @@ export function useAuth() {
 export const AuthProvider = ({ children }) => {
   const presetsBoundToStore = useRef(false);
   const settingsBoundToStore = useRef(false);
-  const { presets, activePreset, setUserMode, setActivePreset, setPresets, setUser, setClientLink } = useGuideState();
+  const { presets, activePreset, setUserMode, setActivePreset, setPresets, setUser } = useGuideState(state => state);
+  const { setClientLink } = useLinkState(state => state)
   const [currentUser, setCurrentUser] = useState<User>();
   const [loading, setLoading] = useState(true);
 

@@ -1,16 +1,10 @@
-import { uniqueClientLink, updateClientLink, useGuideState } from "state";
+import { createPreset, uniqueClientLink, updateClientLink, useGuideState } from "state";
 import {
   DataType, User, getData, pushData, readPropValue, updateData,
-  DEFAULT_PRESET_NAME, defaults, uuid, DB_GUIDES, DB_PRESETS,
-  DB_SESSIONS,
+  DB_GUIDES, DB_SESSIONS,
 } from "lib";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
-
-interface CreatePreset {
-  settings?: typeof defaults;
-  name?: string;
-}
 
 export const getGuideData = (key: string, callback) => {
   const { user: { uid } } = useGuideState.getState();
@@ -41,21 +35,9 @@ export const createGuide = async (user: User) => {
   setUser(user);
   await createUpdateEmail(user);
   await captureLogin({ user });
-  await createPreset({});
   await updateGuide(DB_SESSIONS, []);
   await updateClientLink(initialClientLink);
-};
-
-export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
-  const { user } = useGuideState.getState();
-  if (!user?.uid ) {
-    return;
-  }
-  const presetId = uuid();
-
-  await updateGuide("activePreset", presetId);
-  await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name })
-  await updateData(`${DB_PRESETS}/${presetId}`, settings);
+  await createPreset({});
 };
 
 export const createUpdateEmail = async (user: User, newEmail?: string) => {
@@ -65,20 +47,6 @@ export const createUpdateEmail = async (user: User, newEmail?: string) => {
 export const captureLogin = async ({ user }) => {
   const { metadata: { lastSignInTime }} = user;
   await pushGuideData("logins", lastSignInTime);
-};
-
-export const updateSetting = async (setting: string, value: DataType) => {
-  const { activePreset } = useGuideState.getState();
-  if (!activePreset) {
-    await updateData(`${DB_PRESETS}/${setting}`, value);
-    return;
-  }
-  await updateData(`${DB_PRESETS}/${activePreset}/${setting}`, value);
-};
-
-export const togglePlay = () => {
-  const { settings: { playing } } = useGuideState.getState();
-  updateSetting("playing", !playing);
 };
 
 export const pushGuideData = async (key: string, value: string | number | {}) => {

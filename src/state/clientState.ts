@@ -4,13 +4,8 @@ import { persist, createJSONStorage, devtools } from "zustand/middleware";
 
 import { currentLinkExists, updateLinkData, clientLinkFromPath } from './';
 import {
-  update,
-  readPropValue,
-  consoleLog,
-  objDiff,
-  DB_LINKS,
-  uuid,
-  serverStamp,
+  update, readPropValue, consoleLog, objDiff, DB_LINKS,
+  uuid, serverStamp,
 } from "lib";
 
 type ClientStateTypes = {
@@ -51,7 +46,7 @@ const clientStates = {
   trigger: null,
 };
 
-const clientStateActions = (set, get) => ({
+const clientStateActions = (set, get): ClientStateActions => ({
   setStatus: async (status, persist = true) => {
     if (get().suppressCallback) {
       return;
@@ -78,7 +73,7 @@ const clientStateActions = (set, get) => ({
       state.trigger = "setStatus";
     });
   },
-  setPreset: (preset) => update(set, (state) => {
+  setPreset: (preset: string) => update(set, (state) => {
     state.preset = preset;
     state.trigger = "setPreset";
   }),

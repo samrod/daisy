@@ -1,36 +1,23 @@
 import { MouseEvent } from "react";
 import { create } from "zustand";
-import { User, defaults, limits, update, consoleLog, objDiff } from "lib";
+import { User, update, consoleLog, objDiff } from "lib";
 import { updateGuide } from ".";
 
-const { volume, speed } = limits;
-
-export type StateTypes = {
+export type GuideStateTypes = {
   userMode: boolean;
   user?: User;
-  motionBarActive: boolean;
-  activeSetting: string;
   activePreset: string;
-  clientLink: string | null;
   clientStatus: number;
   clientName: string;
-  settings: typeof defaults;
-  presets: {};
+  presets: { id: string; name: string; }[];
   trigger: null | string;
 }
 
-export type ActionsTypes = {
-  setSetting: (setting: string, value: string | number | boolean) => void;
-  volumeUp: () => void;
-  volumeDown: () => void;
-  speedUp: () => void;
-  speedDown: () => void;
+type GuideActionsTypes = {
   setActivePreset: (setting: string) => void;
-  setActiveSetting: (setting: string) => void;
-  setPresets: (preset: object) => void;
+  setPresets: (preset: string) => void;
   setUser: (user: User) => void;
   setUserMode: (userMode: boolean | MouseEvent<HTMLButtonElement>) => void;
-  setClientLink: (link: string) => void;
   setClientStatus: (state: number) => void;
   setClientName: (name: string, persist?: boolean) => void;
 };
@@ -38,50 +25,14 @@ export type ActionsTypes = {
 const guideStates = {
   userMode: false,
   user: null,
-  settings: defaults,
-  motionBarActive: false,
-  activeSetting: "",
   activePreset: "",
-  clientLink: null,
   clientStatus: 0,
   clientName: "",
-  presets: {},
+  presets: [],
   trigger: null,
 };
 
 const guideActions = (set) => ({
-  setSetting: (setting, value) => update(set, (state) => {
-    state.settings[setting] = value;
-    state.trigger = "setSetting";
-  }),
-
-   setActiveSetting: (setting) => update(set, (state) => {
-    state.activeSetting = setting;
-    state.motionBarActive = !!setting.match(/angle|length/);
-    state.trigger = "setActiveSetting";
-  }),
-
-  volumeDown: () => update(set, ({ settings }) => { 
-    if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
-      settings.volume = Math.max(settings.volume - volume.nudge, volume.min);
-    }
-  }),
-  volumeUp: () => update(set, ({ settings }) => {
-    if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
-      settings.volume = Math.min(settings.volume + volume.nudge, volume.max);
-    }
-  }),
-  speedUp: () => update(set, ({ settings }) => { 
-    if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
-      settings.speed = Math.min(settings.speed + speed.nudge, speed.max);
-    }
-  }),
-  speedDown: () => update(set, ({ settings }) => {
-    if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
-      settings.speed = Math.max(settings.speed - speed.nudge, speed.min);
-    }
-  }),
-  
   setUser: (user) => update(set, (State) => {
     State.user = user;
     State.trigger = "setUser";
@@ -101,10 +52,6 @@ const guideActions = (set) => ({
       state.trigger = "setUserMode";
     }
   }),
-  setClientLink: (link) => update(set, (state) => {
-    state.clientLink = link;
-    state.trigger = "setClientLink";
-  }),
   setClientStatus: (status) => update(set, (state) => {
     state.clientStatus = status;
     state.trigger = "setClientStatus";
@@ -116,8 +63,8 @@ const guideActions = (set) => ({
       updateGuide("clientName", name);
     }
   }),
-  setPresets: (presets) => update(set, (state) => {
-    state.presets = presets;
+  setPresets: (preset: string) => update(set, (state) => {
+    state.presets = preset;
     state.trigger = "setPresets";
   }),
   setActivePreset: (activeSetting) => update(set, (state) => {
@@ -126,7 +73,7 @@ const guideActions = (set) => ({
   }),
 });
 
-export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
+export const useGuideState = create<GuideStateTypes & GuideActionsTypes>((set) => ({
   ...guideStates,
   ...guideActions(set),
 }));

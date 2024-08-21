@@ -2,13 +2,8 @@ import { DependencyList, useCallback, useEffect, useRef } from 'react';
 import { debounce, noop } from 'lodash';
 import { DB_LINKS, bindEvent, consoleLog, readPropValue, unbindEvent } from '.';
 import {
-  useClientState,
-  updateLinkData,
-  sessionFromStorage,
-  useSessionState,
-  sessionExpired,
-  endSession,
-  clientFromStore
+  useClientState, updateLinkData, useSessionState, sessionExpired,
+  endSession, clientFromStore
 } from "state";
 
 export const useRehydrate = () => {
@@ -21,7 +16,7 @@ export const useRehydrate = () => {
     if (!hasHydrated() && localSession && response?.clientLink) {
       rehydrate();
     }
-  }, [hasHydrated, rehydrate]);
+  }, [hasHydrated, rehydrate, localSession]);
 
   useEffect(() => {
     checkAndRehydrate();
@@ -50,8 +45,6 @@ export const useSessionCheck = () => {
       if (response?.clientLink) {
         persistedSessionRef.current = await readPropValue(`${DB_LINKS}/${response.clientLink}/`, "session");
       }
-  
-      const sessionsMatch = persistedSessionRef.current === sessionFromStorage()?.state?.session;
   
       if (!response?.clientLink) {
         setSessionStatus("unavailable");
