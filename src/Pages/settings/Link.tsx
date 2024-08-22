@@ -48,7 +48,7 @@ export const Link = () => {
 
   return (
     <Col cols={4} as="form" justify="start" onSubmit={handleSubmit} klass="accountForm">
-      <h3 className="text-center">http://daisyemdr.com/<span className="color-standard">{displayLink}</span></h3>
+      <h3 className="text-center">{window.location.origin}/<span className="color-standard">{displayLink}</span></h3>
       <Alert persist>{error}</Alert>
       <TextGroup
         ref={linkField}
