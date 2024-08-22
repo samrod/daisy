@@ -79,7 +79,7 @@ export const Button: FC<ButtonProps> = ({
 
   return (
     <button
-      className={classes}
+      className={cn(classes, klass)}
       style={style}
       disabled={disabled || loading}
       {...props as ButtonHTMLAttributes<HTMLButtonElement>}

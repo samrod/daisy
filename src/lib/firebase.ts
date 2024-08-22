@@ -98,6 +98,12 @@ export const pushData = async (path: string, value: DataType) => {
   }
 };
 
+export const deleteDataAtIndex = async (path, index) => {
+  const arrayData = (await readPropValue(path, '/')) || [];
+  const newArray = Object.values(arrayData).filter((_, i) => i !== index);
+  await updateData(path, newArray);
+};
+
 export const serverStamp = () => firebase.firestore.Timestamp.now();
 
 const firebaseConfig = {

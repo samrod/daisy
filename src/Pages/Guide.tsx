@@ -3,10 +3,13 @@ import { debounce, isEmpty } from "lodash";
 import cn from "classnames";
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
-import { useGuideState, useClientState, getLinkData, useLinkState } from "state";
-import { defaultModalState, Display, Modal } from "components";
+import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset } from "state";
+import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateProps, ModalStateType } from "components";
 import Styles from "./Guide.module.scss";
 
+interface ModalActions {
+  [key: string]: (...args: any[]) => void
+}
 const Guide = () => {
   const { userMode, clientStatus, clientName, user, setClientStatus, setClientName } = useGuideState(state => state);
   const { clientLink, setActiveSetting } = useLinkState(state => state);
@@ -21,6 +24,8 @@ const Guide = () => {
   const toolbar = useRef<HTMLIFrameElement>();
   const clientLinkRef = useRef(clientLink);
   const linkDataBound = useRef(false);
+
+  const modalActions = useRef<ModalActions>({});
   
   const setToolbarBusy = () => {
     toolbarBusy.current = true;
@@ -55,58 +60,77 @@ const Guide = () => {
     }
   }, [setClientName, toggleToolbar, setClientStatus]);
 
-  const onDenyClientRequest = useCallback(() => {
-    setStatus(4);
-  }, [setStatus]);
-
-  const onAcceptClientRequest = useCallback(() => {
-    setGuide(user.uid);
-    setStatus(3);
-  }, [user, setGuide, setStatus]);
-
-  const onCancelEndSessionModal = useCallback(() => {
-    setModalActive(false);
-  }, [setModalActive]);
-
-  const onEndClientSession = useCallback(() => {
-    setStatus(5);
-    setModalActive(false);
-  }, [setStatus]);
-
-  const showEndSessionModal = useCallback(() => {
-    setModalActive(true);
-    setModal({
-      title: `End ${clientName}'s session`,
-      body: `Are you sure you want to end this session with ${clientName}?`,
-      cancel: {
-        text: "Cancel",
-        action: onCancelEndSessionModal,
-      },
-      accept: {
-        text: "End Session",
-        action: onEndClientSession,
-      },
-    });
-  }, [clientName, onEndClientSession, onCancelEndSessionModal]);
-
   const showJoinRequestModal = useCallback(() => {
-    setModal({
+    showModal({
       title: `Request from ${clientName}`,
       body: `Allow ${clientName} to join this session?`,
       cancel: {
         text: "Deny",
-        action: onDenyClientRequest,
+        action: ["onDenyClientRequest"],
       },
       accept: {
         text: "Allow",
-        action: onAcceptClientRequest,
+        action: ["onAcceptClientRequest"],
       },
     });
-  }, [clientName, onAcceptClientRequest, onDenyClientRequest]);
+  }, [clientName]);
+
+  modalActions.current = {
+    onDenyClientRequest: useCallback(() => {
+      setStatus(4);
+    }, [setStatus]),
+
+    onAcceptClientRequest: useCallback(() => {
+      setGuide(user.uid);
+      setStatus(3);
+    }, [user, setGuide, setStatus]),
+
+    onCancelEndSessionModal: useCallback(() => {
+      setModalActive(false);
+    }, [setModalActive]),
+
+    onEndClientSession: useCallback(() => {
+      setStatus(5);
+      setModalActive(false);
+    }, [setStatus]),
+
+    onCancelPresetAction: useCallback(() => {
+      console.log("** deny delete/update preset: ");
+      setModalActive(false);
+    }, []),
+
+    onConfirmDeletePreset: useCallback((id) => {
+      console.log("** confirm delete preset: ", id);
+      deletePreset(id);
+      setModalActive(false);
+    }, []),
+
+    onConfirmUpdatePreset: useCallback((id) => {
+      console.log("** confirm update preset: ", id);
+      setModalActive(false);
+    }, []),
+  };
+
+  const showModal = useCallback(({ cancel, accept, ...modalData }: ModalStateType) => {
+    setModalActive(true);
+    setModal({
+      ...modalData,
+      cancel: {
+        ...cancel,
+        action: modalActionsCallback(modalActions.current)(cancel.action),
+      },
+      accept: {
+        ...accept,
+        action: modalActionsCallback(modalActions.current)(accept.action),
+      },
+    });
+  }, [setModalActive, setModal]);
 
   useEffect(() => {
     setModalActive(clientStatus === 2);
-    showJoinRequestModal();
+    if (clientStatus === 2) {
+      showJoinRequestModal();
+    }
   }, [clientStatus, clientName, showJoinRequestModal]);
 
   useEffect(() => {
@@ -122,7 +146,7 @@ const Guide = () => {
       { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
       { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
       { event: 'mousemove', element: document.body, handler: debounce(toggleToolbar, 250, { leading: true }) },
-      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showEndSessionModal }) },
+      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showModal }) },
     ],
     [setActiveSetting, toggleToolbar, toolbar.current]
   );

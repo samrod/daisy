@@ -1,4 +1,4 @@
-@import "../../lib/variables.scss";
+@import "lib/variables.scss";
 
 .formScalers {
   @apply my-2 rounded-md overflow-hidden;
@@ -32,6 +32,7 @@
     text-white
     font-bold
     blur-0
+    overflow-visible
   ;
 
   &:global(.error) { @include buttonColors($palette-error); }
@@ -42,6 +43,19 @@
 
   .spinner {
     @apply absolute right-0 mr-2;
+  }
+
+  :global(.tip) {
+    @apply absolute -top-7 rounded text-sm px-2 opacity-0;
+    background-color: $palette-grey-light;
+    border: 1px solid $palette-grey;
+    color: $palette-grey-dark;
+    transition: opacity 0.125s 0s ease-in;
+  }
+
+  &:hover :global(.tip) {
+    @apply opacity-100;
+    transition-delay: 1s;
   }
 
   transition: background-color 0.1s ease-in;

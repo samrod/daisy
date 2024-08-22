@@ -1,29 +1,70 @@
 import { useCallback, useEffect, useState } from "react";
-import { Col } from "components";
-import { defaults } from "lib";
-// import Styles from "./UserPanel.module.scss";
-import { getSettingsFromPreset, useGuideState } from "state";
+import cn from "classnames";
+
+import { createPreset, getGuideData, getSettingsFromPreset, useGuideState } from "state";
+import { Button, Col, Row } from "components";
+import { DB_PRESETS, defaults, sendMessage } from "lib";
+import Styles from "./UserPanel.module.scss";
 
 interface PresetData {
   id: string;
   name: string;
   settings: typeof defaults;
+  index?: number;
 }
 
-const Preset = ({ settings, name, id }) => {
+const showDeletePresetModal = ({ name, id }) => ({
+  title: `Delete preset?`,
+  body: `Are you sure you want to delete "${name}"?`,
+  cancel: {
+    text: "Cancel",
+    action: ["onCancelPresetAction"],
+  },
+  accept: {
+    text: "Delete",
+    action: ["onConfirmDeletePreset", id],
+  },
+});
+
+const showUpdatePresetModal = ({ name, id }) => ({
+  title: `Update preset?`,
+  body: `Are you sure you want to update "${name}" with current settings?`,
+  cancel: {
+    text: "Cancel",
+    action: ["onCancelPresetAction"],
+  },
+  accept: {
+    text: "Delete",
+    action: ["onConfirmUpdatePreset", id],
+  },
+});
+
+const Preset = (props: PresetData) => {
+  const { settings, name, index } = props;
   const { size,speed,angle,pitch,volume,wave,length,background,opacity,lightbar,steps,color,shape } = settings;
+
+  const onDelete = useCallback(() => {
+    sendMessage({ action: "showModal", params: showDeletePresetModal(props) });
+  }, []);
+
+  const onUpdate = useCallback(() => {
+    sendMessage({ action: "showModal", params: showUpdatePresetModal(props) });
+  }, []);
+
   return (
     <div>
-      {name}<br />
-      {background}, {opacity}, {lightbar}, {steps}, {color}, {shape}<br />
+      {name}, 
+      {background}, {opacity}, {lightbar}, {steps}, {color}, {shape},
       {size}, {speed}, {angle}, {pitch}, {volume}, {wave}, {length}
+      <Button customClass={cn(Styles.presetButton, Styles.update)} onClick={onUpdate} size="sm" circle={25} value="&#x21ba;" />
+      {index && <Button customClass={cn(Styles.presetButton, Styles.delete)} onClick={onDelete} size="sm" circle={25} value="&#10006;" />}
     </div>
   );
 };
 
 export const Presets = () => {
   const [settings, setSettings] = useState<PresetData[]>([]);
-  const { presets } = useGuideState(state => state);
+  const { presets, setPresets } = useGuideState(state => state);
 
   const fetchPresets = useCallback(async () => {
     const fetchedPresets = await Promise.all(
@@ -38,16 +79,29 @@ export const Presets = () => {
     setSettings(fetchedPresets.filter(Boolean) as PresetData[]);
   }, [presets]);
 
+  const onAddPreset = useCallback(async () => {
+    await createPreset({});
+  }, []);
+
+  console.log("*** Presets: ", presets);
+
   useEffect(() => {
     fetchPresets();
-  }, [fetchPresets]);
+  }, [presets, fetchPresets])
+  
+  useEffect(() => {
+    getGuideData(DB_PRESETS, setPresets);
+  }, []);
 
   return (
-    <Col cols={4}>
+    <Col cols={5} items="start">
       <h3 className="text-center mt-3 mb-3">Preset Settings</h3>
-      {settings.map((preset) => (
-        <Preset key={preset.id} {...preset} />
-      ))}
+      <Col nowrap self="stretch" klass={Styles.scrollableList}>
+        {settings.map((preset, index) => (
+          <Preset key={preset.id} {...preset} index={index} />
+        ))}
+      </Col>
+      <Button value="Add" onClick={onAddPreset} size="sm" />
     </Col>
   );
 };

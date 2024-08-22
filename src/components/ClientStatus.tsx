@@ -10,8 +10,21 @@ export const ClientStatus = () => {
   const { session, setSession } = useSessionState(state => state);
   const status = CLIENT_STATES[clientStatus];
 
+  const showEndSessionModalData = {
+    title: `End ${clientName}'s session`,
+    body: `Are you sure you want to end this session with ${clientName}?`,
+    cancel: {
+      text: "Cancel",
+      action: ["onCancelEndSessionModal"],
+    },
+    accept: {
+      text: "End Session",
+      action: ["onEndClientSession"],
+    },
+  };
+
   const sendTerminationMessage = () => {
-    sendMessage({ action: "showEndSessionModal" });
+    sendMessage({ action: "showModal", params: showEndSessionModalData });
   };
 
   const captureSession = useCallback((session: string) => {

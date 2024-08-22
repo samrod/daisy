@@ -1,7 +1,7 @@
 import { createPreset, uniqueClientLink, updateClientLink, useGuideState } from "state";
 import {
   DataType, User, getData, pushData, readPropValue, updateData,
-  DB_GUIDES, DB_SESSIONS,
+  DB_GUIDES, DB_SESSIONS, deletePropValue,
 } from "lib";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
@@ -57,4 +57,12 @@ export const pushGuideData = async (key: string, value: string | number | {}) =>
   }
   const { uid } = user;
   await pushData(`${DB_GUIDES}/${uid}/${key}`, value);
+};
+
+export const deleteGuideData = async (key) => {
+  const { user } = useGuideState.getState();
+  if (!user?.uid ) {
+    return;
+  }
+  await deletePropValue(`${DB_GUIDES}/${user.uid}`, key);
 };
