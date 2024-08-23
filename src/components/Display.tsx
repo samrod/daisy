@@ -7,12 +7,19 @@ import { generateSound, setKeys, limits, useEventBinder } from "lib";
 import { useLinkState } from 'state';
 import Styles from "./Display.module.scss";
 
-export const Display = ({ children = null }) => {
+export const Display = ({ settings, children = null }) => {
   useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys }]);
+  const { motionBarActive, activeSetting } = useLinkState(state => state);
+  let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, gain;
+  settingsRef = useRef(settings);
 
-  const { settings, motionBarActive, activeSetting } = useLinkState(state => state);
-  const settingsRef = useRef(settings);
-  const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current;
+  try {
+    ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current);
+    console.log("*** settings: ", settings);
+  } catch (e) {
+    console.log("*** Missing settings");
+    validSettings = false;
+  }
 
   const [odd, setOdd] = useState(true);
 
@@ -173,16 +180,19 @@ export const Display = ({ children = null }) => {
       animationDuration: `${velocity}ms`,
       animationTimingFunction: timingFunction,
     };
-  }
+  };
 
   useEffect(() => {
-    if (!initialized.current) {
+    if (!initialized.current || !validSettings) {
       return;
     }
     updateWaveAnimation();
-  }, [updateWaveAnimation, wave]);
+  }, [updateWaveAnimation, wave, validSettings]);
 
   useEffect(() => {
+    if (!validSettings) {
+      return;
+    }
     if (playing) {
       playbackStarted.current = true;
     }
@@ -194,11 +204,18 @@ export const Display = ({ children = null }) => {
   }, [length, shape, size, playing]);
 
   useEffect(() => {
+    if (!validSettings) {
+      return;
+    }
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
     initialized.current = true;
     useLinkState.subscribe(state => (settingsRef.current = state.settings));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (!validSettings) {
+    return null;
+  }
 
   updateClassesAndStyles();
   updateDirectionalCalls();
@@ -217,7 +234,7 @@ export const Display = ({ children = null }) => {
           style={targetStyle}
           onAnimationIteration={onAnimationIteration}
         >
-          <div className={cn(Styles.bullseye, bullseyeClass)}></div>
+          <div className={cn(Styles.bullseye, bullseyeClass)} />
         </div>
       </div>
       {children}

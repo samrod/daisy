@@ -1,7 +1,7 @@
 @import "lib/variables.scss";
 
 .formScalers {
-  @apply my-2 rounded-md overflow-hidden;
+  @apply my-2 overflow-hidden;
 
   &:global(.xs) { @apply px-2 py-1 text-xs; }
   &:global(.sm) { @apply px-3 py-1 text-sm; }
@@ -138,5 +138,24 @@
 
   &:global(.persist) {
     @include alertColors(transparent);
+  }
+}
+
+.editField {
+  @apply flex items-center absolute w-full h-full top-0 left-0 pl-2;
+
+  .textfield {
+    @apply absolute mx-0 my-2 top-0 left-0 right-0 bottom-0;
+    padding-left: 5px;
+  }
+  .editIcon {
+    @apply absolute top-0 right-0 m-[4px] p-1 text-black hover:text-blue-700 font-bold;
+    transform: scaleX(-1);
+    font-size: 22px;
+  }
+  &:global(.editMode) {
+    .editIcon {
+      font-size: 22px;
+    }
   }
 }

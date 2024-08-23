@@ -12,7 +12,8 @@ import ResetPassword from "./Pages/auth/ResetPassword";
 import Client from "./Pages/Client";
 import Guide from "./Pages/Guide";
 import Remote from "./Pages/Remote";
-import "./components/global.scss"
+import { Display } from "components/Display";
+import "components/global.scss"
 
 const root = createRoot(document.getElementById("root"));
 
@@ -27,6 +28,7 @@ root.render(
 
         <Route path={`/:clientLink`} element={<Client />} />
         <Route path="/" element={<PrivateRoute><Guide /></PrivateRoute>} />
+        <Route path="/thumb" element={<PrivateRoute><Display /></PrivateRoute>} />
         <Route path="/remote" element={<PrivateRoute><Remote /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>

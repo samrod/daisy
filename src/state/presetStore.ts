@@ -1,11 +1,9 @@
 import { findIndex } from "lodash";
 import {
-  DB_GUIDES, DB_PRESETS, DEFAULT_PRESET_NAME, defaults,
-  deleteDataAtIndex,
-  deletePropValue,
-  pushData, readPropValue, updateData, uuid,
+  DB_GUIDES, DB_PRESETS, defaults, deleteDataAtIndex,
+  deletePropValue, pushData, readPropValue, updateData, uuid,
 } from "lib";
-import { deleteGuideData, getGuideData, guidePropExists, updateGuide, updateLinkData, useGuideState } from ".";
+import { getGuideData, guidePropExists, updateGuide, updateLinkData, useGuideState } from ".";
 
 export const getSettingsFromPreset = async (key: string): Promise<typeof defaults> => {
   if (!key) {
@@ -29,7 +27,11 @@ interface CreatePreset {
   name?: string;
 }
 
-export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
+export const updatePresetData = async (path, value) => {
+  await updateData(`${DB_PRESETS}/${path}`, value);
+};
+
+export const createPreset = async ({ settings = defaults, name }: CreatePreset) => {
   const { user } = useGuideState.getState();
   if (!user?.uid ) {
     return;
@@ -39,7 +41,7 @@ export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_
   await updateGuide("activePreset", presetId);
   await updateData(`${DB_PRESETS}/${presetId}`, settings);
   getGuideData("activePreset", selectPreset);
-  await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name })
+  await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name: "" })
 };
 
 interface PresetsTypes {

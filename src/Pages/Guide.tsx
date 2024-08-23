@@ -4,7 +4,7 @@ import cn from "classnames";
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
 import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset } from "state";
-import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateProps, ModalStateType } from "components";
+import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateType } from "components";
 import Styles from "./Guide.module.scss";
 
 interface ModalActions {
@@ -12,7 +12,7 @@ interface ModalActions {
 }
 const Guide = () => {
   const { userMode, clientStatus, clientName, user, setClientStatus, setClientName } = useGuideState(state => state);
-  const { clientLink, setActiveSetting } = useLinkState(state => state);
+  const { settings, clientLink, setActiveSetting } = useLinkState(state => state);
   const { setStatus, setGuide } = useClientState(state => state);
   
   const [hidden, setHidden] = useState(true);
@@ -60,6 +60,21 @@ const Guide = () => {
     }
   }, [setClientName, toggleToolbar, setClientStatus]);
 
+  const showModal = useCallback(({ cancel, accept, ...modalData }: ModalStateType) => {
+    setModalActive(true);
+    setModal({
+      ...modalData,
+      cancel: {
+        ...cancel,
+        action: modalActionsCallback(modalActions.current)(cancel.action),
+      },
+      accept: {
+        ...accept,
+        action: modalActionsCallback(modalActions.current)(accept.action),
+      },
+    });
+  }, [setModalActive, setModal]);
+
   const showJoinRequestModal = useCallback(() => {
     showModal({
       title: `Request from ${clientName}`,
@@ -73,7 +88,7 @@ const Guide = () => {
         action: ["onAcceptClientRequest"],
       },
     });
-  }, [clientName]);
+  }, [clientName, showModal]);
 
   modalActions.current = {
     onDenyClientRequest: useCallback(() => {
@@ -111,21 +126,6 @@ const Guide = () => {
     }, []),
   };
 
-  const showModal = useCallback(({ cancel, accept, ...modalData }: ModalStateType) => {
-    setModalActive(true);
-    setModal({
-      ...modalData,
-      cancel: {
-        ...cancel,
-        action: modalActionsCallback(modalActions.current)(cancel.action),
-      },
-      accept: {
-        ...accept,
-        action: modalActionsCallback(modalActions.current)(accept.action),
-      },
-    });
-  }, [setModalActive, setModal]);
-
   useEffect(() => {
     setModalActive(clientStatus === 2);
     if (clientStatus === 2) {
@@ -152,7 +152,7 @@ const Guide = () => {
   );
 
   return (
-    <Display>
+    <Display settings={settings}>
       <Modal active={modalActive} {...modal} />
 
       <iframe

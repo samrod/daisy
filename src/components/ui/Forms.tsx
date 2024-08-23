@@ -1,24 +1,15 @@
 import {
-  FC,
-  useRef,
-  Dispatch,
-  forwardRef,
-  ChangeEvent,
-  useCallback,
-  ForwardedRef,
-  ReactElement,
-  SetStateAction,
-  MouseEventHandler,
-  InputHTMLAttributes,
-  useImperativeHandle,
-  ButtonHTMLAttributes,
-  Ref,
+  FC, useRef, Dispatch, forwardRef, ChangeEvent, useCallback,
+  ForwardedRef, ReactElement, SetStateAction, MouseEventHandler,
+  InputHTMLAttributes, useImperativeHandle, ButtonHTMLAttributes,
+  Ref, useState,
 } from "react";
 import { RotatingLines } from "react-loader-spinner";
 import { camelCase, isEmpty, noop } from "lodash";
-import cn from "classnames";
 import validator from "validator";
+import cn from "classnames";
 
+import { useEventBinder } from "lib";
 import { Icon } from "..";
 import Styles from "./Forms.module.scss";
 
@@ -212,6 +203,53 @@ interface AlertProps {
   persist?: boolean;
   children?: ReactElement | string;
 }
+
+export const EditField = ({ value, onSubmit }) => {
+  const [_value, setValue] = useState(value);
+  const [editMode, setEditMode] = useState(isEmpty(value));
+
+  const onChange = useCallback(({ target }) => {
+    setValue(target.value);
+  }, []);
+
+  const _onSubmit = useCallback((e) => {
+    e.preventDefault();
+    const value = e.target[0]?.value;
+    onSubmit(value);
+  }, [onSubmit]);
+
+  useEventBinder(
+    [
+      { event: "keyup", element: window, handler: setEditMode.bind(null, false) },
+    ],
+    [setEditMode]
+  );
+
+  if (editMode) {
+    return (
+      <form className={cn(Styles.editField, { editMode })} onSubmit={_onSubmit}>
+        <Textfield value={_value} onChange={onChange} />
+        <Button
+          customClass={Styles.editIcon}
+          onClick={setEditMode.bind(null, false)}
+          value="&#x24e7;"
+        />
+      </form>
+    );
+  }
+  return (
+    <div className={cn(Styles.editField, { editMode })} onClick={setEditMode.bind(null, true)}>
+      {value}
+      <Button
+        customClass={Styles.editIcon}
+        onClick={setEditMode.bind(null, true)}
+        value="&#x270e;"
+      />
+    </div>
+  );
+};
+
+
 
 export const Alert = ({
   size = "md",

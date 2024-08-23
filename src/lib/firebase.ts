@@ -76,7 +76,7 @@ export const updateData = async (path: string, value:  DataType) => {
   }
 };
 
-export const pushData = async (path: string, value: DataType) => {
+export const pushData = async (path: string, value: DataType, index?: number) => {
   const data = (await readPropValue(path, "/")) || [];
   const array = Object.values(data);
   const valueAlreadyExists = array.some((item) => {
@@ -84,17 +84,26 @@ export const pushData = async (path: string, value: DataType) => {
       ? isEqual(item, value)
       : item === value;
   });
-  if (valueAlreadyExists) {
-    console.warn(`*** pushData: ${JSON.stringify(value)} already exists in ${path}.`);
-    return;
-  }
-  array.push(value);
-  await updateData(path, array);
-  try {
-    consoleLog("pushData", `${path}: ${value}`);
-    await set(ref(db, path), array);
-  } catch(e) {
-    consoleLog(`pushData: ${path}`, e, "error");
+  if (typeof index === "number") {
+    array[index] = value;
+    try {
+      consoleLog("pushData", `${path}[${index}]: ${value}`);
+      await set(ref(db, path), array);
+    } catch(e) {
+      consoleLog(`pushData: ${path}`, e, "error");
+    }
+  } else {
+    if (valueAlreadyExists) {
+      console.warn(`*** pushData: ${JSON.stringify(value)} already exists in ${path}.`);
+      return;
+    }
+    array.push(value);
+    try {
+      consoleLog("pushData", `${path}: ${value}`);
+      await set(ref(db, path), array);
+    } catch(e) {
+      consoleLog(`pushData: ${path}`, e, "error");
+    }
   }
 };
 

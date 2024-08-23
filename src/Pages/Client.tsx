@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from "classnames";
 
 import { CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, useRehydrate, } from "lib";
-import { bindAllSettingsToValues, useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState } from 'state';
+import { bindAllSettingsToValues, useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState, useLinkState } from 'state';
 import { ClientLogin, Clouds, Display, NotAvailable } from "components";
 import { ReactComponent as Logo } from "assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
@@ -15,7 +15,8 @@ const cloudSettings = [
 const Client = () => {
   const { uid, preset, status, username, clientLink, setUsername, setClientLink, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
   const { sessionStatus, setLocalSession, setUpdatedAt } = useSessionState(state => state);
-  const { setActivePreset } = useGuideState(state => state);  
+  const { setActivePreset } = useGuideState(state => state);
+  const { settings } = useLinkState(state => state);
   const [nickname, setNickname] = useState(username)
   const [slideIn, setSlideIn] = useState(false);
   const sessionBusyRef = useRef<boolean>();
@@ -84,7 +85,7 @@ const Client = () => {
 
   if (clientStatus === "active" && sessionStatus === "available") {
     return (
-      <Display />
+      <Display settings={settings} />
     );
   }
 
