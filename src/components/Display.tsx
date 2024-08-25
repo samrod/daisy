@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { noop } from "lodash";
+import { useEffect, useState, useCallback, useRef, memo, ReactNode, FC, useMemo } from 'react';
+import { isEqual, noop } from "lodash";
 import cn from "classnames";
 import CSS from "csstype";
 
@@ -7,17 +7,22 @@ import { generateSound, setKeys, limits, useEventBinder } from "lib";
 import { useLinkState } from 'state';
 import Styles from "./Display.module.scss";
 
-export const Display = ({ settings, children = null }) => {
-  useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys }]);
+interface DisplayProps {
+  settings: SettingsTypes;
+  preview?: boolean;
+  children?: ReactNode;
+}
+
+const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
+  const settings = useMemo(() => _settings, [_settings]);
+  useEventBinder(preview ? [] : [{ event: 'keydown', element: document.body, handler: setKeys }]);
   const { motionBarActive, activeSetting } = useLinkState(state => state);
   let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, gain;
   settingsRef = useRef(settings);
 
   try {
     ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current);
-    console.log("*** settings: ", settings);
   } catch (e) {
-    console.log("*** Missing settings");
     validSettings = false;
   }
 
@@ -183,14 +188,14 @@ export const Display = ({ settings, children = null }) => {
   };
 
   useEffect(() => {
-    if (!initialized.current || !validSettings) {
+    if (!initialized.current || !validSettings || preview) {
       return;
     }
     updateWaveAnimation();
   }, [updateWaveAnimation, wave, validSettings]);
 
   useEffect(() => {
-    if (!validSettings) {
+    if (!validSettings || preview) {
       return;
     }
     if (playing) {
@@ -204,7 +209,7 @@ export const Display = ({ settings, children = null }) => {
   }, [length, shape, size, playing]);
 
   useEffect(() => {
-    if (!validSettings) {
+    if (!validSettings || preview) {
       return;
     }
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
@@ -216,6 +221,8 @@ export const Display = ({ settings, children = null }) => {
   if (!validSettings) {
     return null;
   }
+
+  console.log("*** Display State Update: ", color);
 
   updateClassesAndStyles();
   updateDirectionalCalls();
@@ -241,3 +248,10 @@ export const Display = ({ settings, children = null }) => {
     </div>
   );
 };
+
+const isEverythingEqual = (prev: SettingsTypes, next: SettingsTypes) => (
+  JSON.stringify(prev.settings) === JSON.stringify(next.settings) && 
+  isEqual(prev.children, next.children)
+);
+
+export const Display = memo(_Display, isEverythingEqual);

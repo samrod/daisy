@@ -1,17 +1,17 @@
 import { findIndex } from "lodash";
 import {
-  DB_GUIDES, DB_PRESETS, defaults, deleteDataAtIndex,
+  DB_GUIDES, DB_LINKS, DB_PRESETS, DataType, defaults, deleteDataAtIndex,
   deletePropValue, pushData, readPropValue, updateData, uuid,
 } from "lib";
-import { getGuideData, guidePropExists, updateGuide, updateLinkData, useGuideState } from ".";
+import { clientLinkFromPath, getGuideData, getLinkData, guidePropExists, updateGuide, updateLinkData, useGuideState } from ".";
 
-export const getSettingsFromPreset = async (key: string): Promise<typeof defaults> => {
+export const getSettingsFromPreset = async (key: string): Promise<SettingsTypes> => {
   if (!key) {
     return;
   }
   const response = await readPropValue(`${DB_PRESETS}/`, key);
   if (isDefaultType(response)) {
-    return response as typeof defaults;
+    return response as SettingsTypes;
   }
   return;
 };
@@ -23,7 +23,7 @@ export const selectPreset = async (preset: string) => {
 };
 
 interface CreatePreset {
-  settings?: typeof defaults;
+  settings?: SettingsTypes;
   name?: string;
 }
 
@@ -31,15 +31,20 @@ export const updatePresetData = async (path, value) => {
   await updateData(`${DB_PRESETS}/${path}`, value);
 };
 
-export const createPreset = async ({ settings = defaults, name }: CreatePreset) => {
+export const createPreset = async ({ settings, name }: CreatePreset) => {
   const { user } = useGuideState.getState();
   if (!user?.uid ) {
     return;
   }
   const presetId = uuid();
-
   await updateGuide("activePreset", presetId);
-  await updateData(`${DB_PRESETS}/${presetId}`, settings);
+  if (!settings) {
+    const clientLink = await readPropValue(`${DB_GUIDES}/${user.uid}`, "clientLink");
+    const liveSettings = await readPropValue(`${DB_LINKS}/${ clientLink}`, "settings") as DataType;
+    await updateData(`${DB_PRESETS}/${presetId}`, liveSettings);
+  } else {
+    await updateData(`${DB_PRESETS}/${presetId}`, settings);
+  }
   getGuideData("activePreset", selectPreset);
   await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name: "" })
 };
@@ -61,7 +66,7 @@ export const deletePreset = async (id: string) => {
   await deleteDataAtIndex(`${DB_GUIDES}/${user.uid}/presets/`, index);
 };
 
-function isDefaultType(response: any = {}): response is typeof defaults {
+function isDefaultType(response: any = {}): response is SettingsTypes {
   return (
     'size' in response &&
     'speed' in response &&

@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import { defaults, User } from ".";
+import { User } from ".";
 import { togglePlay, useLinkState } from 'state';
 export { v4 as uuid } from "uuid";
 declare global {
@@ -89,7 +89,7 @@ export const setKeys = ({ key }: KeyboardEvent) => {
 
 
 type UpdateTypes = {
-  [key: string]: boolean | string | {} | [] | typeof defaults | User;
+  [key: string]: boolean | string | {} | [] | SettingsTypes | User;
 }
 
 export const update = (set, func: (state: UpdateTypes) => void) => set(produce(func));

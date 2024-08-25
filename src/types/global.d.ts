@@ -4,4 +4,5 @@ declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext
   }
+  type SettingsTypes = typeof defaults;
 }

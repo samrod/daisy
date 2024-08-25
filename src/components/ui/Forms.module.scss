@@ -142,20 +142,25 @@
 }
 
 .editField {
-  @apply flex items-center absolute w-full h-full top-0 left-0 pl-2;
+  @apply flex items-center absolute w-full h-full top-0 left-0 pl-2 cursor-pointer;
+
+  .spinner {
+    @apply absolute top-0 right-0 mt-[8px];
+  }
 
   .textfield {
     @apply absolute mx-0 my-2 top-0 left-0 right-0 bottom-0;
     padding-left: 5px;
   }
-  .editIcon {
+  .editCloseIcon {
     @apply absolute top-0 right-0 m-[4px] p-1 text-black hover:text-blue-700 font-bold;
     transform: scaleX(-1);
     font-size: 22px;
   }
   &:global(.editMode) {
+    @apply cursor-text;
     .editIcon {
-      font-size: 22px;
+      font-size: 20px;
     }
   }
 }

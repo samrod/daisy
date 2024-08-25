@@ -2,14 +2,13 @@ import {
   FC, useRef, Dispatch, forwardRef, ChangeEvent, useCallback,
   ForwardedRef, ReactElement, SetStateAction, MouseEventHandler,
   InputHTMLAttributes, useImperativeHandle, ButtonHTMLAttributes,
-  Ref, useState,
+  Ref, useState, FormEvent, KeyboardEvent, MouseEvent,
 } from "react";
 import { RotatingLines } from "react-loader-spinner";
 import { camelCase, isEmpty, noop } from "lodash";
 import validator from "validator";
 import cn from "classnames";
 
-import { useEventBinder } from "lib";
 import { Icon } from "..";
 import Styles from "./Forms.module.scss";
 
@@ -204,47 +203,91 @@ interface AlertProps {
   children?: ReactElement | string;
 }
 
-export const EditField = ({ value, onSubmit }) => {
-  const [_value, setValue] = useState(value);
-  const [editMode, setEditMode] = useState(isEmpty(value));
+export const EditField = ({ value: originalValue, onSubmit = noop, onAbort = noop, loading = false, ...props }) => {
+  const [newValue, setNewValue] = useState(originalValue);
+  const [editMode, setEditMode] = useState(isEmpty(originalValue));
 
   const onChange = useCallback(({ target }) => {
-    setValue(target.value);
-  }, []);
+    setNewValue(target.value);
+  }, [setNewValue]);
 
-  const _onSubmit = useCallback((e) => {
+  const _onSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
-    const value = e.target[0]?.value;
-    onSubmit(value);
+    save();
   }, [onSubmit]);
 
-  useEventBinder(
-    [
-      { event: "keyup", element: window, handler: setEditMode.bind(null, false) },
-    ],
-    [setEditMode]
-  );
+  const save = useCallback(() => {
+    onSubmit(newValue);
+    setEditMode(false);
+  }, [newValue, onSubmit]);
+
+  const onKeyUp = useCallback(({ key }: KeyboardEvent<HTMLFormElement>) => {
+    console.log("*** onKeyUp: ", newValue);
+    if (key === "Escape") {
+      abort();
+    }
+  }, [newValue]);
+
+  const onSetEditMode = useCallback((mode: boolean) => (e: MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
+    e.preventDefault();
+    if (mode) {
+      setEditMode(true);
+    } else {
+      abort();
+    }
+  }, []);
+
+  const abort = () => {
+    if (newValue.length && !originalValue.length) {
+      save();
+    } else if (newValue.length && originalValue.length) {
+      setNewValue(originalValue);
+    } else if (!newValue.length && !originalValue.length) {
+      onAbort();
+    }
+    setEditMode(false);
+  };
 
   if (editMode) {
     return (
-      <form className={cn(Styles.editField, { editMode })} onSubmit={_onSubmit}>
-        <Textfield value={_value} onChange={onChange} />
+      <form
+        onKeyUp={onKeyUp}
+        onSubmit={_onSubmit}
+        className={cn(Styles.editField, { editMode })}
+      >
+        <Textfield
+          onChange={onChange}
+          value={newValue}
+          {...props}
+        />
         <Button
-          customClass={Styles.editIcon}
-          onClick={setEditMode.bind(null, false)}
+          onClick={onSetEditMode(false)}
+          customClass={Styles.editCloseIcon}
           value="&#x24e7;"
+          type="button"
         />
       </form>
     );
   }
   return (
-    <div className={cn(Styles.editField, { editMode })} onClick={setEditMode.bind(null, true)}>
-      {value}
-      <Button
-        customClass={Styles.editIcon}
-        onClick={setEditMode.bind(null, true)}
-        value="&#x270e;"
-      />
+    <div onClick={onSetEditMode(true)} className={cn(Styles.editField, { editMode })}>
+      {originalValue}
+      {loading
+        ? <div className={Styles.spinner}>
+            <RotatingLines
+              width="36"
+              strokeColor="black"
+              strokeWidth="3"
+              animationDuration="0.25s"
+            />
+          </div>
+        : <Button
+            onClick={onSetEditMode(true)}
+            customClass={Styles.editCloseIcon}
+            value="&#x270e;"
+            type="button"
+          />
+      }
     </div>
   );
 };

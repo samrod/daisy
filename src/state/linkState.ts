@@ -4,7 +4,7 @@ import { defaults, limits, update, consoleLog, objDiff } from "lib";
 const { volume, speed } = limits;
 
 export type LinkStateTypes = {
-  settings: typeof defaults;
+  settings: SettingsTypes;
   clientLink: string | null;
   clientStatus: number;
   clientName: string;

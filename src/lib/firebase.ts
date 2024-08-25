@@ -65,7 +65,7 @@ export const updateData = async (path: string, value:  DataType) => {
     return;
   }
   if (typeof value === "undefined" || value === null) {
-    consoleLog("updateData", `value missing for "${path}"`, "error");
+    consoleLog("updateData", `"${path}: value missing"`, "error");
     return;
   }
   try {
