@@ -1,8 +1,8 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Button, EditField, Thumbnail } from "components";
-import { pushGuidePrest } from "state";
-import { sendMessage } from "lib";
+import { getPresetData, pushGuideData, updateGuideData, updateLinkData, useGuideState } from "state";
+import { DB_PRESETS, sendMessage } from "lib";
 import Styles from "./Presets.module.scss";
 
 export interface PresetData {
@@ -13,38 +13,57 @@ export interface PresetData {
   required: boolean;
 }
 
-export const _PresetRow = (props: PresetData) => {
+export const PresetRow = (props: PresetData) => {
+  const { activePreset } = useGuideState(state => state);
+  const { settings: _settings, name, index, id, required } = props;
+  const activeClass = activePreset === id ? Styles.active : "";
+  const [settings, setSettings] = useState(_settings);
   const [loading, setLoading] = useState(false);
-  const { settings, name, index, id, required } = props;
-  const memoizedSettings = useMemo(() => settings, [settings]);
-  const { speed, angle, pitch, volume, wave, length, steps } = settings;
+  const [validSettings, setValidSettings] = useState(true);
+  let speed, angle, pitch, volume, wave, length, steps;;
+  
+  try {
+    ({ speed, angle, pitch, volume, wave, length, steps }= settings);
+  } catch (e) {
+    setValidSettings(false);
+  }
 
   const onDelete = useCallback(() => {
     sendMessage({ action: "showModal", params: showDeletePresetModal(props) });
   }, [props]);
 
-  const onUpdate = useCallback(() => {
+  const onUpdate = useCallback(async () => {
     sendMessage({ action: "showModal", params: showUpdatePresetModal(props) });
   }, [props]);
-
-  const savePreset = useCallback(async (name) => {
+  
+  const savePresetName = useCallback(async (name: string) => {
     setLoading(true);
-    await pushGuidePrest(index, { name, id });
+    await pushGuideData(DB_PRESETS, { name, id }, index);
     setLoading(false);
   }, [index, id]);
 
-  if (!memoizedSettings) {
+  const onActivate = useCallback( async (e) => {
+    e.stopPropagation();
+    updateGuideData("activePreset", id);
+    updateLinkData("activePreset", id);
+  }, [id]);
+
+  useEffect(() => {
+    getPresetData(id, setSettings);
+  }, [id]);
+
+  if (!validSettings) {
     return null;
   }
 
   return (
-    <tr>
+    <tr onClick={onActivate} className={activeClass}>
       <td className={Styles.thumbnail}>
-        <Thumbnail settings={memoizedSettings} id={id} />
+        <Thumbnail settings={settings} />
       </td>
       <td className={Styles.name}>
         <EditField
-          onSubmit={savePreset}
+          onSubmit={savePresetName}
           onAbort={onDelete}
           loading={loading}
           value={name}
@@ -66,16 +85,6 @@ export const _PresetRow = (props: PresetData) => {
     </tr>
   );
 };
-
-const isEqual = (prev: SettingsTypes, next: SettingsTypes) => (
-  JSON.stringify(prev.settings) === JSON.stringify(next.settings) &&
-  prev.name === next.name &&
-  prev.index === next.index &&  
-  prev.id === next.id &&
-  prev.required === next.required
-);
-
-export const PresetRow = memo(_PresetRow, isEqual);
 
 export const showDeletePresetModal = ({ name, id }) => ({
   title: `Delete preset?`,

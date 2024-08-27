@@ -8,12 +8,12 @@
 			<line fill="#FFFFFF" x1="0.877" y1="56.716" x2="113.877" y2="56.716"/>
 			<g>
 				
-					<line fill="none" stroke="#B3B3B3" stroke-width="8.2881" stroke-linecap="round" stroke-miterlimit="10" x1="13.951" y1="56.716" x2="100.803" y2="56.716"/>
+					<line fill="none" stroke="#B3B3B3" stroke-width="10.3601" stroke-linecap="round" stroke-miterlimit="10" x1="17.22" y1="56.716" x2="97.534" y2="56.716"/>
 				<g>
-					<polygon fill="#B3B3B3" points="15.977,41.613 15.977,71.819 0.877,56.716 					"/>
+					<polygon fill="#B3B3B3" points="19.751,37.837 19.751,75.595 0.877,56.716 					"/>
 				</g>
 				<g>
-					<polygon fill="#B3B3B3" points="98.777,41.613 98.777,71.819 113.877,56.716 					"/>
+					<polygon fill="#B3B3B3" points="95.003,37.837 95.003,75.595 113.877,56.716 					"/>
 				</g>
 			</g>
 		</g>

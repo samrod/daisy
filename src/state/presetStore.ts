@@ -1,9 +1,10 @@
 import { findIndex } from "lodash";
 import {
-  DB_GUIDES, DB_LINKS, DB_PRESETS, DataType, defaults, deleteDataAtIndex,
-  deletePropValue, pushData, readPropValue, updateData, uuid,
+  DB_GUIDES, DB_LINKS, DB_PRESETS, DataType, deleteDataAtIndex,
+  deletePropValue, getData, pushData, readPropValue, updateData, uuid,
 } from "lib";
-import { clientLinkFromPath, getGuideData, getLinkData, guidePropExists, updateGuide, updateLinkData, useGuideState } from ".";
+import { getGuideData, guidePropExists, updateGuideData, updateLinkData, useGuideState } from ".";
+import { Dispatch } from "react";
 
 export const getSettingsFromPreset = async (key: string): Promise<SettingsTypes> => {
   if (!key) {
@@ -37,7 +38,7 @@ export const createPreset = async ({ settings, name }: CreatePreset) => {
     return;
   }
   const presetId = uuid();
-  await updateGuide("activePreset", presetId);
+  await updateGuideData("activePreset", presetId);
   if (!settings) {
     const clientLink = await readPropValue(`${DB_GUIDES}/${user.uid}`, "clientLink");
     const liveSettings = await readPropValue(`${DB_LINKS}/${ clientLink}`, "settings") as DataType;
@@ -47,6 +48,20 @@ export const createPreset = async ({ settings, name }: CreatePreset) => {
   }
   getGuideData("activePreset", selectPreset);
   await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name: "" })
+};
+
+export const updatePresetFromClientLink = async (id: string) => {
+  const { user } = useGuideState.getState();
+  if (!user?.uid ) {
+    return;
+  }
+  const clientLink = await readPropValue(`${DB_GUIDES}/${user.uid}`, "clientLink");
+  const settings = await readPropValue(`${DB_LINKS}/${clientLink}`, "settings");
+  updatePresetData(id, settings);
+};
+
+export const getPresetData = async (id: string, callback: Dispatch<React.SetStateAction<SettingsTypes>>) => {
+  getData({ path: DB_PRESETS, key: id, callback });
 };
 
 interface PresetsTypes {

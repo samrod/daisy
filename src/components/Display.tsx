@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef, memo, ReactNode, FC, useMemo } from 'react';
+import { useEffect, useState, useCallback, useRef, memo, ReactNode, useMemo } from 'react';
 import { isEqual, noop } from "lodash";
 import cn from "classnames";
 import CSS from "csstype";
@@ -19,7 +19,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
   const { motionBarActive, activeSetting } = useLinkState(state => state);
   let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, gain;
   settingsRef = useRef(settings);
-
+  
   try {
     ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current);
   } catch (e) {
@@ -27,6 +27,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
   }
 
   const [odd, setOdd] = useState(true);
+  const [, forceUpdate] = useState(false);
 
   const animatorStylesheets = useRef(['length', 'wave']);
   const initialized = useRef(false);
@@ -192,7 +193,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
       return;
     }
     updateWaveAnimation();
-  }, [updateWaveAnimation, wave, validSettings]);
+  }, [updateWaveAnimation, wave, validSettings, preview]);
 
   useEffect(() => {
     if (!validSettings || preview) {
@@ -209,6 +210,13 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
   }, [length, shape, size, playing]);
 
   useEffect(() => {
+    if (validSettings) {
+      settingsRef.current = settings;
+      forceUpdate(prev => !prev);
+    }
+  }, [settings, settingsRef, validSettings]);
+
+  useEffect(() => {
     if (!validSettings || preview) {
       return;
     }
@@ -222,13 +230,12 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
     return null;
   }
 
-  console.log("*** Display State Update: ", color);
-
   updateClassesAndStyles();
   updateDirectionalCalls();
+  
 
   return (
-    <div className={Styles.display} style={displayStyle.current}>
+    <div className={`${Styles.display} display`} style={displayStyle.current}>
       <div
         className={cn(Styles.container, containerClass)}
         style={containerStyle}

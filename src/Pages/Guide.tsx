@@ -3,28 +3,28 @@ import { debounce, isEmpty } from "lodash";
 import cn from "classnames";
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
-import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset } from "state";
+import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset, getGuideData, updatePresetFromClientLink, getClientData } from "state";
 import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateType } from "components";
 import Styles from "./Guide.module.scss";
 
 interface ModalActions {
   [key: string]: (...args: any[]) => void
 }
+
 const Guide = () => {
-  const { userMode, clientStatus, clientName, user, setClientStatus, setClientName } = useGuideState(state => state);
-  const { settings, clientLink, setActiveSetting } = useLinkState(state => state);
-  const { setStatus, setGuide } = useClientState(state => state);
-  
-  const [hidden, setHidden] = useState(true);
+  const { userMode, clientStatus, clientName, user, setInitialValues, setClientStatus, setClientName, setActivePreset, setUserMode, setPresets } = useGuideState(state => state);
+  const { settings, setPreset, clientLink, setActiveSetting } = useLinkState(state => state);
+  const { setStatus, setGuide, setClientLink } = useClientState(state => state);
+
   const [modalActive, setModalActive] = useState(false);
   const [modal, setModal] = useState(defaultModalState);
+  const [hidden, setHidden] = useState(true);
 
   const toolbarBusy = useRef(false);
   const toolbarTimer = useRef<NodeJS.Timeout | number>();
   const toolbar = useRef<HTMLIFrameElement>();
   const clientLinkRef = useRef(clientLink);
   const linkDataBound = useRef(false);
-
   const modalActions = useRef<ModalActions>({});
   
   const setToolbarBusy = () => {
@@ -110,18 +110,16 @@ const Guide = () => {
     }, [setStatus]),
 
     onCancelPresetAction: useCallback(() => {
-      console.log("** deny delete/update preset: ");
       setModalActive(false);
     }, []),
 
-    onConfirmDeletePreset: useCallback((id) => {
-      console.log("** confirm delete preset: ", id);
-      deletePreset(id);
+    onConfirmDeletePreset: useCallback(async (id) => {
+      await deletePreset(id);
       setModalActive(false);
     }, []),
 
-    onConfirmUpdatePreset: useCallback((id) => {
-      console.log("** confirm update preset: ", id);
+    onConfirmUpdatePreset: useCallback(async (id) => {
+      await updatePresetFromClientLink(id);
       setModalActive(false);
     }, []),
   };
@@ -150,6 +148,15 @@ const Guide = () => {
     ],
     [setActiveSetting, toggleToolbar, toolbar.current]
   );
+
+  useEffect(() => {
+    setInitialValues();
+    getClientData("activePreset", setPreset);
+    getGuideData("clientLink", setClientLink);
+    getGuideData("activePreset", setActivePreset);
+    getGuideData("userMode", setUserMode);
+    getGuideData(`presets`, setPresets);
+  }, [setPreset, setActivePreset, setClientLink, setInitialValues, setPresets, setUserMode]);
 
   return (
     <Display settings={settings}>

@@ -211,33 +211,12 @@ export const EditField = ({ value: originalValue, onSubmit = noop, onAbort = noo
     setNewValue(target.value);
   }, [setNewValue]);
 
-  const _onSubmit = useCallback((e: FormEvent) => {
-    e.preventDefault();
-    save();
-  }, [onSubmit]);
-
   const save = useCallback(() => {
     onSubmit(newValue);
     setEditMode(false);
-  }, [newValue, onSubmit]);
+  }, [newValue,onSubmit]);
 
-  const onKeyUp = useCallback(({ key }: KeyboardEvent<HTMLFormElement>) => {
-    console.log("*** onKeyUp: ", newValue);
-    if (key === "Escape") {
-      abort();
-    }
-  }, [newValue]);
-
-  const onSetEditMode = useCallback((mode: boolean) => (e: MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
-    e.preventDefault();
-    if (mode) {
-      setEditMode(true);
-    } else {
-      abort();
-    }
-  }, []);
-
-  const abort = () => {
+  const abort = useCallback(() => {
     if (newValue.length && !originalValue.length) {
       save();
     } else if (newValue.length && originalValue.length) {
@@ -246,7 +225,28 @@ export const EditField = ({ value: originalValue, onSubmit = noop, onAbort = noo
       onAbort();
     }
     setEditMode(false);
-  };
+  }, [save, newValue.length, onAbort, originalValue]);
+
+  const _onSubmit = useCallback((e: FormEvent) => {
+    e.preventDefault();
+    save();
+  }, [save]);
+
+  const onKeyUp = useCallback(({ key }: KeyboardEvent<HTMLFormElement>) => {
+    if (key === "Escape") {
+      abort();
+    }
+  }, [abort]);
+
+  const onSetEditMode = useCallback((mode: boolean) => (e: MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (mode) {
+      setEditMode(true);
+    } else {
+      abort();
+    }
+  }, [abort]);
 
   if (editMode) {
     return (

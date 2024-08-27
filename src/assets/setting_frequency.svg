@@ -4,10 +4,10 @@
 	 x="0px" y="0px" width="115px" height="115px" viewBox="0 0 115 115" xml:space="preserve">
 <g id="Frequency">
 	
-		<line fill="none" stroke="#B3B3B3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="3.281" y1="58.052" x2="111.281" y2="58.052"/>
+		<line fill="none" stroke="#B3B3B3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" x1="2.886" y1="57.928" x2="112.578" y2="57.928"/>
 	
-		<polyline fill="none" stroke="#000000" stroke-width="4.7078" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
-		20.157,57.475 30.363,45.493 40.033,83.979 49.86,3.906 59.495,110.792 69.133,34.462 78.765,68.332 88.746,51.613 97.736,57.631 	
-		"/>
+		<polyline fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+		26.726,57.452 35.126,47.591 43.085,79.267 51.174,13.362 59.104,101.336 67.036,38.512 74.963,66.389 83.179,52.628 
+		90.578,57.581 	"/>
 </g>
 </svg>

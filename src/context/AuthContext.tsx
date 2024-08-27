@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
     getGuideData("clientLink", setClientLink);
     getGuideData("activePreset", setActivePreset);
-    getGuideData("userMode", (value: boolean) => setUserMode(value));
+    getGuideData("userMode", setUserMode);
     getGuideData(`presets`, setPresets);
 
     presetsBoundToStore.current = true;

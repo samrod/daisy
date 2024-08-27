@@ -10,7 +10,7 @@ const panels = [ "Email", "Password", "Link", "Presets"];
 export const UserPanel = ({ exists }) => {
   const { currentUser } = getAuth();
   const { setUserMode } = useGuideState(state => state);
-  const [tab, setTab] = useState("email");
+  const [tab, setTab] = useState("presets");
 
   const onTabClick = ({ target }) => {
     setTab(target.dataset.option);

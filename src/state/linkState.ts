@@ -4,7 +4,7 @@ import { defaults, limits, update, consoleLog, objDiff } from "lib";
 const { volume, speed } = limits;
 
 export type LinkStateTypes = {
-  settings: SettingsTypes;
+  settings: null | SettingsTypes;
   clientLink: string | null;
   clientStatus: number;
   clientName: string;
@@ -21,6 +21,7 @@ export type LinkActionsTypes = {
   speedUp: () => void;
   speedDown: () => void;
   setClientLink: (state: string) => void;
+  setPreset: (state: string) => void;
   setActiveSetting: (setting: string) => void;
 };
 
@@ -69,6 +70,10 @@ const linkActions = (set): LinkActionsTypes => ({
     state.clientLink = link;
     state.trigger = "setClientLink";
   }),
+  setPreset: (preset) => update(set, (state) => {
+    state.preset = preset;
+    state.trigger = "setPreset";
+  }),
 });
 
 export const useLinkState = create<LinkStateTypes & LinkActionsTypes>((set) => ({
@@ -82,6 +87,6 @@ useLinkState.subscribe(({ trigger, ...state }, {trigger: j2, ...preState}) => {
   }
   const diff = objDiff(preState, state);
   if (diff) {
-    consoleLog(trigger, diff, "#09F" );
+    consoleLog(trigger, diff, "#0CC" );
   }
 });

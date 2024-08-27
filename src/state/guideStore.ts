@@ -1,7 +1,7 @@
 import { createPreset, uniqueClientLink, updateClientLink, useGuideState } from "state";
 import {
   DataType, User, getData, pushData, readPropValue, updateData,
-  DB_GUIDES, DB_SESSIONS, deletePropValue, DEFAULT_PRESET_NAME, DB_PRESETS,
+  DB_GUIDES, DB_SESSIONS, deletePropValue, DEFAULT_PRESET_NAME,
 } from "lib";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
@@ -21,7 +21,7 @@ export const guidePropExists = async (key: string) => {
   return typeof response !== "undefined" ? response : false;
 };
 
-export const updateGuide = async (key: string, value: DataType) => {
+export const updateGuideData = async (key: string, value: DataType) => {
   const { user } = useGuideState.getState();
   if (!user?.uid) {
     return;
@@ -35,13 +35,13 @@ export const createGuide = async (user: User) => {
   setUser(user);
   await createUpdateEmail(user);
   await captureLogin({ user });
-  await updateGuide(DB_SESSIONS, []);
+  await updateGuideData(DB_SESSIONS, []);
   await updateClientLink(initialClientLink);
   await createPreset({ name: DEFAULT_PRESET_NAME });
 };
 
 export const createUpdateEmail = async (user: User, newEmail?: string) => {
-  await updateGuide("email", user.email || newEmail);
+  await updateGuideData("email", user.email || newEmail);
 };
 
 export const captureLogin = async ({ user }) => {
@@ -49,14 +49,14 @@ export const captureLogin = async ({ user }) => {
   await pushGuideData("logins", lastSignInTime);
 };
 
-export const pushGuideData = async (key: string, value: string | number | {}) => {
+export const pushGuideData = async (key: string, value: string | number | {}, index?: number) => {
   const { user } = useGuideState.getState();
   if (!user) {
     console.warn("*** pushGuideData: user missing.");
     return;
   }
   const { uid } = user;
-  await pushData(`${DB_GUIDES}/${uid}/${key}`, value);
+  await pushData(`${DB_GUIDES}/${uid}/${key}`, value, index);
 };
 
 export const deleteGuideData = async (key) => {
@@ -65,12 +65,4 @@ export const deleteGuideData = async (key) => {
     return;
   }
   await deletePropValue(`${DB_GUIDES}/${user.uid}`, key);
-};
-
-export const pushGuidePrest = async (index: number, value: DataType) => {
-  const { user } = useGuideState.getState();
-  if (!user?.uid ) {
-    return;
-  }
-  await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, value, index);
 };

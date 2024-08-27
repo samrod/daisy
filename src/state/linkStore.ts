@@ -1,7 +1,7 @@
 import { isEmpty } from "lodash";
 import { matchPath } from "react-router";
 import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue, propExists, uuid, DataType } from "lib";
-import { useClientState, useGuideState, guidePropExists, updateGuide, selectPreset, useLinkState } from ".";
+import { useClientState, useGuideState, guidePropExists, updateGuideData, selectPreset, useLinkState } from ".";
 
 const getState = (key: string) => {
   const linkState = useLinkState.getState();
@@ -48,12 +48,12 @@ export const updateClientLink = async (clientLink: string) => {
   const { setClientLink } = useLinkState.getState();
   const { uid, setPreset } = useClientState.getState();
   const oldClientLink = await guidePropExists("clientLink");
-  deletePropValue(DB_LINKS, oldClientLink as string);
+  await deletePropValue(DB_LINKS, oldClientLink as string);
   setClientLink(clientLink);
+  await updateGuideData("clientLink", clientLink);
   setPreset(preset);
-  updateGuide("clientLink", clientLink);
-  updateLinkData("", { status: 0, guide: user?.uid, client: uid });
-  selectPreset(preset);
+  await updateLinkData("", { status: 0, guide: user?.uid, client: uid });
+  await selectPreset(preset);
 };
 
 export const clientLinkFromPath = () => {
@@ -111,5 +111,8 @@ const bindSettingToValue = (activePreset: string, key: string) => {
 export const bindAllSettingsToValues = () => {
   const { activePreset } = useGuideState.getState();
   const { settings } = useLinkState.getState();
+  if (!settings) {
+    return;
+  }
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
