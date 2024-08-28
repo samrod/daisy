@@ -12,7 +12,6 @@ interface TabsProps {
 }
 
 const Tabs = ({ options, action, callback, state, size }: TabsProps) => {
-
   const tab = (label: string, index: number) => {
     const option = label.toLowerCase();
 

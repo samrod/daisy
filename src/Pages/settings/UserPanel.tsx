@@ -4,16 +4,22 @@ import { Button as CloseButton, Tabs } from "components";
 import { getAuth, useGuideState } from "state";
 import * as SettingComponents from "./";
 import Styles from "./UserPanel.module.scss";
+import { useAuth } from 'context/AuthContext';
 
-const panels = [ "Email", "Password", "Link", "Presets"];
+const panels = [ "Email", "Password", "Link", "Presets", "Logout"];
 
 export const UserPanel = ({ exists }) => {
+  const { logout } = useAuth();
   const { currentUser } = getAuth();
   const { setUserMode } = useGuideState(state => state);
   const [tab, setTab] = useState("presets");
 
   const onTabClick = ({ target }) => {
-    setTab(target.dataset.option);
+    if (target.dataset.option === "logout") {
+      logout();
+    } else {
+      setTab(target.dataset.option);
+    }
   };
 
   if (!exists || !currentUser) {
@@ -27,8 +33,16 @@ export const UserPanel = ({ exists }) => {
         <Tabs options={panels} state={tab} callback={onTabClick} action="panel" />
           {panels.map((key, index) => {
             const PanelContent = SettingComponents[key]
+            if (!PanelContent) {
+              return;
+            }
             return (
-              <Tabs.Panel key={`tab-panel-${index}`} klass={Styles.panel} active={tab} title={key}>
+              <Tabs.Panel
+                key={`tab-panel-${index}`}
+                klass={Styles.panel}
+                active={tab}
+                title={key}
+              >
                 <PanelContent />
               </Tabs.Panel>
             );

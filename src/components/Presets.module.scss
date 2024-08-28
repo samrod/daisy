@@ -1,16 +1,16 @@
 @import "lib/variables";
 
 .thumb {
-  @apply max-w-[170px] max-h-[90px] rounded-lg overflow-hidden;
+  @apply max-w-[140px] max-h-[80px] rounded-lg overflow-hidden;
 
   :global {
     .display {
       @apply relative;
       width: 800%;
-      height: 800%;
+      height: calc( 90px * 7);
       transform: scale(0.125);
       transform-origin: top left;
-      aspect-ratio: 1.85 / 1;
+      // aspect-ratio: 1.85 / 1;
     }
   }
 }
@@ -38,7 +38,7 @@
     background-color: $palette-grey-light;
   }
   td, th {
-    @apply text-center border-2;
+    @apply text-center;
     border-bottom: 0.5px solid transparentize($palette-white, .65);
     width: calc( ( 100vw - 390px ) / 9);
 
@@ -48,7 +48,7 @@
 
     &.thumbnail {
       @apply relative;
-      width: 180px;
+      width: 135px;
       iframe {
         @apply rounded-lg w-full;
         aspect-ratio: 1.85 / 1;

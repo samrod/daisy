@@ -48,6 +48,13 @@
   @apply grid grid-cols-6 justify-center;
 }
 
+[data-option=logout] {
+  background-color: darken($palette-success, 5);
+  &:hover {
+    background-color: darken($palette-success, 2.5);
+  }
+}
+
 .panel {
   @apply p-8 pb-2;
 }

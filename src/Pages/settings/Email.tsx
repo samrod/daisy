@@ -2,11 +2,11 @@ import { useState, useCallback, FormEvent } from 'react'
 
 import { useAuth } from '../../context/AuthContext';
 import { getAuth, updateEmail, createUpdateEmail as updateEmailFB } from "state";
-import { Alert, Button, Col, Row, TextGroup } from '../../components';
+import { Alert, Button, Col, Row, TextGroup } from 'components';
 import Styles from "./UserPanel.module.scss";
 
 export const Email = () => {
-  const { logout, getFormHandlers } = useAuth();
+  const { getFormHandlers } = useAuth();
   const { currentUser } = getAuth();
   const [email, setEmail] = useState(currentUser?.email);
   const [error, setError] = useState('');
@@ -45,10 +45,7 @@ export const Email = () => {
           defaultValue: currentUser?.email,
         }}
       />
-      <Row>
-        <Button onClick={logout} variant="success">LOGOUT</Button>
-        <Button disabled={loading || !validEmail} type="submit">UPDATE</Button>
-      </Row>
+      <Button disabled={loading || !validEmail} type="submit">UPDATE</Button>
     </Col>
   )
 };
