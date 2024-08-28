@@ -30,7 +30,7 @@ const executeCallback = ({ key, path, callback, debug }: GetData) => (snapshot) 
   callback(val)
 };
 
-export const getData = (params: GetData) => {
+export const getData = async (params: GetData) => {
   const { path, key} = params;
   const keyRef = ref(db, `${path}/${key}`);
   return onValue(keyRef, executeCallback(params));

@@ -113,8 +113,9 @@ const persistOptions = {
 export const useSessionState = create<SessionStateTypes & SessionStateActions>()(
   devtools(
     persist(sessionStateCreator, persistOptions),
-  { name: "sessionState", store: "sessionState" }
-));
+    { name: "sessionState", store: "sessionState" }
+  )
+);
 
 useSessionState.subscribe(({trigger, ...state }, { trigger: preTrigger, ...preState }) => {
   const diff = objDiff(preState, state);

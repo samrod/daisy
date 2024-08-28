@@ -1,7 +1,7 @@
 import { isEmpty } from "lodash";
 import { matchPath } from "react-router";
 import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue, propExists, uuid, DataType } from "lib";
-import { useClientState, useGuideState, guidePropExists, updateGuideData, selectPreset, useLinkState } from ".";
+import { useClientState, useGuideState, guidePropExists, updateGuideData, selectPreset, useLinkState, getSettingsFromPreset } from ".";
 
 const getState = (key: string) => {
   const linkState = useLinkState.getState();
@@ -15,11 +15,10 @@ const getState = (key: string) => {
   }
 };
 
-export const getLinkData = async (key: string, callback: (params: unknown) => void) => {
+export const getLinkData = (key: string, callback: (params: unknown) => void) => {
   const clientLink = getState("clientLink");
   if (clientLink) {
-    // console.log(`*** ${window.location.pathname} getLinkData:`, key);
-    await getData({ path: `/${DB_LINKS}/${clientLink}`, key, callback});
+    getData({ path: `/${DB_LINKS}/${clientLink}`, key, callback});
   }
 };
 
@@ -36,6 +35,11 @@ export const updateSetting = async (setting: string, value: DataType) => {
     return;
   }
   await updateLinkData(`settings/${setting}`, value);
+};
+
+export const updateSettingFromPreset = async (preset: string) => {
+  const settings = await getSettingsFromPreset(preset);
+  await updateSetting("", settings);
 };
 
 export const togglePlay = () => {
@@ -64,7 +68,7 @@ export const clientLinkFromPath = () => {
   return matchPathData.params.clientLink;
 };
 
-export const clientFromStore = async () => {
+export const clientLinkFromStore = async () => {
   const clientLink = clientLinkFromPath();
   const response = await readPropValue(`${DB_LINKS}/${clientLink}`, "");
   if (response) {
@@ -81,7 +85,7 @@ export const currentLinkExists = async (): Promise<{ preset?: string; clientLink
       const clientLink = linkState.clientLink || await readPropValue(`${DB_GUIDES}/${user.uid}`, "clientLink") + "";
       return { clientLink };
     }
-    return await clientFromStore();
+    return await clientLinkFromStore();
   } catch(e) {
     console.log("*** ", e);
     return null;
@@ -108,11 +112,12 @@ const bindSettingToValue = (activePreset: string, key: string) => {
   getLinkData(`settings/${key}`, updateSettingFromFirebase(key));
 };
 
-export const bindAllSettingsToValues = () => {
+export const subscribeAllSettings = () => {
   const { activePreset } = useGuideState.getState();
   const { settings } = useLinkState.getState();
   if (!settings) {
     return;
   }
+  getLinkData("activePreset", updateSettingFromPreset)
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };

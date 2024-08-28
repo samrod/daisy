@@ -19,7 +19,7 @@ export const Cloud = ({ scaleX = 1, scaleY = 1, offset = 0 }: CloudProps) => {
         style={{
           width: `${scaleX*166}px`,
           height: `${scaleY*80}px`,
-          boxShadow: `0px ${scaleY*40+220}px ${scaleY*50}px #fff`,
+          boxShadow: `0px ${scaleY*40+220}px ${scaleY*50}px #fffC`,
         }}
         className={Styles.back}
       />
@@ -35,7 +35,7 @@ export const Cloud = ({ scaleX = 1, scaleY = 1, offset = 0 }: CloudProps) => {
         style={{
           width: `${scaleX*153}px`,
           height: `${scaleY*10}px`,
-          boxShadow: `20px ${scaleY*10+220}px ${scaleY*25}px #333`,
+          boxShadow: `20px ${scaleY*10+220}px ${scaleY*25}px #339`,
         }}
         className={Styles.front}
       />

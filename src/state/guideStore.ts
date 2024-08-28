@@ -1,4 +1,4 @@
-import { createPreset, uniqueClientLink, updateClientLink, useGuideState } from "state";
+import { createPreset, uniqueClientLink, updateClientLink, useGuideState, useLinkState } from "state";
 import {
   DataType, User, getData, pushData, readPropValue, updateData,
   DB_GUIDES, DB_SESSIONS, deletePropValue, DEFAULT_PRESET_NAME,
@@ -6,7 +6,7 @@ import {
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
 
-export const getGuideData = (key: string, callback) => {
+export const getGuideData = async (key: string, callback) => {
   const { user: { uid } } = useGuideState.getState();
   if (!uid) {
     return;
@@ -65,4 +65,14 @@ export const deleteGuideData = async (key) => {
     return;
   }
   await deletePropValue(`${DB_GUIDES}/${user.uid}`, key);
+};
+
+export const subscribeGuideData = () => {
+  const { setActivePreset, setUserMode, setPresets } = useGuideState.getState();
+  const { setClientLink } = useLinkState.getState();
+
+  getGuideData("clientLink", setClientLink);
+  getGuideData("activePreset", setActivePreset);
+  getGuideData("userMode", setUserMode);
+  getGuideData(`presets`, setPresets);
 };

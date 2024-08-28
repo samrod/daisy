@@ -3,7 +3,7 @@ import { debounce, isEmpty } from "lodash";
 import cn from "classnames";
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
-import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset, getGuideData, updatePresetFromClientLink, getClientData } from "state";
+import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset, updatePresetFromClientLink } from "state";
 import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateType } from "components";
 import Styles from "./Guide.module.scss";
 
@@ -12,9 +12,9 @@ interface ModalActions {
 }
 
 const Guide = () => {
-  const { userMode, clientStatus, clientName, user, setInitialValues, setClientStatus, setClientName, setActivePreset, setUserMode, setPresets } = useGuideState(state => state);
-  const { settings, setPreset, clientLink, setActiveSetting } = useLinkState(state => state);
-  const { setStatus, setGuide, setClientLink } = useClientState(state => state);
+  const { userMode, clientStatus, clientName, user, setInitialValues, setClientStatus, setClientName } = useGuideState(state => state);
+  const { settings, clientLink, setActiveSetting } = useLinkState(state => state);
+  const { setStatus, setGuide } = useClientState(state => state);
 
   const [modalActive, setModalActive] = useState(false);
   const [modal, setModal] = useState(defaultModalState);
@@ -151,12 +151,7 @@ const Guide = () => {
 
   useEffect(() => {
     setInitialValues();
-    getClientData("activePreset", setPreset);
-    getGuideData("clientLink", setClientLink);
-    getGuideData("activePreset", setActivePreset);
-    getGuideData("userMode", setUserMode);
-    getGuideData(`presets`, setPresets);
-  }, [setPreset, setActivePreset, setClientLink, setInitialValues, setPresets, setUserMode]);
+  }, [setInitialValues]);
 
   return (
     <Display settings={settings}>

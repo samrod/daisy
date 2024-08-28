@@ -1,8 +1,8 @@
 import { MouseEvent } from "react";
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import { User, update, consoleLog, objDiff, readPropValue, DB_GUIDES } from "lib";
-import { updateGuideData, useLinkState } from ".";
-
+import { updateLinkData, updateGuideData, useLinkState } from ".";
 export type GuideStateTypes = {
   userMode: boolean;
   user?: User;
@@ -68,8 +68,10 @@ const guideActions = (set): GuideActionsTypes => ({
     state.presets = preset;
     state.trigger = "setPresets";
   }),
-  setActivePreset: (activeSetting) => update(set, (state) => {
-    state.activePreset = activeSetting;
+  setActivePreset: (activePreset) => update(set, (state) => {
+    state.activePreset = activePreset;
+    updateLinkData("activePreset", activePreset);
+    useLinkState.getState().setPreset(activePreset);
     state.trigger = "setActivePreset";
   }),
   setInitialValues: async () => {
@@ -97,10 +99,12 @@ const guideActions = (set): GuideActionsTypes => ({
   },
 });
 
-export const useGuideState = create<GuideStateTypes & GuideActionsTypes>((set) => ({
-  ...guideStates,
-  ...guideActions(set),
-}));
+export const useGuideState = create<GuideStateTypes & GuideActionsTypes>()(
+  devtools((set) => ({
+    ...guideStates,
+    ...guideActions(set),
+  }))
+);
 
 useGuideState.subscribe(({ trigger, user, ...state }, {user: j1 ,trigger: j2, ...preState}) => {
   if (trigger === "setSetting") {

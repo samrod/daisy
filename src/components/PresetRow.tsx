@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Button, EditField, Thumbnail } from "components";
-import { getPresetData, pushGuideData, updateGuideData, updateLinkData, useGuideState } from "state";
+import { getPresetData, pushGuideData, updateGuideData, useGuideState } from "state";
 import { DB_PRESETS, sendMessage } from "lib";
 import Styles from "./Presets.module.scss";
 
@@ -45,7 +45,6 @@ export const PresetRow = (props: PresetData) => {
   const onActivate = useCallback( async (e) => {
     e.stopPropagation();
     updateGuideData("activePreset", id);
-    updateLinkData("activePreset", id);
   }, [id]);
 
   useEffect(() => {
@@ -101,13 +100,13 @@ export const showDeletePresetModal = ({ name, id }) => ({
 
 export const showUpdatePresetModal = ({ name, id }) => ({
   title: `Update preset?`,
-  body: `Are you sure you want to update "${name}" with current settings?`,
+  body: `Are you sure you want to overwrite "${name}" with the current settings?`,
   cancel: {
     text: "Cancel",
     action: ["onCancelPresetAction"],
   },
   accept: {
-    text: "Delete",
+    text: "Overwrite",
     action: ["onConfirmUpdatePreset", id],
   },
 });

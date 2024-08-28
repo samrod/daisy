@@ -145,7 +145,8 @@
   @apply flex items-center absolute w-full h-full top-0 left-0 pl-2 cursor-pointer;
 
   .spinner {
-    @apply absolute top-0 right-0 mt-[8px];
+    @apply absolute top-0 right-0;
+    margin-top: 8px;
   }
 
   .textfield {

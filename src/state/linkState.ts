@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import { defaults, limits, update, consoleLog, objDiff } from "lib";
 
 const { volume, speed } = limits;
@@ -76,10 +77,12 @@ const linkActions = (set): LinkActionsTypes => ({
   }),
 });
 
-export const useLinkState = create<LinkStateTypes & LinkActionsTypes>((set) => ({
-  ...linkStates,
-  ...linkActions(set),
-}));
+export const useLinkState = create<LinkStateTypes & LinkActionsTypes>()(
+  devtools((set) => ({
+    ...linkStates,
+    ...linkActions(set),
+  }))
+);
 
 useLinkState.subscribe(({ trigger, ...state }, {trigger: j2, ...preState}) => {
   if (trigger === "setSetting") {

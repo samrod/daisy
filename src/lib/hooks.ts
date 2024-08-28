@@ -3,7 +3,7 @@ import { debounce, noop } from 'lodash';
 import { DB_LINKS, bindEvent, consoleLog, readPropValue, unbindEvent } from '.';
 import {
   useClientState, updateLinkData, useSessionState, sessionExpired,
-  endSession, clientFromStore
+  endSession, clientLinkFromStore
 } from "state";
 
 export const useRehydrate = () => {
@@ -11,7 +11,7 @@ export const useRehydrate = () => {
   const { localSession } = useSessionState.getState();
 
   const checkAndRehydrate = useCallback(async () => {
-    const response = await clientFromStore();
+    const response = await clientLinkFromStore();
 
     if (!hasHydrated() && localSession && response?.clientLink) {
       rehydrate();
@@ -41,7 +41,7 @@ export const useSessionCheck = () => {
 
   const updateSessionStatus = async () => {
     try {
-      const response = await clientFromStore();
+      const response = await clientLinkFromStore();
       if (response?.clientLink) {
         persistedSessionRef.current = await readPropValue(`${DB_LINKS}/${response.clientLink}/`, "session");
       }
