@@ -26,7 +26,7 @@ html {
 }
 
 body {
-  width: 100vw;
+  @apply overflow-hidden w-screen;
   -webkit-font-smoothing: antialiased;
   font: 16px "Lucida Sans", system;
   letter-spacing: -0.025em;

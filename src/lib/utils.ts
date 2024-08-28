@@ -1,6 +1,6 @@
 import { produce } from 'immer';
-import { defaults, User } from ".";
-import { togglePlay, useGuideState } from '../state';
+import { User } from ".";
+import { togglePlay, useLinkState } from 'state';
 export { v4 as uuid } from "uuid";
 declare global {
   interface Window {
@@ -64,7 +64,7 @@ export const sendMessage = (
 };
 
 export const setKeys = ({ key }: KeyboardEvent) => {
-  const State = useGuideState.getState();
+  const State = useLinkState.getState();
   // console.log(`*** ${document.location.pathname} setKeys: "${key}"`, test.settings.playing, State.settings.playing);
   switch (key) {
     case "ArrowDown":
@@ -89,7 +89,7 @@ export const setKeys = ({ key }: KeyboardEvent) => {
 
 
 type UpdateTypes = {
-  [key: string]: boolean | string | {} | typeof defaults | User;
+  [key: string]: boolean | string | {} | [] | SettingsTypes | User;
 }
 
 export const update = (set, func: (state: UpdateTypes) => void) => set(produce(func));

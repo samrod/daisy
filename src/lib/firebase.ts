@@ -1,17 +1,16 @@
-import { isEmpty } from "lodash";
-import { child, get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
+import { isEmpty, isEqual } from "lodash";
+import { child, get, getDatabase, onValue, ref, remove, set } from "firebase/database";
 import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import firebase from "firebase/compat/app";
 import { getAuth } from "firebase/auth";
 import "firebase/compat/firestore";
 
-import { useGuideState } from "state";
 import { consoleLog } from ".";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
-export type DataType = Object | { [key: string]: Object | {}};
+export type DataType = Object | { [key: string]: Object | {}} | object[];
 export interface GetData {
   key: string;
   callback: (setting: number | boolean | string | object) => void;
@@ -31,7 +30,7 @@ const executeCallback = ({ key, path, callback, debug }: GetData) => (snapshot) 
   callback(val)
 };
 
-export const getData = (params: GetData) => {
+export const getData = async (params: GetData) => {
   const { path, key} = params;
   const keyRef = ref(db, `${path}/${key}`);
   return onValue(keyRef, executeCallback(params));
@@ -66,50 +65,52 @@ export const updateData = async (path: string, value:  DataType) => {
     return;
   }
   if (typeof value === "undefined" || value === null) {
-    consoleLog("updateData", `value missing for "${path}"`, "error");
+    consoleLog("updateData", `"${path}: value missing"`, "error");
     return;
   }
   try {
     consoleLog("updateData", `${path}: ${value}`);
     await set(ref(db, path), value);
   } catch(e) {
-    consoleLog("updateData", e, "error");
+    consoleLog(`updateData: ${path}/${value}`, e, "error");
   }
 };
 
-export const pushData = async(path: string, value: DataType) => {
-  const arrayRef = ref(db, path);
-  const newLoginRef = push(arrayRef)
-  if (!value) {
-    console.warn(`*** pushData: value "${value}" empty for ${path}`)
-    return;
-  }
-  const arrayData = await readPropValue(path, "/");
-  const valueAlreadyExists = arrayData && Object.values(arrayData).includes(value);
-  if (valueAlreadyExists) {
-    console.warn(`*** pushData: ${value} already exists in ${path}.`);
-    return;
-  }
-  try {
-    await set(newLoginRef, value);
-    consoleLog("pushData", `${path}: ${value}`);
-  } catch(e) {
-    consoleLog("pushData", e, "error");
+export const pushData = async (path: string, value: DataType, index?: number) => {
+  const data = (await readPropValue(path, "/")) || [];
+  const array = Object.values(data);
+  const valueAlreadyExists = array.some((item) => {
+    return typeof value === 'object' && typeof item === 'object'
+      ? isEqual(item, value)
+      : item === value;
+  });
+  if (typeof index === "number") {
+    array[index] = value;
+    try {
+      consoleLog("pushData", `${path}[${index}]: ${value}`);
+      await set(ref(db, path), array);
+    } catch(e) {
+      consoleLog(`pushData: ${path}`, e, "error");
+    }
+  } else {
+    if (valueAlreadyExists) {
+      console.warn(`*** pushData: ${JSON.stringify(value)} already exists in ${path}.`);
+      return;
+    }
+    array.push(value);
+    try {
+      consoleLog("pushData", `${path}: ${value}`);
+      await set(ref(db, path), array);
+    } catch(e) {
+      consoleLog(`pushData: ${path}`, e, "error");
+    }
   }
 };
 
-const updateSettingFromFirebase = (key: string) => (val) => {
-  const { setSetting } = useGuideState.getState();
-   setSetting(key, val);
-};
-
-const bindSettingToValue = (activePreset: string, key: string) => {
-  getData({ path: `presets/${activePreset}`, key, callback: updateSettingFromFirebase(key) })
-};
-
-export const bindAllSettingsToValues = () => {
-  const { activePreset, settings } = useGuideState.getState();
-  Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
+export const deleteDataAtIndex = async (path, index) => {
+  const arrayData = (await readPropValue(path, '/')) || [];
+  const newArray = Object.values(arrayData).filter((_, i) => i !== index);
+  await updateData(path, newArray);
 };
 
 export const serverStamp = () => firebase.firestore.Timestamp.now();
@@ -129,4 +130,3 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const analytics = getAnalytics(app);
-// export default app;

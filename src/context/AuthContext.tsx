@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
+import { User } from 'firebase/auth';
 
-import { useGuideState, getGuideData } from 'state';
-import { FormEventHandlers, FormHandlerProps, User, auth, bindAllSettingsToValues, useAuthHandlers } from 'lib';
+import { useGuideState, subscribeAllSettings, useLinkState, subscribeGuideData } from 'state';
+import { FormHandlerProps, FormEventHandlers, useAuthHandlers, auth } from 'lib';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -25,7 +26,8 @@ export function useAuth() {
 export const AuthProvider = ({ children }) => {
   const presetsBoundToStore = useRef(false);
   const settingsBoundToStore = useRef(false);
-  const { presets, activePreset, setUserMode, setActivePreset, setPresets, setUser, setClientLink } = useGuideState();
+  const { presets, activePreset, setUserMode, setActivePreset, setPresets, setUser } = useGuideState(state => state);
+  const { setClientLink } = useLinkState(state => state)
   const [currentUser, setCurrentUser] = useState<User>();
   const [loading, setLoading] = useState(true);
 
@@ -35,21 +37,15 @@ export const AuthProvider = ({ children }) => {
     if (settingsBoundToStore.current || isEmpty(presets)) {
       return;
     }
-    bindAllSettingsToValues();
+    subscribeAllSettings();
     settingsBoundToStore.current = true;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presets, activePreset]);
 
   useEffect(() => {
     if (!currentUser?.uid || presetsBoundToStore.current) {
       return;
     }
-
-    getGuideData("clientLink", setClientLink);
-    getGuideData("activePreset", setActivePreset);
-    getGuideData("userMode", (value: boolean) => setUserMode(value));
-    getGuideData(`presets`, setPresets);
-
+    subscribeGuideData();
     presetsBoundToStore.current = true;
   }, [activePreset, currentUser, presets, setActivePreset, setPresets, setUserMode, setClientLink]);
 

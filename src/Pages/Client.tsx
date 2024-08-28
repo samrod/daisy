@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import cn from "classnames";
 
-import { bindAllSettingsToValues, CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, } from "lib";
-import { useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState } from 'state';
+import { CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, useRehydrate, } from "lib";
+import { subscribeAllSettings, useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState, useLinkState } from 'state';
 import { ClientLogin, Clouds, Display, NotAvailable } from "components";
 import { ReactComponent as Logo } from "assets/daisy-logo.svg"
 import Styles from "./Client.module.scss";
@@ -15,19 +15,21 @@ const cloudSettings = [
 const Client = () => {
   const { uid, preset, status, username, clientLink, setUsername, setClientLink, setStatus, setGuide, setLocalPriority } = useClientState(state => state);
   const { sessionStatus, setLocalSession, setUpdatedAt } = useSessionState(state => state);
-  const { setActivePreset } = useGuideState(state => state);  
+  const { setActivePreset } = useGuideState(state => state);
+  const { settings } = useLinkState(state => state);
   const [nickname, setNickname] = useState(username)
   const [slideIn, setSlideIn] = useState(false);
   const sessionBusyRef = useRef<boolean>();
 
   const clientStatus = CLIENT_STATES[status];
 
+  useRehydrate();
   useSessionCheck();
   useUnloadHandler();
   useFullscreenHandler(clientStatus === "active");
 
   const findGuide = useCallback(async () => {
-    bindAllSettingsToValues();
+    subscribeAllSettings();
     if (clientStatus === "unavailable") {
       setStatus(1);
     }
@@ -83,7 +85,7 @@ const Client = () => {
 
   if (clientStatus === "active" && sessionStatus === "available") {
     return (
-      <Display />
+      <Display settings={settings} />
     );
   }
 

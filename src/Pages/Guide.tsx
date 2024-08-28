@@ -1,24 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isEmpty } from "lodash";
+import { debounce, isEmpty } from "lodash";
 import cn from "classnames";
 
 import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
-import { useGuideState, useClientState, getLinkData } from "state";
-import { defaultModalState, Display, Modal } from "components";
+import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset, updatePresetFromClientLink } from "state";
+import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateType } from "components";
 import Styles from "./Guide.module.scss";
 
+interface ModalActions {
+  [key: string]: (...args: any[]) => void
+}
+
 const Guide = () => {
-  const { userMode, clientLink, clientStatus, clientName, user, setActiveSetting, setClientStatus, setClientName } = useGuideState(state => state);
+  const { userMode, clientStatus, clientName, user, setInitialValues, setClientStatus, setClientName } = useGuideState(state => state);
+  const { settings, clientLink, setActiveSetting } = useLinkState(state => state);
   const { setStatus, setGuide } = useClientState(state => state);
-  
-  const [hidden, setHidden] = useState(true);
+
   const [modalActive, setModalActive] = useState(false);
   const [modal, setModal] = useState(defaultModalState);
+  const [hidden, setHidden] = useState(true);
 
   const toolbarBusy = useRef(false);
   const toolbarTimer = useRef<NodeJS.Timeout | number>();
   const toolbar = useRef<HTMLIFrameElement>();
   const clientLinkRef = useRef(clientLink);
+  const linkDataBound = useRef(false);
+  const modalActions = useRef<ModalActions>({});
   
   const setToolbarBusy = () => {
     toolbarBusy.current = true;
@@ -35,14 +42,9 @@ const Guide = () => {
     clearTimeout(toolbarTimer.current);
     if (hidden) {
       setHidden(false);
-    } else {
-      if (!toolbarBusy.current) {
-        toolbarTimer.current = setTimeout(() => {
-          setHidden(true);
-        },
-        limits.toolbarHideDelay
-        );
-      }
+    }
+    if (!toolbarBusy.current) {
+      toolbarTimer.current = setTimeout(setHidden.bind(null, true), limits.toolbarHideDelay);
     }
   }, [hidden]);
 
@@ -50,72 +52,90 @@ const Guide = () => {
     if (!data) {
       return;
     }
+    toggleToolbar();
     const { status, username } = data;
     if (username) {
       setClientStatus(status);
       setClientName(username, false);
     }
-  }, [setClientName, setClientStatus]);
+  }, [setClientName, toggleToolbar, setClientStatus]);
 
-  const onDenyClientRequest = useCallback(() => {
-    setStatus(4);
-  }, [setStatus]);
-
-  const onAcceptClientRequest = useCallback(() => {
-    setGuide(user.uid);
-    setStatus(3);
-  }, [user, setGuide, setStatus]);
-
-  const onCancelEndSessionModal = useCallback(() => {
-    setModalActive(false);
-  }, [setModalActive]);
-
-  const onEndClientSession = useCallback(() => {
-    setStatus(5);
-    setModalActive(false);
-  }, [setStatus]);
-
-  const showEndSessionModal = useCallback(() => {
+  const showModal = useCallback(({ cancel, accept, ...modalData }: ModalStateType) => {
     setModalActive(true);
     setModal({
-      title: `End ${clientName}'s session`,
-      body: `Are you sure you want to end this session with ${clientName}?`,
+      ...modalData,
       cancel: {
-        text: "Cancel",
-        action: onCancelEndSessionModal,
+        ...cancel,
+        action: modalActionsCallback(modalActions.current)(cancel.action),
       },
       accept: {
-        text: "End Session",
-        action: onEndClientSession,
+        ...accept,
+        action: modalActionsCallback(modalActions.current)(accept.action),
       },
     });
-  }, [clientName, onEndClientSession, onCancelEndSessionModal]);
+  }, [setModalActive, setModal]);
 
   const showJoinRequestModal = useCallback(() => {
-    setModal({
+    showModal({
       title: `Request from ${clientName}`,
       body: `Allow ${clientName} to join this session?`,
       cancel: {
         text: "Deny",
-        action: onDenyClientRequest,
+        action: ["onDenyClientRequest"],
       },
       accept: {
         text: "Allow",
-        action: onAcceptClientRequest,
+        action: ["onAcceptClientRequest"],
       },
     });
-  }, [clientName, onAcceptClientRequest, onDenyClientRequest]);
+  }, [clientName, showModal]);
+
+  modalActions.current = {
+    onDenyClientRequest: useCallback(() => {
+      setStatus(4);
+    }, [setStatus]),
+
+    onAcceptClientRequest: useCallback(() => {
+      setGuide(user.uid);
+      setStatus(3);
+    }, [user, setGuide, setStatus]),
+
+    onCancelEndSessionModal: useCallback(() => {
+      setModalActive(false);
+    }, [setModalActive]),
+
+    onEndClientSession: useCallback(() => {
+      setStatus(5);
+      setModalActive(false);
+    }, [setStatus]),
+
+    onCancelPresetAction: useCallback(() => {
+      setModalActive(false);
+    }, []),
+
+    onConfirmDeletePreset: useCallback(async (id) => {
+      await deletePreset(id);
+      setModalActive(false);
+    }, []),
+
+    onConfirmUpdatePreset: useCallback(async (id) => {
+      await updatePresetFromClientLink(id);
+      setModalActive(false);
+    }, []),
+  };
 
   useEffect(() => {
-    setHidden(false);
     setModalActive(clientStatus === 2);
-    showJoinRequestModal();
+    if (clientStatus === 2) {
+      showJoinRequestModal();
+    }
   }, [clientStatus, clientName, showJoinRequestModal]);
 
   useEffect(() => {
     clientLinkRef.current = clientLink;
-    if (!isEmpty(clientLink)) {
+    if (!isEmpty(clientLink) && !linkDataBound.current) {
       getLinkData("", setClientStates);
+      linkDataBound.current = true;
     }
   }, [clientLink, setClientStatus, setClientStates]);
 
@@ -123,14 +143,18 @@ const Guide = () => {
     [
       { event: 'mouseout', element: toolbar.current, handler: setToolbarFree },
       { event: 'mouseover', element: toolbar.current, handler: setToolbarBusy },
-      { event: 'mousemove', element: document.body, handler: toggleToolbar },
-      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showEndSessionModal }) },
+      { event: 'mousemove', element: document.body, handler: debounce(toggleToolbar, 250, { leading: true }) },
+      { event: 'message', element: window, handler: receiveMessage.bind({ setKeys, setActiveSetting, showModal }) },
     ],
     [setActiveSetting, toggleToolbar, toolbar.current]
   );
 
+  useEffect(() => {
+    setInitialValues();
+  }, [setInitialValues]);
+
   return (
-    <Display>
+    <Display settings={settings}>
       <Modal active={modalActive} {...modal} />
 
       <iframe

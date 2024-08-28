@@ -1,18 +1,12 @@
-import { uniqueClientLink, updateClientLink, useGuideState } from "state";
+import { createPreset, uniqueClientLink, updateClientLink, useGuideState, useLinkState } from "state";
 import {
   DataType, User, getData, pushData, readPropValue, updateData,
-  DEFAULT_PRESET_NAME, defaults, uuid, DB_GUIDES, DB_PRESETS,
-  DB_SESSIONS
+  DB_GUIDES, DB_SESSIONS, deletePropValue, DEFAULT_PRESET_NAME,
 } from "lib";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
 
-interface CreatePreset {
-  settings?: typeof defaults;
-  name?: string;
-}
-
-export const getGuideData = (key: string, callback) => {
+export const getGuideData = async (key: string, callback) => {
   const { user: { uid } } = useGuideState.getState();
   if (!uid) {
     return;
@@ -27,7 +21,7 @@ export const guidePropExists = async (key: string) => {
   return typeof response !== "undefined" ? response : false;
 };
 
-export const updateGuide = async (key: string, value: DataType) => {
+export const updateGuideData = async (key: string, value: DataType) => {
   const { user } = useGuideState.getState();
   if (!user?.uid) {
     return;
@@ -41,21 +35,13 @@ export const createGuide = async (user: User) => {
   setUser(user);
   await createUpdateEmail(user);
   await captureLogin({ user });
-  await createPreset({});
-  await updateGuide(DB_SESSIONS, "");
+  await updateGuideData(DB_SESSIONS, []);
   await updateClientLink(initialClientLink);
-};
-
-export const createPreset = async ({ settings = defaults, name = DEFAULT_PRESET_NAME }: CreatePreset) => {
-  const presetId = uuid();
-
-  await updateGuide("activePreset", presetId);
-  await updateGuide(`${DB_PRESETS}/${presetId}`, name);
-  await updateData(`${DB_PRESETS}/${presetId}`, settings);
+  await createPreset({ name: DEFAULT_PRESET_NAME });
 };
 
 export const createUpdateEmail = async (user: User, newEmail?: string) => {
-  await updateGuide("email", user.email || newEmail);
+  await updateGuideData("email", user.email || newEmail);
 };
 
 export const captureLogin = async ({ user }) => {
@@ -63,26 +49,30 @@ export const captureLogin = async ({ user }) => {
   await pushGuideData("logins", lastSignInTime);
 };
 
-export const updateSetting = async (setting: string, value: DataType) => {
-  const { activePreset } = useGuideState.getState();
-  if (!activePreset) {
-    await updateData(`${DB_PRESETS}/${setting}`, value);
-    return;
-  }
-  await updateData(`${DB_PRESETS}/${activePreset}/${setting}`, value);
-};
-
-export const togglePlay = () => {
-  const { settings: { playing } } = useGuideState.getState();
-  updateSetting("playing", !playing);
-};
-
-export const pushGuideData = async (key: string, value: string | number | {}) => {
+export const pushGuideData = async (key: string, value: string | number | {}, index?: number) => {
   const { user } = useGuideState.getState();
   if (!user) {
     console.warn("*** pushGuideData: user missing.");
     return;
   }
   const { uid } = user;
-  await pushData(`${DB_GUIDES}/${uid}/${key}`, value);
+  await pushData(`${DB_GUIDES}/${uid}/${key}`, value, index);
+};
+
+export const deleteGuideData = async (key) => {
+  const { user } = useGuideState.getState();
+  if (!user?.uid ) {
+    return;
+  }
+  await deletePropValue(`${DB_GUIDES}/${user.uid}`, key);
+};
+
+export const subscribeGuideData = () => {
+  const { setActivePreset, setUserMode, setPresets } = useGuideState.getState();
+  const { setClientLink } = useLinkState.getState();
+
+  getGuideData("clientLink", setClientLink);
+  getGuideData("activePreset", setActivePreset);
+  getGuideData("userMode", setUserMode);
+  getGuideData(`presets`, setPresets);
 };

@@ -1,20 +1,33 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { noop } from "lodash";
+import { useEffect, useState, useCallback, useRef, memo, ReactNode, useMemo } from 'react';
+import { isEqual, noop } from "lodash";
 import cn from "classnames";
 import CSS from "csstype";
 
 import { generateSound, setKeys, limits, useEventBinder } from "lib";
-import { useGuideState } from 'state';
+import { useLinkState } from 'state';
 import Styles from "./Display.module.scss";
 
-export const Display = ({ children = null }) => {
-  useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys }]);
+interface DisplayProps {
+  settings: SettingsTypes;
+  preview?: boolean;
+  children?: ReactNode;
+}
 
-  const { motionBarActive, activeSetting } = useGuideState(state => state);
-  const settingsRef = useRef(useGuideState.getState().settings);
-  const { size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current;
+const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
+  const settings = useMemo(() => _settings, [_settings]);
+  useEventBinder(preview ? [] : [{ event: 'keydown', element: document.body, handler: setKeys }]);
+  const { motionBarActive, activeSetting } = useLinkState(state => state);
+  let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, gain;
+  settingsRef = useRef(settings);
+  
+  try {
+    ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current);
+  } catch (e) {
+    validSettings = false;
+  }
 
   const [odd, setOdd] = useState(true);
+  const [, forceUpdate] = useState(false);
 
   const animatorStylesheets = useRef(['length', 'wave']);
   const initialized = useRef(false);
@@ -173,16 +186,19 @@ export const Display = ({ children = null }) => {
       animationDuration: `${velocity}ms`,
       animationTimingFunction: timingFunction,
     };
-  }
+  };
 
   useEffect(() => {
-    if (!initialized.current) {
+    if (!initialized.current || !validSettings || preview) {
       return;
     }
     updateWaveAnimation();
-  }, [updateWaveAnimation, wave]);
+  }, [updateWaveAnimation, wave, validSettings, preview]);
 
   useEffect(() => {
+    if (!validSettings || preview) {
+      return;
+    }
     if (playing) {
       playbackStarted.current = true;
     }
@@ -194,17 +210,32 @@ export const Display = ({ children = null }) => {
   }, [length, shape, size, playing]);
 
   useEffect(() => {
+    if (validSettings) {
+      settingsRef.current = settings;
+      forceUpdate(prev => !prev);
+    }
+  }, [settings, settingsRef, validSettings]);
+
+  useEffect(() => {
+    if (!validSettings || preview) {
+      return;
+    }
     animatorStylesheets.current.forEach(createAnimatorStylesheet);
     initialized.current = true;
-    useGuideState.subscribe(state => (settingsRef.current = state.settings));
+    useLinkState.subscribe(state => (settingsRef.current = state.settings));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (!validSettings) {
+    return null;
+  }
+
   updateClassesAndStyles();
   updateDirectionalCalls();
+  
 
   return (
-    <div className={Styles.display} style={displayStyle.current}>
+    <div className={`${Styles.display} display`} style={displayStyle.current}>
       <div
         className={cn(Styles.container, containerClass)}
         style={containerStyle}
@@ -217,10 +248,17 @@ export const Display = ({ children = null }) => {
           style={targetStyle}
           onAnimationIteration={onAnimationIteration}
         >
-          <div className={cn(Styles.bullseye, bullseyeClass)}></div>
+          <div className={cn(Styles.bullseye, bullseyeClass)} />
         </div>
       </div>
       {children}
     </div>
   );
 };
+
+const isEverythingEqual = (prev: SettingsTypes, next: SettingsTypes) => (
+  JSON.stringify(prev.settings) === JSON.stringify(next.settings) && 
+  isEqual(prev.children, next.children)
+);
+
+export const Display = memo(_Display, isEverythingEqual);

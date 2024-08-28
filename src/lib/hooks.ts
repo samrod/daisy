@@ -1,12 +1,32 @@
-import { DependencyList, useEffect, useRef } from 'react';
+import { DependencyList, useCallback, useEffect, useRef } from 'react';
 import { debounce, noop } from 'lodash';
-import { DB_LINKS, bindEvent, readPropValue, unbindEvent } from '.';
-import { useClientState, updateLinkData, sessionFromStorage, useSessionState, sessionExpired, endSession } from '../state';
+import { DB_LINKS, bindEvent, consoleLog, readPropValue, unbindEvent } from '.';
+import {
+  useClientState, updateLinkData, useSessionState, sessionExpired,
+  endSession, clientLinkFromStore
+} from "state";
+
+export const useRehydrate = () => {
+  const { rehydrate, hasHydrated } = useClientState.persist;
+  const { localSession } = useSessionState.getState();
+
+  const checkAndRehydrate = useCallback(async () => {
+    const response = await clientLinkFromStore();
+
+    if (!hasHydrated() && localSession && response?.clientLink) {
+      rehydrate();
+    }
+  }, [hasHydrated, rehydrate, localSession]);
+
+  useEffect(() => {
+    checkAndRehydrate();
+  }, [checkAndRehydrate]);
+};
 
 export const useSessionCheck = () => {
-  const { clientLink, status } = useClientState.getState();
+  const { status } = useClientState.getState();
   const { session, localSession, setSessionStatus } = useSessionState.getState();
-  const persistedSessionRef = useRef<string | {} | null>(null);
+  const persistedSessionRef = useRef(null);
 
   const reinitializeSession = () => {
     const { session, setUpdatedAt } = useSessionState.getState();
@@ -20,28 +40,30 @@ export const useSessionCheck = () => {
   };
 
   const updateSessionStatus = async () => {
-    if (clientLink) {
-      persistedSessionRef.current = await readPropValue(`${DB_LINKS}/${clientLink}/`, "session");
-    }
-
-    const sessionsMatch = persistedSessionRef.current === sessionFromStorage()?.state?.session;
-
-    if (!clientLink) {
+    try {
+      const response = await clientLinkFromStore();
+      if (response?.clientLink) {
+        persistedSessionRef.current = await readPropValue(`${DB_LINKS}/${response.clientLink}/`, "session");
+      }
+  
+      if (!response?.clientLink) {
+        setSessionStatus("unavailable");
+      } else if (status === 1 || localSession) {
+        setSessionStatus("available");
+        if (localSession) reinitializeSession();
+      } else {
+        setSessionStatus("busy");
+      }
+    } catch (e) {
+      consoleLog("useSessionCheck", e, "error");
       setSessionStatus("unavailable");
-    } else if (status === 1) {
-      setSessionStatus("available");
-    } else if (localSession || (!persistedSessionRef.current || sessionsMatch)) {
-      setSessionStatus("available");
-      reinitializeSession();
-    } else {
-      setSessionStatus("busy");
     }
   };
 
   useEffect(() => {
     updateSessionStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setSessionStatus, session, clientLink, status]);
+  }, [setSessionStatus, session, status]);
 };
 
 export const useFullscreenHandler = (authorized) => {
@@ -137,4 +159,3 @@ export const useUnloadHandler = () => {
   useEventBinder(unloadEvents.current, [setStatus, setLocalPriority, unloadEvents.current]
   );
 };
-

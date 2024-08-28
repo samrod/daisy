@@ -1,23 +1,13 @@
 import {
-  FC,
-  useRef,
-  Dispatch,
-  forwardRef,
-  ChangeEvent,
-  useCallback,
-  ForwardedRef,
-  ReactElement,
-  SetStateAction,
-  MouseEventHandler,
-  InputHTMLAttributes,
-  useImperativeHandle,
-  ButtonHTMLAttributes,
-  Ref,
+  FC, useRef, Dispatch, forwardRef, ChangeEvent, useCallback,
+  ForwardedRef, ReactElement, SetStateAction, MouseEventHandler,
+  InputHTMLAttributes, useImperativeHandle, ButtonHTMLAttributes,
+  Ref, useState, FormEvent, KeyboardEvent, MouseEvent,
 } from "react";
 import { RotatingLines } from "react-loader-spinner";
 import { camelCase, isEmpty, noop } from "lodash";
-import cn from "classnames";
 import validator from "validator";
+import cn from "classnames";
 
 import { Icon } from "..";
 import Styles from "./Forms.module.scss";
@@ -79,7 +69,7 @@ export const Button: FC<ButtonProps> = ({
 
   return (
     <button
-      className={classes}
+      className={cn(classes, klass)}
       style={style}
       disabled={disabled || loading}
       {...props as ButtonHTMLAttributes<HTMLButtonElement>}
@@ -212,6 +202,97 @@ interface AlertProps {
   persist?: boolean;
   children?: ReactElement | string;
 }
+
+export const EditField = ({ value: originalValue, onSubmit = noop, onAbort = noop, loading = false, ...props }) => {
+  const [newValue, setNewValue] = useState(originalValue);
+  const [editMode, setEditMode] = useState(isEmpty(originalValue));
+
+  const onChange = useCallback(({ target }) => {
+    setNewValue(target.value);
+  }, [setNewValue]);
+
+  const save = useCallback(() => {
+    onSubmit(newValue);
+    setEditMode(false);
+  }, [newValue,onSubmit]);
+
+  const abort = useCallback(() => {
+    if (newValue.length && !originalValue.length) {
+      save();
+    } else if (newValue.length && originalValue.length) {
+      setNewValue(originalValue);
+    } else if (!newValue.length && !originalValue.length) {
+      onAbort();
+    }
+    setEditMode(false);
+  }, [save, newValue.length, onAbort, originalValue]);
+
+  const _onSubmit = useCallback((e: FormEvent) => {
+    e.preventDefault();
+    save();
+  }, [save]);
+
+  const onKeyUp = useCallback(({ key }: KeyboardEvent<HTMLFormElement>) => {
+    if (key === "Escape") {
+      abort();
+    }
+  }, [abort]);
+
+  const onSetEditMode = useCallback((mode: boolean) => (e: MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (mode) {
+      setEditMode(true);
+    } else {
+      abort();
+    }
+  }, [abort]);
+
+  if (editMode) {
+    return (
+      <form
+        onKeyUp={onKeyUp}
+        onSubmit={_onSubmit}
+        className={cn(Styles.editField, { editMode })}
+      >
+        <Textfield
+          onChange={onChange}
+          value={newValue}
+          {...props}
+        />
+        <Button
+          onClick={onSetEditMode(false)}
+          customClass={Styles.editCloseIcon}
+          value="&#x24e7;"
+          type="button"
+        />
+      </form>
+    );
+  }
+  return (
+    <div onClick={onSetEditMode(true)} className={cn(Styles.editField, { editMode })}>
+      {originalValue}
+      {loading
+        ? <div className={Styles.spinner}>
+            <RotatingLines
+              width="36"
+              strokeColor="black"
+              strokeWidth="3"
+              animationDuration="0.25s"
+            />
+          </div>
+        : <Button
+            onClick={onSetEditMode(true)}
+            customClass={Styles.editCloseIcon}
+            value="&#x270e;"
+            type="button"
+          />
+      }
+    </div>
+  );
+};
+
+
 
 export const Alert = ({
   size = "md",

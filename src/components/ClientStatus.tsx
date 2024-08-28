@@ -1,16 +1,30 @@
 import { useCallback, useEffect } from "react";
 
-import { useGuideState, getLinkData, useSessionState, pushSessionData } from "state";
+import { useGuideState, getLinkData, useSessionState, pushSessionData, useLinkState } from "state";
 import { CLIENT_STATES, sendMessage, CLIENT_STATE_DISPLAYS } from "lib";
 import { Button } from "components";
 
 export const ClientStatus = () => {
-  const { clientLink, clientStatus, clientName, setClientName } = useGuideState(state => state);
+  const { clientStatus, clientName, setClientName } = useGuideState(state => state);
+  const { clientLink } = useLinkState(state => state);
   const { session, setSession } = useSessionState(state => state);
   const status = CLIENT_STATES[clientStatus];
 
+  const showEndSessionModalData = {
+    title: `End ${clientName}'s session`,
+    body: `Are you sure you want to end this session with ${clientName}?`,
+    cancel: {
+      text: "Cancel",
+      action: ["onCancelEndSessionModal"],
+    },
+    accept: {
+      text: "End Session",
+      action: ["onEndClientSession"],
+    },
+  };
+
   const sendTerminationMessage = () => {
-    sendMessage({ action: "showEndSessionModal" });
+    sendMessage({ action: "showModal", params: showEndSessionModalData });
   };
 
   const captureSession = useCallback((session: string) => {

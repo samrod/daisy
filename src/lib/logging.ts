@@ -4,7 +4,7 @@ type LevelTypes = "info" | "warn" | "error" | "standard" | string;
 const levels: { [key: string]: string } = {
   info: "#090",
   warn: "#990",
-  error: "#F33",
+  error: "#C00",
   standard: "#069",
 };
 
@@ -25,11 +25,22 @@ const logTitleStyle = (level: LevelTypes) => `
   width: 100px;
 `;
 
-export const objDiff = (obj1, obj2) => {
-  if (!obj1 || !obj2) {
+const serialize = (data: unknown) => JSON.parse(JSON.stringify(data));
+const stringifyClean = (data: unknown) => {
+  if (typeof data !== "object") {
+    return data;
+  }
+  const string = JSON.stringify(data);
+  return string.replace(/^"(.+)"$/, "$1");
+};
+
+export const objDiff = (_obj1: unknown, _obj2: unknown) => {
+  if (!_obj1 || !_obj2) {
     return false;
   }
   const diff = {};
+  const obj1 = serialize(_obj1);
+  const obj2 = serialize(_obj2);
   const allKeys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})]);
   allKeys.forEach(key => {
     const value1 = obj1[key];
@@ -42,7 +53,7 @@ export const objDiff = (obj1, obj2) => {
       }
     } else {
       if (value1 !== value2) {
-        diff[key] = `${value1} => ${value2}`;
+        diff[key] = `${stringifyClean(value1)} => ${stringifyClean(value2)}`;
       }
     }
   });
@@ -56,6 +67,9 @@ export const consoleLog = (
     pre?: boolean,
     post?: boolean,
   ) => {
+    if (process.env.NODE_ENV === "production") {
+      return;
+    }
     const preGap = pre ? "\n" : "";
     const postGap = post ? "\n" : "";
     console.log(`${preGap}%c${window.location.pathname}%c ${message}${postGap}`, logStyle(level), logTitleStyle(level), extraInfo);

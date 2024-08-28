@@ -1,85 +1,39 @@
 import { MouseEvent } from "react";
 import { create } from "zustand";
-import { User, defaults, limits, update, consoleLog, objDiff } from "lib";
-import { updateGuide } from ".";
-
-const { volume, speed } = limits;
-
-export type StateTypes = {
+import { devtools } from "zustand/middleware";
+import { User, update, consoleLog, objDiff, readPropValue, DB_GUIDES } from "lib";
+import { updateLinkData, updateGuideData, useLinkState } from ".";
+export type GuideStateTypes = {
   userMode: boolean;
   user?: User;
-  motionBarActive: boolean;
-  activeSetting: string;
   activePreset: string;
-  clientLink: string | null;
   clientStatus: number;
   clientName: string;
-  settings: typeof defaults;
-  presets: {};
+  presets: { id: string; name: string; }[];
   trigger: null | string;
 }
 
-export type ActionsTypes = {
-  setSetting: (setting: string, value: string | number | boolean) => void;
-  volumeUp: () => void;
-  volumeDown: () => void;
-  speedUp: () => void;
-  speedDown: () => void;
+type GuideActionsTypes = {
   setActivePreset: (setting: string) => void;
-  setActiveSetting: (setting: string) => void;
-  setPresets: (preset: object) => void;
+  setPresets: (preset: string) => void;
   setUser: (user: User) => void;
   setUserMode: (userMode: boolean | MouseEvent<HTMLButtonElement>) => void;
-  setClientLink: (link: string) => void;
   setClientStatus: (state: number) => void;
   setClientName: (name: string, persist?: boolean) => void;
+  setInitialValues: () => void;
 };
 
-export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
+const guideStates = {
   userMode: false,
   user: null,
-  settings: defaults,
-  motionBarActive: false,
-  activeSetting: "",
   activePreset: "",
-  clientLink: null,
   clientStatus: 0,
   clientName: "",
-  presets: {},
+  presets: [],
   trigger: null,
+};
 
-  setSetting: (setting, value) => update(set, (state) => {
-    state.settings[setting] = value;
-    state.trigger = "setSetting";
-  }),
-
-   setActiveSetting: (setting) => update(set, (state) => {
-    state.activeSetting = setting;
-    state.motionBarActive = !!setting.match(/angle|length/);
-    state.trigger = "setActiveSetting";
-  }),
-
-  volumeDown: () => update(set, ({ settings }) => { 
-    if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
-      settings.volume = Math.max(settings.volume - volume.nudge, volume.min);
-    }
-  }),
-  volumeUp: () => update(set, ({ settings }) => {
-    if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
-      settings.volume = Math.min(settings.volume + volume.nudge, volume.max);
-    }
-  }),
-  speedUp: () => update(set, ({ settings }) => { 
-    if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
-      settings.speed = Math.min(settings.speed + speed.nudge, speed.max);
-    }
-  }),
-  speedDown: () => update(set, ({ settings }) => {
-    if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
-      settings.speed = Math.max(settings.speed - speed.nudge, speed.min);
-    }
-  }),
-  
+const guideActions = (set): GuideActionsTypes => ({
   setUser: (user) => update(set, (State) => {
     State.user = user;
     State.trigger = "setUser";
@@ -94,14 +48,10 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
     if (state.userMode !== newUserMode) {
       state.userMode = newUserMode;
       if (persist) {
-        updateGuide("userMode", newUserMode);
+        updateGuideData("userMode", newUserMode);
       }
       state.trigger = "setUserMode";
     }
-  }),
-  setClientLink: (link) => update(set, (state) => {
-    state.clientLink = link;
-    state.trigger = "setClientLink";
   }),
   setClientStatus: (status) => update(set, (state) => {
     state.clientStatus = status;
@@ -111,18 +61,50 @@ export const useGuideState = create<StateTypes & ActionsTypes>((set) => ({
     state.clientName = name;
     state.trigger = "setClientName";
     if (persist) {
-      updateGuide("clientName", name);
+      updateGuideData("clientName", name);
     }
   }),
-  setPresets: (presets) => update(set, (state) => {
-    state.presets = presets;
+  setPresets: (preset: string) => update(set, (state) => {
+    state.presets = preset;
     state.trigger = "setPresets";
   }),
-  setActivePreset: (activeSetting) => update(set, (state) => {
-    state.activePreset = activeSetting;
+  setActivePreset: (activePreset) => update(set, (state) => {
+    state.activePreset = activePreset;
+    updateLinkData("activePreset", activePreset);
+    useLinkState.getState().setPreset(activePreset);
     state.trigger = "setActivePreset";
   }),
-}));
+  setInitialValues: async () => {
+    const { user: { uid }, } = useGuideState.getState();
+    const { setClientLink } = useLinkState.getState();
+    if (!uid) {
+      return;
+    }
+    try {
+      const data: GuideStateTypes & { clientLink?: string } = await readPropValue(`${DB_GUIDES}/${uid}`, "") as GuideStateTypes;
+      if (data == null || typeof data === "string") {
+        return;
+      }
+      update(set, (state) => {
+        const { activePreset, presets, userMode } = data;
+        state.activePreset = activePreset ?? state.activePreset;
+        state.userMode = userMode ?? state.userMode;
+        state.presets = presets ?? state.Object.values(presets);
+        state.trigger =  "setInitialValues";
+      });
+      setClientLink(data.clientLink);
+    } catch (e) {
+      consoleLog("setInitialValues", e, "error");
+    }
+  },
+});
+
+export const useGuideState = create<GuideStateTypes & GuideActionsTypes>()(
+  devtools((set) => ({
+    ...guideStates,
+    ...guideActions(set),
+  }))
+);
 
 useGuideState.subscribe(({ trigger, user, ...state }, {user: j1 ,trigger: j2, ...preState}) => {
   if (trigger === "setSetting") {

@@ -10,7 +10,7 @@ const panels = [ "Email", "Password", "Link", "Presets"];
 export const UserPanel = ({ exists }) => {
   const { currentUser } = getAuth();
   const { setUserMode } = useGuideState(state => state);
-  const [tab, setTab] = useState("email");
+  const [tab, setTab] = useState("presets");
 
   const onTabClick = ({ target }) => {
     setTab(target.dataset.option);
@@ -22,7 +22,7 @@ export const UserPanel = ({ exists }) => {
 
   return (
     <div className="user-panel">
-      <CloseButton onClick={setUserMode} customClass={Styles.close} variant="black" circle={33}>&#10006;</CloseButton>
+      <CloseButton onClick={setUserMode} customClass={Styles.close} variant="black" circle={33} value="&#10006;" />
       <Tabs.Panels theme="light">
         <Tabs options={panels} state={tab} callback={onTabClick} action="panel" />
           {panels.map((key, index) => {

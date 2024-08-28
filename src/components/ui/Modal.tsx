@@ -10,7 +10,7 @@ interface ModalProps {
   children?: ReactElement;
   title?: string;
   body?: string;
-  active: boolean;
+  active?: boolean;
   cancel?: {
     text: string;
     action: () => void;
@@ -117,7 +117,41 @@ Modal.Foot = ({ children }) => {
   );
 };
 
-const defaultModalState = {
+export interface ModalStateProps {
+  title: string;
+  body: string;
+  cancel: {
+    text: string;
+    action: string | (() => void);
+  };
+  accept: {
+    text: string;
+    action: string | (() => void);
+  }
+}
+
+export interface ModalStateType extends Omit<ModalProps, 'cancel' | 'accept'> {
+  cancel?: {
+    text: string;
+    action: string[];
+  };
+  accept?: {
+    text: string;
+    action: string[];
+  };
+}
+
+export const modalActionsCallback = modalActions => (message: string[]): (() => void) | undefined => {
+  if (Array.isArray(message)) {
+    const [action, ...params] = message;
+    const modalAction = modalActions[action];
+    if (modalAction) {
+      return modalAction.bind(null, ...params);
+    }
+  }
+};
+
+const defaultModalState: ModalProps = {
   title: "",
   body: "",
   cancel: {

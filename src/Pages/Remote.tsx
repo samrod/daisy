@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, ChangeEvent, useRef, MouseEventHandle
 import { isEmpty } from "lodash";
 import cn from "classnames";
 
-import { useGuideState, updateSetting, getLinkData } from "state";
+import { useGuideState, updateSetting, getLinkData, useLinkState } from "state";
 import { setKeys, useEventBinder } from "lib";
 import { Slider, Swatch, Button, Tabs, Clock, Row, ClientStatus } from "components";
 import { UserPanel } from "./settings";
@@ -11,8 +11,9 @@ import Styles from "./Remote.module.scss";
 const Remote = () => {
   useEventBinder([{ event: 'keydown', element: document.body, handler: setKeys, options: { capture: true }}]);
 
-  const { setClientStatus, clientLink, setSetting, userMode, setUserMode } = useGuideState(state => state);
-  const settingsRef = useRef(useGuideState.getState().settings);
+  const { setClientStatus, userMode, setUserMode } = useGuideState(state => state);
+  const { clientLink, setSetting } = useLinkState(state => state);
+  const settingsRef = useRef(useLinkState.getState().settings);
   const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave } = settingsRef.current;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
   const localState = {
@@ -113,7 +114,7 @@ const Remote = () => {
     if (window.parent["bound"]) {
       return;
     }
-    useGuideState.subscribe(state => (settingsRef.current = state.settings));
+    useLinkState.subscribe(state => (settingsRef.current = state.settings));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

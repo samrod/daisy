@@ -13,7 +13,7 @@ export const CLIENT_STATES = [
 
 export const CLIENT_STATE_DISPLAYS = (clientLink, clientName, session) => ({
   unavailable: session ? `${clientName || "client"} is not connected` : "waiting for client",
-  present: `someon's at ${clientLink}`,
+  present: `someone's at ${clientLink}`,
   waiting: `${clientName} is waiting`,
   authorized: `waiing for ${clientName} to join`,
   denied: `${clientName} was denied`,

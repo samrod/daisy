@@ -68,6 +68,11 @@ const sessionStateActions = (set, get) => ({
   }),
 });
 
+const sessionStateCreator = (set, get) => ({
+  ...sessionStates,
+  ...sessionStateActions(set, get),
+});
+
 const persistOptions = {
   name: "daisy-session",
   storage: createJSONStorage(() => localStorage),
@@ -78,11 +83,15 @@ const persistOptions = {
       let prevState: SessionStateTypes;
       try {
         prevState = sessionFromStorage()?.state;
-        if (objDiff(newState, prevState)) {
-          consoleLog("persist session", newState, "#09C");
+        const diff = objDiff(newState, prevState);
+        if (diff) {
+          consoleLog("persist session", diff, "#09C");
         }
       } catch (e) {}
       return newState;
+    }
+    if (localSession) {
+      return { localSession };
     }
   },
   onRehydrateStorage: (prevState: SessionStateTypes) => {
@@ -103,14 +112,10 @@ const persistOptions = {
 
 export const useSessionState = create<SessionStateTypes & SessionStateActions>()(
   devtools(
-    persist((set, get) => ({
-      ...sessionStates,
-      ...sessionStateActions(set, get),
-    }),
-    persistOptions,
-  ),
-  { name: "sessionState", store: "sessionState" }
-));
+    persist(sessionStateCreator, persistOptions),
+    { name: "sessionState", store: "sessionState" }
+  )
+);
 
 useSessionState.subscribe(({trigger, ...state }, { trigger: preTrigger, ...preState }) => {
   const diff = objDiff(preState, state);
