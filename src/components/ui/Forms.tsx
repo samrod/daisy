@@ -194,15 +194,6 @@ export const TextGroup = forwardRef<HTMLInputElement, TextGroupProps>(({
   );
 });
 
-interface AlertProps {
-  size?: string;
-  variant?: string;
-  title?: string;
-  klass?: string;
-  persist?: boolean;
-  children?: ReactElement | string;
-}
-
 export const EditField = ({ value: originalValue, onSubmit = noop, onAbort = noop, loading = false, ...props }) => {
   const [newValue, setNewValue] = useState(originalValue);
   const [editMode, setEditMode] = useState(isEmpty(originalValue));
@@ -292,7 +283,14 @@ export const EditField = ({ value: originalValue, onSubmit = noop, onAbort = noo
   );
 };
 
-
+interface AlertProps {
+  size?: string;
+  variant?: string;
+  title?: string;
+  klass?: string;
+  persist?: boolean;
+  children?: ReactElement | string;
+}
 
 export const Alert = ({
   size = "md",

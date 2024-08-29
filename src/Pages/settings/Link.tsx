@@ -57,6 +57,7 @@ export const Link = () => {
           autoComplete: "off",
           onChange: onChangeLink,
           placeholder: LINK_PLACEHOLDER,
+          autoFocus: true,
         }}
       />
       <Button stretch disabled={disabled} type="submit">UPDATE</Button>

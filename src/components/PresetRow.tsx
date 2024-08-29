@@ -88,10 +88,6 @@ export const PresetRow = (props: PresetData) => {
 export const showDeletePresetModal = ({ name, id }) => ({
   title: `Delete preset?`,
   body: `Are you sure you want to delete "${name}"?`,
-  cancel: {
-    text: "Cancel",
-    action: ["onCancelPresetAction"],
-  },
   accept: {
     text: "Delete",
     action: ["onConfirmDeletePreset", id],
@@ -101,10 +97,6 @@ export const showDeletePresetModal = ({ name, id }) => ({
 export const showUpdatePresetModal = ({ name, id }) => ({
   title: `Update preset?`,
   body: `Are you sure you want to overwrite "${name}" with the current settings?`,
-  cancel: {
-    text: "Cancel",
-    action: ["onCancelPresetAction"],
-  },
   accept: {
     text: "Overwrite",
     action: ["onConfirmUpdatePreset", id],

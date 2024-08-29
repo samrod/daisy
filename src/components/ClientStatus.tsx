@@ -13,10 +13,6 @@ export const ClientStatus = () => {
   const showEndSessionModalData = {
     title: `End ${clientName}'s session`,
     body: `Are you sure you want to end this session with ${clientName}?`,
-    cancel: {
-      text: "Cancel",
-      action: ["onCancelEndSessionModal"],
-    },
     accept: {
       text: "End Session",
       action: ["onEndClientSession"],

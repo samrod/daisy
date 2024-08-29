@@ -10,6 +10,7 @@ export type GuideStateTypes = {
   clientStatus: number;
   clientName: string;
   presets: { id: string; name: string; }[];
+  modalActive: boolean;
   trigger: null | string;
 }
 
@@ -20,6 +21,7 @@ type GuideActionsTypes = {
   setUserMode: (userMode: boolean | MouseEvent<HTMLButtonElement>) => void;
   setClientStatus: (state: number) => void;
   setClientName: (name: string, persist?: boolean) => void;
+  setModalActive: (flag: boolean)  => void;
   setInitialValues: () => void;
 };
 
@@ -30,6 +32,7 @@ const guideStates = {
   clientStatus: 0,
   clientName: "",
   presets: [],
+  modalActive: false,
   trigger: null,
 };
 
@@ -73,6 +76,10 @@ const guideActions = (set): GuideActionsTypes => ({
     updateLinkData("activePreset", activePreset);
     useLinkState.getState().setPreset(activePreset);
     state.trigger = "setActivePreset";
+  }),
+  setModalActive: (flag) => update(set, (state) => {
+    state.modalActive = flag;
+    state.trigger = "setModalActive";
   }),
   setInitialValues: async () => {
     const { user: { uid }, } = useGuideState.getState();

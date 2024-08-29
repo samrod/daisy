@@ -1,9 +1,8 @@
 @import '../lib/variables.scss';
 
 .toolbar {
-  @apply w-full h-[$remoteHeight];
-  // width: 100%;
-  // height: $remoteHeight;
+  @apply w-full;
+  height: $remoteHeight;
   background-color: rgba(16,16,16,.85);
   backdrop-filter: blur(3px);
   border: none;

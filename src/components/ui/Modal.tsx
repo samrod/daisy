@@ -1,16 +1,16 @@
 import cn from "classnames";
 import { noop } from "lodash";
 
-import Styles from "./Modal.module.scss";
 import { ReactElement, useCallback, useEffect, useState } from "react";
 import { Button, Row } from "../";
 import { useEventBinder } from "lib";
+import { useGuideState } from "state";
+import Styles from "./Modal.module.scss";
 
 interface ModalProps {
   children?: ReactElement;
   title?: string;
   body?: string;
-  active?: boolean;
   cancel?: {
     text: string;
     action: () => void;
@@ -25,35 +25,40 @@ const Modal = ({
   children,
   title = "",
   body = "",
-  cancel,
+  cancel = { text: "Cancel", action: noop },
   accept,
-  active = false,
 }: ModalProps) => {
+  const { modalActive, setModalActive } = useGuideState(state => state);
   const [_visible, setVisible] = useState(false);
   const [_invisible, setInvisible] = useState(false);
   const [exists, setExists] = useState(false);
 
+  const onCancel = useCallback(() => {
+    setModalActive(false);
+    cancel.action();
+  }, [setModalActive, cancel]);
+
   const show = useCallback(() => {
-    setVisible(active);
-  }, [active]);
+    setVisible(modalActive);
+  }, [modalActive]);
 
   const kill = useCallback(() => {
-    setExists(active);
-  }, [active]);
+    setExists(modalActive);
+  }, [modalActive]);
 
   const onKeydown = useCallback(({ key }: KeyboardEvent) => {
     switch (key) {
       case "Escape":
-        cancel.action();
+        onCancel();
         break;
       case "Enter":
         accept.action();
         break;
     }
-  }, [cancel, accept]);
+  }, [accept, onCancel]);
 
   useEffect(() => {
-    if (!active) {
+    if (!modalActive) {
       setInvisible(true);
       setTimeout(kill, 1000);
       setTimeout(show, 1000);
@@ -62,7 +67,7 @@ const Modal = ({
       setInvisible(false);
       setTimeout(show, 100);
     }
-  }, [active, kill, show]);
+  }, [modalActive, kill, show]);
 
   useEventBinder([{ event: "keydown", element: window, handler: onKeydown }], [cancel.action, onKeydown]);
 
@@ -77,7 +82,7 @@ const Modal = ({
         {children}
       </div>
     );
-  }
+  };
 
   return (
     <div className={cn(Styles.modal, { _visible, _invisible })}>
@@ -87,7 +92,7 @@ const Modal = ({
         </Modal.Body>
         <Modal.Foot>
           <Row justify="between">
-            {cancel && <Button value={cancel.text} onClick={cancel.action} autoFocus={true} />}
+            {cancel && <Button value={cancel.text} onClick={onCancel} autoFocus={true} />}
             <Button value={accept.text} variant="success" onClick={accept.action} />
           </Row>
         </Modal.Foot>

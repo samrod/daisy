@@ -6,17 +6,18 @@ import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
 import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset, updatePresetFromClientLink } from "state";
 import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateType } from "components";
 import Styles from "./Guide.module.scss";
+import { useAuth } from "context/AuthContext";
 
 interface ModalActions {
   [key: string]: (...args: any[]) => void
 }
 
 const Guide = () => {
-  const { userMode, clientStatus, clientName, user, setInitialValues, setClientStatus, setClientName } = useGuideState(state => state);
+  const { userMode, clientStatus, clientName, user, setModalActive, setInitialValues, setClientStatus, setClientName } = useGuideState(state => state);
   const { settings, clientLink, setActiveSetting } = useLinkState(state => state);
   const { setStatus, setGuide } = useClientState(state => state);
+  const { logout } = useAuth();
 
-  const [modalActive, setModalActive] = useState(false);
   const [modal, setModal] = useState(defaultModalState);
   const [hidden, setHidden] = useState(true);
 
@@ -64,10 +65,10 @@ const Guide = () => {
     setModalActive(true);
     setModal({
       ...modalData,
-      cancel: {
+      cancel: cancel ? {
         ...cancel,
         action: modalActionsCallback(modalActions.current)(cancel.action),
-      },
+      } : undefined,
       accept: {
         ...accept,
         action: modalActionsCallback(modalActions.current)(accept.action),
@@ -100,28 +101,22 @@ const Guide = () => {
       setStatus(3);
     }, [user, setGuide, setStatus]),
 
-    onCancelEndSessionModal: useCallback(() => {
-      setModalActive(false);
-    }, [setModalActive]),
-
     onEndClientSession: useCallback(() => {
       setStatus(5);
       setModalActive(false);
-    }, [setStatus]),
-
-    onCancelPresetAction: useCallback(() => {
-      setModalActive(false);
-    }, []),
+    }, [setStatus, setModalActive]),
 
     onConfirmDeletePreset: useCallback(async (id) => {
       await deletePreset(id);
       setModalActive(false);
-    }, []),
+    }, [setModalActive]),
 
     onConfirmUpdatePreset: useCallback(async (id) => {
       await updatePresetFromClientLink(id);
       setModalActive(false);
-    }, []),
+    }, [setModalActive]),
+
+    logout,
   };
 
   useEffect(() => {
@@ -129,7 +124,7 @@ const Guide = () => {
     if (clientStatus === 2) {
       showJoinRequestModal();
     }
-  }, [clientStatus, clientName, showJoinRequestModal]);
+  }, [clientStatus, clientName, setModalActive, showJoinRequestModal]);
 
   useEffect(() => {
     clientLinkRef.current = clientLink;
@@ -155,7 +150,7 @@ const Guide = () => {
 
   return (
     <Display settings={settings}>
-      <Modal active={modalActive} {...modal} />
+      <Modal {...modal} />
 
       <iframe
         ref={toolbar}
