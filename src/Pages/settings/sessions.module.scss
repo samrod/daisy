@@ -1,0 +1,48 @@
+@import "lib/variables";
+
+.sessions {
+  @apply mx-auto border-spacing-0 w-full lg:w-5/6 xl:w-2/3 rounded-lg overflow-hidden;
+
+  thead tr {
+    @apply pb-4;
+    background-color: $palette-grey-light;
+  }
+
+  tbody, tr {
+    @apply flex;
+  }
+  tbody {
+    @apply flex-col overflow-auto;
+    max-height: calc( 100vh - 190px );
+  }
+  tr {
+    @apply py-3;
+    border-bottom: 0.5px solid transparentize($palette-white, .65);
+    &:nth-of-type(even) {
+      background-color: $palette-grey-light;
+    }
+  }
+  td, th {
+    @apply px-4 text-left whitespace-nowrap;
+    width: 20%;
+    &:last-of-type {
+      @apply text-right;
+    }
+    &.username {
+      width: 25%;
+    }
+    &.preset {
+      width: 25%;
+    }
+    &.terminatedBy {
+      width: 13%
+    }
+    &.startedAt {
+      width: 22%;
+    }
+    &.duration {
+      width: 15%;
+      min-width: 100px;
+    }
+  }
+}

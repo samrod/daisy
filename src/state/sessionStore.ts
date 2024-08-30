@@ -1,8 +1,7 @@
-import firebase from 'firebase/compat/app';
 import { differenceInSeconds } from "date-fns/differenceInSeconds";
 import {
   getData, updateData, DB_SESSIONS, serverStamp, readPropValue,
-  DB_LINKS, EXPIRE_SESSION_SECONDS, deletePropValue
+  DB_LINKS, EXPIRE_SESSION_SECONDS, deletePropValue, parseDate
 } from "lib";
 import {
   useClientState, pushClientData, useGuideState, pushGuideData,
@@ -100,8 +99,7 @@ export const sessionExpired = () => {
     console.log("*** sessionExpired: updatedAt not set");
     return true;
   }
-  const { seconds, nanoseconds } = updatedAt;
-  const oldStamp = new firebase.firestore.Timestamp(seconds, nanoseconds);
-  const timeDelta = Math.abs(differenceInSeconds( oldStamp.toDate(), serverStamp().toDate()) );
+  const oldStamp = parseDate(updatedAt);
+  const timeDelta = Math.abs(differenceInSeconds( oldStamp, serverStamp().toDate()) );
   return timeDelta > EXPIRE_SESSION_SECONDS;
 };

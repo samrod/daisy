@@ -48,6 +48,7 @@ const Client = () => {
         break;
       case "cancelled":
         setLocalSession(false);
+        setUsername(null);
         break;
       case "authorized":
         setStatus(7);

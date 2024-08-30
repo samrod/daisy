@@ -114,6 +114,7 @@ export const deleteDataAtIndex = async (path, index) => {
 };
 
 export const serverStamp = () => firebase.firestore.Timestamp.now();
+export const parseDate = ({ seconds, nanoseconds }) => new firebase.firestore.Timestamp(seconds, nanoseconds).toDate();
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,

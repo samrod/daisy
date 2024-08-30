@@ -15,9 +15,16 @@ export const getGuideData = async (key: string, callback) => {
   return getData({ path, key, callback });
 };
 
-export const guidePropExists = async (key: string) => {
+export const readGuideProp = async (key: string) => {
   const { user: { uid } } = useGuideState.getState();
-  const response = await readPropValue(`${DB_GUIDES}/${uid}/`, key);
+  if (!uid) {
+    return;
+  }
+  return await readPropValue(`${DB_GUIDES}/${uid}/`, key);
+};
+
+export const guidePropExists = async (key: string) => {
+  const response = await readGuideProp(key);
   return typeof response !== "undefined" ? response : false;
 };
 

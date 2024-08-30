@@ -6,7 +6,7 @@ import * as SettingComponents from "./";
 import Styles from "./UserPanel.module.scss";
 import { sendMessage } from "lib";
 
-const panels = [ "Account", "Link", "Presets", "Logout"];
+const panels = [ "Account", "Link", "Presets", "Sessions", "Logout"];
 
 export const UserPanel = ({ exists }) => {
   const { currentUser } = getAuth();

@@ -16,7 +16,10 @@
 }
 
 .settingsTable {
-  @apply mx-auto border-spacing-0;
+  @apply mx-auto border-spacing-0 w-full lg:w-5/6 xl:w-2/3 rounded-lg overflow-hidden;
+  thead {
+    background-color: $palette-grey-light;
+  }
   tbody, thead tr {
     @apply block;
   }
