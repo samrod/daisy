@@ -39,7 +39,7 @@ export const Slider = ({ name, label, value, ...props }: SliderProps) => {
         onMouseUp={onBlur}
         onChange={onChange}
         type="range"
-        value={value}
+        value={value || 0}
       />
     </div>
   );

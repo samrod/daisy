@@ -17,11 +17,11 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
   const settings = useMemo(() => _settings, [_settings]);
   useEventBinder(preview ? [] : [{ event: 'keydown', element: document.body, handler: setKeys }]);
   const { motionBarActive, activeSetting } = useLinkState(state => state);
-  let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, gain;
+  let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, gain, duration;
   settingsRef = useRef(settings);
   
   try {
-    ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain } = settingsRef.current);
+    ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain, duration } = settingsRef.current);
   } catch (e) {
     validSettings = false;
   }
@@ -75,8 +75,8 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
     const _distance = distance();
     const body =`
         @keyframes bounce {
-          0% { left: -${_distance}vw; }
-          100%  { left: ${_distance}vw; }
+          0% { transform: translate3d(-${_distance}vw, 0, 0); }
+          100%  { transform: translate3d(${_distance}vw, 0, 0); }
         }
       `;
     updateAnimation('length', body);
@@ -115,7 +115,9 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
 
   let toggleSteppedAnimationFlow = noop;
   const _toggleSteppedAnimationFlow = e => {
-    const flow = parseInt(getComputedStyle(e.target).left) < 0;
+    const matrix = getComputedStyle(e.target).transform;
+    const transX = Number(matrix.split(/[(), ]+/)[5]);
+    const flow = transX < 0;
     if (flow === odd) {
       return;
     }
@@ -139,7 +141,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
     const { audioPanRange } = limits;
     const twoStepReverse = steps !== 2 ? 1 : -1;
     const panX = (odd ? audioPanRange : -audioPanRange) * twoStepReverse;
-    generateSound({ panX, pitch, gain, duration: 70 });
+    generateSound({ panX, pitch, gain, duration });
   };
 
   const updateClassesAndStyles = () => {
