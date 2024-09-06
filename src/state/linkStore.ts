@@ -121,3 +121,13 @@ export const subscribeAllSettings = () => {
   getLinkData("activePreset", updateSettingFromPreset)
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
+
+export interface PersistedLinkType {
+  session?: string;
+  username?: string;
+  status: number;
+  settings: SettingsTypes;
+  preset: string;
+  guide: string;
+  client: string;
+}
