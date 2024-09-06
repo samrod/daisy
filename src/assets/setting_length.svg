@@ -8,16 +8,16 @@
 			<line fill="#FFFFFF" x1="0.877" y1="56.716" x2="113.877" y2="56.716"/>
 			<g>
 				
-					<line fill="none" stroke="#B3B3B3" stroke-width="16" stroke-linecap="round" stroke-miterlimit="10" x1="17.704" y1="56.716" x2="97.05" y2="56.716"/>
+					<line fill="none" stroke="#B3B3B3" stroke-width="8.2881" stroke-linecap="round" stroke-miterlimit="10" x1="13.951" y1="56.716" x2="100.803" y2="56.716"/>
 				<g>
-					<polygon fill="#B3B3B3" points="20.31,37.279 20.31,76.154 0.877,56.716 					"/>
+					<polygon fill="#B3B3B3" points="15.977,41.613 15.977,71.819 0.877,56.716 					"/>
 				</g>
 				<g>
-					<polygon fill="#B3B3B3" points="94.444,37.279 94.444,76.154 113.877,56.716 					"/>
+					<polygon fill="#B3B3B3" points="98.777,41.613 98.777,71.819 113.877,56.716 					"/>
 				</g>
 			</g>
 		</g>
 	</g>
-	<ellipse cx="57.56" cy="56.438" rx="13.163" ry="13.388"/>
+	<ellipse cx="57.56" cy="56.438" rx="9.402" ry="9.562"/>
 </g>
 </svg>

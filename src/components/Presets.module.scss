@@ -1,7 +1,8 @@
 @import "lib/variables";
 
 .thumb {
-  @apply max-w-[140px] max-h-[80px] rounded-lg overflow-hidden;
+  @apply h-[80px] w-full rounded-lg overflow-hidden;
+  aspect-ratio: 1.77;
 
   :global {
     .display {
@@ -15,15 +16,28 @@
   }
 }
 
+.unit {
+  @apply ml-1 opacity-50;
+  font-size: .9em;
+}
+
+.symbol {
+  @apply inline-block font-bold opacity-50;
+  width: 1ex;
+  height: 1em;
+  font-size: 1.5em;
+}
+
 .settingsTable {
-  @apply mx-auto border-spacing-0 w-full lg:w-5/6 xl:w-2/3 rounded-lg overflow-hidden;
+  @apply mx-auto border-spacing-0 w-full rounded-lg overflow-hidden;
   thead {
     background-color: $palette-grey-light;
   }
-  tbody, thead tr {
-    @apply block;
+  tr {
+    @apply table w-full;
   }
   tbody {
+    @apply block;
     tr {
       @apply cursor-pointer;
       transition: background-color 0.125s ease-in;
@@ -43,36 +57,42 @@
   td, th {
     @apply text-center;
     border-bottom: 0.5px solid transparentize($palette-white, .65);
-    width: calc( ( 100vw - 390px ) / 9);
+    // border: 0.5px solid red;
+    width: calc( 100% / 17 );
+    min-width: 40px;
+    line-height: 1.3em;
 
     &.name {
-      @apply relative pl-2 text-left w-[200px] font-bold;
+      @apply relative text-left w-1/5 min-w-[150px] font-bold;
     }
 
     &.thumbnail {
       @apply relative;
-      width: 135px;
+      width: 15%;
+      min-width: 140px;
       iframe {
         @apply rounded-lg w-full;
-        aspect-ratio: 1.85 / 1;
+        aspect-ratio: 1.77;
       }
       .spinner {
         @apply absolute flex size-full p-4 mx-auto aspect-square;
       }
     }
     &.actions {
-      @apply text-right w-[100px] pr-5 whitespace-nowrap;
+      @apply text-right pr-4 whitespace-nowrap;
+      width: calc( ( 100% / 17 ) * 2 );
       button {
-        @apply ml-3 px-2;
+        @apply ml-3;
+        height: 1em;
       }
       .update {
-        font-size: 40px;
+        font-size: 30px;
         &:hover {
           color: $palette-success;
         }
       }
       .delete {
-        font-size: 30px;
+        font-size: 20px;
         &:hover {
           color: $palette-danger;
         }
@@ -82,6 +102,7 @@
 
   svg {
     @apply h-auto w-5/6 mx-auto;
+    aspect-ratio: 1.33;
   }
 }
 

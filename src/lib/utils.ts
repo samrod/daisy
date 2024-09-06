@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 import { User } from ".";
-import { togglePlay, useLinkState } from 'state';
+import { togglePlay, useGuideState, useLinkState } from 'state';
 export { v4 as uuid } from "uuid";
 declare global {
   interface Window {
@@ -65,6 +65,10 @@ export const sendMessage = (
 
 export const setKeys = ({ key }: KeyboardEvent) => {
   const State = useLinkState.getState();
+  const { userMode } = useGuideState.getState();
+  if (userMode) {
+    return;
+  }
   // console.log(`*** ${document.location.pathname} setKeys: "${key}"`, test.settings.playing, State.settings.playing);
   switch (key) {
     case "ArrowDown":

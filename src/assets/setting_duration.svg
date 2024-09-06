@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.4, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.2" baseProfile="tiny" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="115px" height="115px" viewBox="0 0 115 115" xml:space="preserve">
+<g id="Duration">
+	<g>
+		
+			<line fill="none" stroke="#B3B3B3" stroke-width="13.9379" stroke-miterlimit="10" x1="1.097" y1="58.082" x2="2.04" y2="58.082"/>
+		
+			<line fill="none" stroke="#B3B3B3" stroke-width="13.9379" stroke-miterlimit="10" stroke-dasharray="1.9422,7.7686" x1="9.809" y1="58.082" x2="93.321" y2="58.082"/>
+		
+			<line fill="none" stroke="#B3B3B3" stroke-width="13.9379" stroke-miterlimit="10" x1="97.205" y1="58.082" x2="98.148" y2="58.082"/>
+	</g>
+	<g>
+		<line fill="#FFFFFF" x1="5" y1="58.082" x2="114.144" y2="58.082"/>
+		<g>
+			
+				<line fill="none" stroke="#B3B3B3" stroke-width="4" stroke-linecap="round" stroke-miterlimit="10" x1="5" y1="58.082" x2="99.42" y2="58.082"/>
+			<g>
+				<polygon fill="#B3B3B3" points="97.14,41.074 97.14,75.09 114.144,58.082 				"/>
+			</g>
+		</g>
+	</g>
+	<polyline fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-miterlimit="10" points="2.6,57.437 
+		7.289,51.933 11.731,69.613 16.246,32.827 20.673,81.932 25.1,46.865 29.525,62.425 34.11,54.744 38.24,57.509 	"/>
+</g>
+</svg>

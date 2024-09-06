@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Button, EditField, Thumbnail } from "components";
 import { getPresetData, pushGuideData, updateGuideData, useGuideState } from "state";
-import { DB_PRESETS, sendMessage } from "lib";
+import { DB_PRESETS, limits, sendMessage } from "lib";
 import Styles from "./Presets.module.scss";
 
 export interface PresetData {
@@ -20,11 +20,12 @@ export const PresetRow = (props: PresetData) => {
   const [settings, setSettings] = useState(_settings);
   const [loading, setLoading] = useState(false);
   const [validSettings, setValidSettings] = useState(true);
-  let speed, angle, pitch, volume, wave, length, steps;;
-  
+  let speed, angle, pitch, duration, volume, wave, length, steps;
+
   try {
-    ({ speed, angle, pitch, volume, wave, length, steps }= settings);
+    ({ speed, angle, pitch, duration, volume, wave, length, steps } = settings);
   } catch (e) {
+    console.warn("*** PresetRow missing data: ", id, index, name, e)
     setValidSettings(false);
   }
 
@@ -72,11 +73,12 @@ export const PresetRow = (props: PresetData) => {
       </td>
       <td>{speed}</td>
       <td>{steps}</td>
-      <td>{angle}</td>
+      <td>{angle}<span className={Styles.symbol}>&ang;</span></td>
       <td>{wave}</td>
       <td>{length}</td>
-      <td>{volume}</td>
-      <td>{pitch}</td>
+      <td>{Math.round(volume/limits.volume.max*100)}<span className={Styles.unit}>%</span></td>
+      <td>{pitch}<span className={Styles.unit}>Hz</span></td>
+      <td>{duration}<span className={Styles.unit}>ms</span></td>
       <td className={Styles.actions}>
         {!required ? <Button customClass={Styles.delete} onClick={onDelete} circle={25} value="&#10006;" /> : null}
         <Button customClass={Styles.update} onClick={onUpdate} circle={25} value="&#x21ba;" />

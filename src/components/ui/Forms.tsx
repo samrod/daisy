@@ -198,7 +198,9 @@ export const EditField = ({ value: originalValue, onSubmit = noop, onAbort = noo
   const [newValue, setNewValue] = useState(originalValue);
   const [editMode, setEditMode] = useState(isEmpty(originalValue));
 
-  const onChange = useCallback(({ target }) => {
+  const onChange = useCallback((e) => {
+    e.stopPropagation();
+    const { target } = e;
     setNewValue(target.value);
   }, [setNewValue]);
 

@@ -7,6 +7,7 @@ import Styles from "components/Presets.module.scss";
 
 import { ReactComponent as IconAngle } from "assets/setting_angle.svg";
 import { ReactComponent as IconFrequency } from "assets/setting_frequency.svg";
+import { ReactComponent as IconDuration } from "assets/setting_duration.svg";
 import { ReactComponent as IconLength } from "assets/setting_length.svg";
 // import { ReactComponent as IconPitch } from "assets/setting_pitch.svg";
 import { ReactComponent as IconSpeed } from "assets/setting_speed.svg";
@@ -46,29 +47,28 @@ export const Presets = () => {
 
   return (
     <Col items="start">
-      <Col nowrap self="stretch">
-        <table className={Styles.settingsTable}>
-          <thead>
-            <tr>
-              <th className={Styles.thumbnail} />
-              <th className={Styles.name}/>
-              <th><IconSpeed title="Speed" /></th>
-              <th><IconSteps title="Steps" /></th>
-              <th><IconAngle title="Angle" /></th>
-              <th><IconWave title="Wave" /></th>
-              <th><IconLength title="Length" /></th>
-              <th><IconVolume title="Volume" /></th>
-              <th><IconFrequency title="Frequency" /></th>
-              <th className={Styles.actions} />
-            </tr>
-          </thead>
-          <tbody>
-            {settings?.map((preset, index, items) => (
-              <PresetRow key={preset.id} {...preset} index={index} required={items.length === 1} />
-            ))}
-          </tbody>
-        </table>
-      </Col>
+      <table className={Styles.settingsTable}>
+        <thead>
+          <tr>
+            <th className={Styles.thumbnail} />
+            <th className={Styles.name}/>
+            <th><IconSpeed title="Speed" /></th>
+            <th><IconSteps title="Steps" /></th>
+            <th><IconAngle title="Angle" /></th>
+            <th><IconWave title="Wave" /></th>
+            <th><IconLength title="Length" /></th>
+            <th><IconVolume title="Volume" /></th>
+            <th><IconFrequency title="Frequency" /></th>
+            <th><IconDuration title="Duration" /></th>
+            <th className={Styles.actions} />
+          </tr>
+        </thead>
+        <tbody>
+          {settings?.map((preset, index, items) => (
+            <PresetRow key={preset.id} {...preset} index={index} required={items.length === 1} />
+          ))}
+        </tbody>
+      </table>
       <Button value="Add Preset" onClick={onAddPreset} size="sm" />
     </Col>
   );
