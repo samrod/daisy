@@ -1,7 +1,7 @@
 import { differenceInSeconds } from "date-fns/differenceInSeconds";
 import {
   getData, updateData, DB_SESSIONS, serverStamp, readPropValue,
-  DB_LINKS, EXPIRE_SESSION_SECONDS, deletePropValue, parseDate
+  DB_LINKS, EXPIRE_SESSION_SECONDS, deletePropValue, parseDate, DB_GUIDES, DB_PRESETS
 } from "lib";
 import {
   useClientState, pushClientData, useGuideState, pushGuideData,
@@ -63,6 +63,7 @@ export const createSession = async () => {
   setSession();
   const { status, guide, preset, username, uid: client } = useClientState.getState();
   const { session, updatedAt } = useSessionState.getState();
+
   await pushClientData(DB_SESSIONS, session);
   await updateLinkData("session", session);
   await updateSessionData("", {

@@ -10,6 +10,7 @@ export type LinkStateTypes = {
   clientStatus: number;
   clientName: string;
   preset: string;
+  presetName: string;
   motionBarActive: boolean;
   activeSetting: string;
   trigger: null | string;
@@ -23,6 +24,7 @@ export type LinkActionsTypes = {
   speedDown: () => void;
   setClientLink: (state: string) => void;
   setPreset: (state: string) => void;
+  setPresetName: (name: string) => void;
   setActiveSetting: (setting: string) => void;
 };
 
@@ -34,6 +36,7 @@ const linkStates: LinkStateTypes = {
   clientStatus: 0,
   clientName: "",
   preset: "",
+  presetName: "",
   trigger: null,
 };
 
@@ -74,6 +77,10 @@ const linkActions = (set): LinkActionsTypes => ({
   setPreset: (preset) => update(set, (state) => {
     state.preset = preset;
     state.trigger = "setPreset";
+  }),
+  setPresetName: (name) => update(set, (state) => {
+    state.presetName = name;
+    state.trigger = "setPresetNae";
   }),
 });
 

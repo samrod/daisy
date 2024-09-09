@@ -1,8 +1,9 @@
 import { MouseEvent } from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { User, update, consoleLog, objDiff, readPropValue, DB_GUIDES } from "lib";
-import { updateLinkData, updateGuideData, useLinkState } from ".";
+import { User, update, consoleLog, objDiff, readPropValue, DB_GUIDES, DB_PRESETS } from "lib";
+import { updateLinkData, updateGuideData, useLinkState, readGuideProp, PresetsTypes } from ".";
+import { find } from "lodash";
 export type GuideStateTypes = {
   userMode: boolean;
   user?: User;
@@ -71,12 +72,18 @@ const guideActions = (set): GuideActionsTypes => ({
     state.presets = preset;
     state.trigger = "setPresets";
   }),
-  setActivePreset: (activePreset) => update(set, (state) => {
-    state.activePreset = activePreset;
-    updateLinkData("activePreset", activePreset);
-    useLinkState.getState().setPreset(activePreset);
-    state.trigger = "setActivePreset";
-  }),
+  setActivePreset: async (activePreset) => {
+    const { setPreset, setPresetName } = useLinkState.getState();
+    const presetList = await readGuideProp(DB_PRESETS) as PresetsTypes[];
+    const presetName = find(presetList, { id: activePreset })?.name;
+    update(set, (state) => {
+      state.activePreset = activePreset;
+      updateLinkData("activePreset", activePreset);
+      setPreset(activePreset);
+      setPresetName(presetName);
+      state.trigger = "setActivePreset";
+    });
+  },
   setModalActive: (flag) => update(set, (state) => {
     state.modalActive = flag;
     state.trigger = "setModalActive";

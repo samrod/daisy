@@ -42,15 +42,16 @@ export const Sessions = () => {
   const [sessions, setSessions] = useState<PrettySessionType[]>([]);
   const presets = useRef<PresetType[]>([]);
 
-  const cleanSession = useCallback(async (id: string): Promise<PrettySessionType> => {
+  const cleanSession = useCallback(async (id: string): Promise<PrettySessionType | null> => {
     const data = await readPropValue(DB_SESSIONS, id);
     let username, preset, createdAt, endedAt, terminatedBy;
     try {
       ({ username, preset, createdAt, endedAt, terminatedBy } = data as SessionDataType);
     } catch (e) {
-      console.warn("*** Sessions cleanSession: ", e.message);
+      console.warn("*** Sessions cleanSession: ", id, e.message);
+      return;
     }
-    if (!createdAt) {
+    if (!createdAt || !endedAt) {
       return;
     }
     const startDate = parseDate(createdAt);

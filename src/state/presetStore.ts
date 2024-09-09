@@ -64,7 +64,7 @@ export const getPresetData = async (id: string, callback: Dispatch<React.SetStat
   getData({ path: DB_PRESETS, key: id, callback });
 };
 
-interface PresetsTypes {
+export interface PresetsTypes {
   id: string;
   name: string;
 }

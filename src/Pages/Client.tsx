@@ -65,7 +65,6 @@ const Client = () => {
         createClient();
         createSession();
       }
-      setActivePreset(preset);
       findGuide();
     }
   }, [clientLink, clientStatus, sessionStatus, preset, uid, setUpdatedAt, findGuide, setActivePreset]);
