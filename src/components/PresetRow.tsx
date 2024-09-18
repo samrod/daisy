@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Button, EditField, Thumbnail } from "components";
-import { getGuideData, getPresetData, pushGuideData, readGuideProp, updateGuideData, useGuideState } from "state";
+import { getPresetData, pushGuideData, updateGuideData, useGuideState } from "state";
 import { DB_PRESETS, limits, sendMessage } from "lib";
 import Styles from "./Presets.module.scss";
 

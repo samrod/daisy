@@ -26,7 +26,6 @@ export const useRehydrate = () => {
 export const useSessionCheck = () => {
   const { status } = useClientState.getState();
   const { session, localSession, setSessionStatus } = useSessionState.getState();
-  const persistedSessionRef = useRef(null);
 
   const reinitializeSession = () => {
     const { session, setUpdatedAt } = useSessionState.getState();

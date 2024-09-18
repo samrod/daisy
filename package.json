@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@popperjs/core": "^2.9.2",
+    "@sentry/cli": "^2.36.1",
+    "@sentry/react": "^8.30.0",
     "classnames": "^2.2.6",
     "date-fns": "^3.6.0",
     "firebase": "^10.11.1",
@@ -47,11 +49,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && yarn sentry:sourcemaps",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "deploy": "deploy build centos@samrod.com/var/www/daisyemdr.com/beta",
-    "export": "irm build && yarn build || true && yarn deploy"
+    "export": "irm build && yarn build || true && yarn deploy",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org samrod-studio --project daisy ./build && sentry-cli sourcemaps upload --org samrod-studio --project daisy ./build"
   },
   "eslintConfig": {
     "extends": "react-app"
