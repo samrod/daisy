@@ -52,7 +52,7 @@
     "build": "react-scripts build && yarn sentry:sourcemaps",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "deploy build centos@samrod.com/var/www/daisyemdr.com/beta",
+    "deploy": "deploy build ec2-user@samrod.com/var/www/daisyemdr.com/beta",
     "export": "irm build && yarn build || true && yarn deploy",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org samrod-studio --project daisy ./build && sentry-cli sourcemaps upload --org samrod-studio --project daisy ./build"
   },
