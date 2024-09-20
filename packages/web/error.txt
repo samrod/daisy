@@ -1,0 +1,13 @@
+➤ YN0000: ┌ Resolution step
+➤ YN0061: │ @babel/plugin-proposal-nullish-coalescing-operator@npm:7.18.6 is deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coalescing-operator instead.
+➤ YN0061: │ @babel/plugin-proposal-class-properties@npm:7.18.6 is deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
+➤ YN0061: │ @babel/plugin-proposal-optional-catch-binding@npm:7.18.6 is deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-catch-binding instead.
+➤ YN0061: │ @babel/plugin-proposal-object-rest-spread@npm:7.20.7 is deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-object-rest-spread instead.
+➤ YN0032: │ fsevents@npm:2.3.3: Implicit dependencies on node-gyp are discouraged
+➤ YN0032: │ fsevents@npm:2.3.3: Implicit dependencies on node-gyp are discouraged
+➤ YN0061: │ @babel/plugin-proposal-private-methods@npm:7.18.6 is deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead.
+➤ YN0061: │ abab@npm:2.0.6 is deprecated: Use your platform's native atob() and btoa() methods instead
+➤ YN0061: │ @babel/plugin-proposal-numeric-separator@npm:7.18.6 is deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator instead.
+➤ YN0061: │ urix@npm:0.1.0 is deprecated: Please see https://github.com/lydell/urix#deprecated
+➤ YN0061: │ source-map-resolve@npm:0.5.3 is deprecated: See https://github.com/lydell/source-map-resolve#deprecated
+➤ YN0061: │ workbox-webpack-plugin@npm:6.6.1 is deprecated: this package has been deprecated

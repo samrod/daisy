@@ -1,13 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src",
-    "paths": {
-      "@components/*": ["components/*"],
-      "@lib/*": ["lib/*"],
-      "@state/*": ["state/*"],
-      "@assets/*": ["assets/*"],
-      "@context/*": ["context/*"]
-    },
     "target": "es5",
     "lib": [
       "dom",
@@ -25,10 +17,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
-  },
-  "include": [
-    "src",
-    "**/*.tsx"
-  ]
+    "jsx": "react-jsx",
+  }
 }

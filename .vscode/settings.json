@@ -16,12 +16,18 @@
     "typescriptreact": "javascript",
     "javascriptreact": "javascript",
     "scss": "css",
-    "sass": "css",
+    "sass": "css"
   },
   "editor.quickSuggestions": {
-    "strings": true,
+    "strings": true
   },
   "css.validate": false,
   "scss.validate": false,
-  "postcss.validate": false
+  "postcss.validate": false,
+  "search.exclude": {
+    "**/.yarn": true,
+    "**/.pnp.*": true
+  },
+  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }

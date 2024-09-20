@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback, useRef, memo, ReactNode, useMemo } from 'react';
 import { isEqual, noop } from "lodash";
 import cn from "classnames";
-import CSS from "csstype";
+import * as CSS from "csstype";
 
 import { generateSound, setKeys, limits, useEventBinder } from "lib";
-import { useLinkState } from 'state';
+import { useLinkState } from "state";
 import Styles from "./Display.module.scss";
 
 interface DisplayProps {

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@lib/*": ["lib/*"],
+      "@state/*": ["state/*"],
+      "@assets/*": ["assets/*"],
+      "@context/*": ["context/*"],
+      "@components/*": ["components/*"],
+    },
+    "plugins": [{ "name": "@yarnpkg/pnpify" }]
+  },
+  "include": [
+    "src",
+    "**/*.ts",
+    "**/*.tsx"
+  ]
+}
