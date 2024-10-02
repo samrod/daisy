@@ -17,7 +17,7 @@ import { Display } from "components/Display";
 import "components/global.scss"
 
 Sentry.init({
-  dsn: "https://e86aec34d27a5331ba6969622acc24b4@o4507972650991616.ingest.us.sentry.io/4507972653023232",
+  dsn: process.env.SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
