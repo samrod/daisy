@@ -28,7 +28,7 @@ html {
 body {
   @apply overflow-hidden w-screen;
   -webkit-font-smoothing: antialiased;
-  font: 16px "Lucida Sans", system;
+  font: 16px system-ui, system;
   letter-spacing: -0.025em;
 
   --palette-black: $palette-black;
