@@ -7205,8 +7205,8 @@ __metadata:
     react-scripts: "npm:^5.0.1"
     rework: "npm:^1.0.1"
     rework-visit: "npm:^1.0.0"
-    sass: "npm:^1.79.3"
-    sass-embedded: "npm:^1.79.3"
+    sass: "npm:^1.79.4"
+    sass-embedded: "npm:^1.79.4"
     sass-loader: "npm:^16.0.2"
     sockjs-client: "npm:^1.6.1"
     tailwindcss: "npm:^3.4.4"
@@ -7233,7 +7233,7 @@ __metadata:
     node-gyp: "npm:^10.2.0"
     react: "npm:^18.3.1"
     react-scripts: "npm:^5.0.1"
-    sass: "npm:^1.79.3"
+    sass: "npm:^1.79.4"
     sst: "npm:^3.1.28"
     typescript: "npm:^5.6.2"
   peerDependencies:
@@ -14980,7 +14980,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass-embedded@npm:^1.79.3":
+"sass-embedded@npm:^1.79.4":
   version: 1.79.4
   resolution: "sass-embedded@npm:1.79.4"
   dependencies:
@@ -15109,7 +15109,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.79.3":
+"sass@npm:^1.79.4":
   version: 1.79.4
   resolution: "sass@npm:1.79.4"
   dependencies:

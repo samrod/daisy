@@ -42,10 +42,10 @@
       @apply cursor-pointer;
       transition: background-color 0.125s ease-in;
       &:hover {
-        background-color: transparentize($palette-yellow, 0.95);
+        background-color: scale-color($palette-yellow, $alpha: -95%);
       }
       &.active {
-        background-color: transparentize($palette-blue, 0.90);
+        background-color: scale-color($palette-blue, $alpha: -90%);
       }
     }
     @apply overflow-y-auto;
@@ -56,7 +56,7 @@
   }
   td, th {
     @apply text-center;
-    border-bottom: 0.5px solid transparentize($palette-white, .65);
+    border-bottom: 0.5px solid scale-color($palette-white, $alpha: -50%);
     // border: 0.5px solid red;
     width: calc( 100% / 17 );
     min-width: 40px;

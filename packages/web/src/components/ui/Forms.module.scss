@@ -12,10 +12,10 @@
 @mixin buttonColors($color) {  
   background-color: $color;
   &:hover {
-    background-color: lighten($color, 5);
+    background-color: scale-color($color, $lightness: 5%);
   }
   &:focus {
-    outline: 3px solid transparentize($color, 0.5);
+    outline: 3px solid scale-color($color, $alpha: -75%);
   }
 }
 
@@ -107,9 +107,9 @@
 }
 
 @mixin alertColors($color) {  
-  color: desaturate(darken($color, 20), 20);
-  border-color: desaturate(darken($color, 0), 65);
-  background-color: transparentize($color, 0.9);
+  color: scale-color($color, $lightness: -20%, $saturation: -20%);
+  border-color: scale-color($color, $saturation: -65%);
+  background-color: scale-color($color, $alpha: -10%);
 }
 
 .alert {

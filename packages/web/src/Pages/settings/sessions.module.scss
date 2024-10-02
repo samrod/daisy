@@ -17,7 +17,7 @@
   }
   tr {
     @apply py-3;
-    border-bottom: 0.5px solid transparentize($palette-white, .65);
+    border-bottom: 0.5px solid scale-color($palette-white, $alpha: 65%);
     &:nth-of-type(even) {
       background-color: $palette-grey-light;
     }

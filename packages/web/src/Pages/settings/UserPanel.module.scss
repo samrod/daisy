@@ -49,9 +49,9 @@
 }
 
 [data-option=logout] {
-  background-color: darken($palette-success, 5);
+  background-color: scale-color($palette-success, $lightness: -5%);
   &:hover {
-    background-color: darken($palette-success, 2.5);
+    background-color: scale-color($palette-success, $lightness: -2.5%);
   }
 }
 
