@@ -1,7 +1,7 @@
 import { findIndex } from "lodash";
 import {
-  DB_GUIDES, DB_LINKS, DB_PRESETS, DataType, deleteDataAtIndex,
-  deletePropValue, getData, pushData, readPropValue, updateData, uuid,
+  DB_GUIDES, DB_LINKS, DB_PRESETS, deleteDataAtIndex,
+  deletePropValue, getData, pushData, readPropValue, updateData, uuid, defaults,
 } from "lib";
 import { getGuideData, guidePropExists, updateGuideData, updateLinkData, useGuideState } from ".";
 import { Dispatch } from "react";
@@ -41,13 +41,14 @@ export const createPreset = async ({ settings, name }: CreatePreset) => {
   await updateGuideData("activePreset", presetId);
   if (!settings) {
     const clientLink = await readPropValue(`${DB_GUIDES}/${user.uid}`, "clientLink");
-    const liveSettings = await readPropValue(`${DB_LINKS}/${ clientLink}`, "settings") as DataType;
+    const liveSettings: SettingsTypes = await readPropValue(`${DB_LINKS}/${ clientLink}`, "settings") || defaults;
     await updateData(`${DB_PRESETS}/${presetId}`, liveSettings);
+    await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name })
   } else {
+    await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name: "" })
     await updateData(`${DB_PRESETS}/${presetId}`, settings);
   }
   getGuideData("activePreset", selectPreset);
-  await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name: "" })
 };
 
 export const updatePresetFromClientLink = async (id: string) => {

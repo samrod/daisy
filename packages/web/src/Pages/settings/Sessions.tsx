@@ -67,7 +67,7 @@ export const Sessions = () => {
   const fetchPresetsAndSessions = useCallback(async () => {
     const response = await readGuideProp(DB_PRESETS);
     presets.current = Object.values(response);
-    const sessionIds = await readGuideProp(DB_SESSIONS);
+    const sessionIds = (await readGuideProp(DB_SESSIONS)) || [];
     const cleanedSessions = await Promise.all(
       Object.values(sessionIds).map(cleanSession)
     );
