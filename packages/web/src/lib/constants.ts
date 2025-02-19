@@ -11,7 +11,7 @@ export const CLIENT_STATES = [
   "hidden",      // 9
 ];
 
-export const CLIENT_STATE_DISPLAYS = (clientLink, clientName, session) => ({
+export const CLIENT_STATE_DISPLAYS = (clientLink: string, clientName: string, session: string) => ({
   unavailable: session ? `${clientName || "client"} is not connected` : "waiting for client",
   present: `someone's at ${clientLink}`,
   waiting: `${clientName} is waiting`,

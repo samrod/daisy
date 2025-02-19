@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "es2020",  // Use a higher target for modern Node.js
+    "lib": ["es2020"],   // You don't need DOM for backend
+    "module": "commonjs", // For Node.js, use commonjs
+    "types": ["node"],    // Ensures Node types are included
+    "skipLibCheck": true
+  },
+  "include": ["src", "**/*.ts"]
+}

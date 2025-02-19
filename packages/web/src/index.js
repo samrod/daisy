@@ -13,6 +13,7 @@ import ResetPassword from "./Pages/auth/ResetPassword";
 import Client from "./Pages/Client";
 import Guide from "./Pages/Guide";
 import Remote from "./Pages/Remote";
+import { CheckoutForm, Return } from "./Pages/Membership";
 import { Display } from "components/Display";
 import "components/global.scss"
 
@@ -41,11 +42,13 @@ root.render(
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/checkout" element={<CheckoutForm />} />
+        <Route path="/return" element={<Return />} />
 
-        <Route path={`/:clientLink`} element={<Client />} />
         <Route path="/" element={<PrivateRoute><Guide /></PrivateRoute>} />
         <Route path="/thumb" element={<PrivateRoute><Display /></PrivateRoute>} />
         <Route path="/remote" element={<PrivateRoute><Remote /></PrivateRoute>} />
+        <Route path={`/:clientLink`} element={<Client />} />
       </Routes>
     </BrowserRouter>
   </AuthProvider>

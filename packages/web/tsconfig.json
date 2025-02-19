@@ -1,15 +1,19 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "paths": {
+    "baseUrl": "./src",         // Base URL for the web app's paths
+    "jsx": "react-jsx",         // Preserve React settings
+    "paths": {                  // Restore the custom paths for the web app
       "@lib/*": ["lib/*"],
       "@state/*": ["state/*"],
       "@assets/*": ["assets/*"],
       "@context/*": ["context/*"],
-      "@components/*": ["components/*"],
+      "@components/*": ["components/*"]
     },
-    "plugins": [{ "name": "@yarnpkg/pnpify" }]
+    "target": "es5",            // Keep ES5 for maximum browser compatibility
+    "module": "esnext",         // Modern ES modules for the web
+    "lib": ["dom", "dom.iterable", "esnext"], // Browser-specific libraries
+    "strict": false
   },
   "include": [
     "src",
