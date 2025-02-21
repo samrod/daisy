@@ -1,10 +1,10 @@
 import { findIndex } from "lodash";
+import { Dispatch } from "react";
 import {
-  DB_GUIDES, DB_LINKS, DB_PRESETS, deleteDataAtIndex,
-  deletePropValue, getData, pushData, readPropValue, updateData, uuid, defaults,
+  DB_GUIDES, DB_LINKS, DB_PRESETS, deleteDataAtIndex, deletePropValue,
+  getData, pushData, readPropValue, updateData, uuid, defaults, NEW_PRESET_NAME,
 } from "lib";
 import { getGuideData, guidePropExists, updateGuideData, updateLinkData, useGuideState } from ".";
-import { Dispatch } from "react";
 
 export const getSettingsFromPreset = async (key: string): Promise<SettingsTypes> => {
   if (!key) {
@@ -32,7 +32,7 @@ export const updatePresetData = async (path, value) => {
   await updateData(`${DB_PRESETS}/${path}`, value);
 };
 
-export const createPreset = async ({ settings, name }: CreatePreset) => {
+export const createPreset = async ({ settings, name = NEW_PRESET_NAME }: CreatePreset) => {
   const { user } = useGuideState.getState();
   if (!user?.uid ) {
     return;
@@ -45,7 +45,7 @@ export const createPreset = async ({ settings, name }: CreatePreset) => {
     await updateData(`${DB_PRESETS}/${presetId}`, liveSettings);
     await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name })
   } else {
-    await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name: "" })
+    await pushData(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}`, { id: presetId, name })
     await updateData(`${DB_PRESETS}/${presetId}`, settings);
   }
   getGuideData("activePreset", selectPreset);
@@ -71,15 +71,18 @@ export interface PresetsTypes {
 }
 
 export const deletePreset = async (id: string) => {
-  const { user } = useGuideState.getState();
+  const { user, setActivePreset } = useGuideState.getState();
   if (!user?.uid ) {
     return;
   }
   const presets = await guidePropExists(DB_PRESETS) as PresetsTypes[];
   const index = findIndex(Object.values(presets), { "id": id });
-  console.log("*** deletePreset: ", index);
+  const activePreset = await readPropValue(`${DB_GUIDES}/${user.uid}`, "activePreset");
+  if (id === activePreset) {
+    setActivePreset("");
+  }
+  await deleteDataAtIndex(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}/`, index);
   await deletePropValue(DB_PRESETS, id);
-  await deleteDataAtIndex(`${DB_GUIDES}/${user.uid}/presets/`, index);
 };
 
 function isDefaultType(response: any = {}): response is SettingsTypes {

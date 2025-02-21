@@ -45,7 +45,7 @@
         background-color: transparentize($palette-yellow, 0.95);
       }
       &.active {
-        background-color: transparentize($palette-blue, 0.90);
+        background-color: transparentize($palette-pale-blue, 0.85);
       }
     }
     @apply overflow-y-auto;
