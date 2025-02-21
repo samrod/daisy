@@ -5,15 +5,9 @@ import { Button, Col, PresetData, PresetRow } from "components";
 import { DB_PRESETS } from "lib";
 import Styles from "components/Presets.module.scss";
 
-import { ReactComponent as IconAngle } from "assets/setting_angle.svg";
-import { ReactComponent as IconFrequency } from "assets/setting_frequency.svg";
-import { ReactComponent as IconDuration } from "assets/setting_duration.svg";
-import { ReactComponent as IconLength } from "assets/setting_length.svg";
-// import { ReactComponent as IconPitch } from "assets/setting_pitch.svg";
-import { ReactComponent as IconSpeed } from "assets/setting_speed.svg";
-import { ReactComponent as IconSteps } from "assets/setting_steps.svg";
-import { ReactComponent as IconVolume } from "assets/setting_volume.svg";
-import { ReactComponent as IconWave } from "assets/setting_wave.svg";
+import { IconAngle, IconFrequency, IconDuration, IconLength,
+  IconSpeed, IconSteps, IconVolume, IconWave,
+} from "assets";
 
 export const Presets = () => {
   const [settings, setSettings] = useState<PresetData[]>([]);

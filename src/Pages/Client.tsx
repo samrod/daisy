@@ -4,7 +4,7 @@ import cn from "classnames";
 import { CLIENT_STATES, useUnloadHandler, useFullscreenHandler, useSessionCheck, useRehydrate, } from "lib";
 import { subscribeAllSettings, useClientState, useGuideState, createClient, createSession, getLinkData, useSessionState, useLinkState } from 'state';
 import { ClientLogin, Clouds, Display, NotAvailable } from "components";
-import { ReactComponent as Logo } from "assets/daisy-logo.svg"
+import { Logo } from "assets"
 import Styles from "./Client.module.scss";
 
 const cloudSettings = [
