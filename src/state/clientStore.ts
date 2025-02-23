@@ -6,12 +6,12 @@ export const getClientData = (key: string, callback: (params: unknown) => void) 
   getData({ path: `${DB_CLIENTS}/${uid}`, key, callback});
 };
 
-export const updateClientData = (key: string, value) => {
+export const updateClientData = async (key: string, value) => {
   const { uid } = useClientState.getState();
   if (!uid) {
     return;
   }
-  updateData(`${DB_CLIENTS}/${uid}/${key}`, value);
+  await updateData(`${DB_CLIENTS}/${uid}/${key}`, value);
 };
 
 export const createClient = async () => {
@@ -21,7 +21,7 @@ export const createClient = async () => {
   }
   setUid();
   setCreatedAt();
-  updateLinkData("client", useClientState.getState().uid);
+  await updateLinkData("client", useClientState.getState().uid);
   await updateClientData(``, {
     preset, username, guide,
     createdAt: serverStamp(),

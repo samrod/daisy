@@ -41,44 +41,44 @@ const linkStates: LinkStateTypes = {
 };
 
 const linkActions = (set): LinkActionsTypes => ({
-  setSetting: (setting, value) => update(set, (state) => {
+  setSetting: async (setting, value) => await update(set, (state) => {
     state.settings[setting] = value;
     state.trigger = "setSetting";
   }),
-  setActiveSetting: (setting) => update(set, (state) => {
+  setActiveSetting: async (setting) => await update(set, (state) => {
     state.activeSetting = setting;
     state.motionBarActive = !!setting.match(/angle|length/);
     state.trigger = "setActiveSetting";
   }),
-  volumeDown: () => update(set, ({ settings }) => { 
+  volumeDown: async () => await update(set, ({ settings }) => { 
     if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
       settings.volume = Math.max(settings.volume - volume.nudge, volume.min);
     }
   }),
-  volumeUp: () => update(set, ({ settings }) => {
+  volumeUp: async () => await update(set, ({ settings }) => {
     if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
       settings.volume = Math.min(settings.volume + volume.nudge, volume.max);
     }
   }),
-  speedUp: () => update(set, ({ settings }) => { 
+  speedUp: async () => await update(set, ({ settings }) => { 
     if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
       settings.speed = Math.min(settings.speed + speed.nudge, speed.max);
     }
   }),
-  speedDown: () => update(set, ({ settings }) => {
+  speedDown: async () => await update(set, ({ settings }) => {
     if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
       settings.speed = Math.max(settings.speed - speed.nudge, speed.min);
     }
   }),
-  setClientLink: (link) => update(set, (state) => {
+  setClientLink: async (link) => await update(set, (state) => {
     state.clientLink = link;
     state.trigger = "setClientLink";
   }),
-  setPreset: (preset) => update(set, (state) => {
+  setPreset: async (preset) => await update(set, (state) => {
     state.preset = preset;
     state.trigger = "setPreset";
   }),
-  setPresetName: (name) => update(set, (state) => {
+  setPresetName: async (name) => await update(set, (state) => {
     state.presetName = name;
     state.trigger = "setPresetNae";
   }),

@@ -8,8 +8,8 @@ import {
   updateLinkData, useSessionState, clientLinkFromPath, useLinkState,
 } from '.';
 
-export const getSessionData = (key: string, callback: (params: unknown) => void) => {
-  getData({ path: `${DB_SESSIONS}/`, key, callback});
+export const getSessionData = async (key: string, callback: (params: unknown) => void) => {
+  await getData({ path: `${DB_SESSIONS}/`, key, callback});
 };
 
 export const updateSessionData = async (key: string, value: string | number | {}) => {
@@ -37,7 +37,7 @@ export const pushSessionData = async (session) => {
     console.warn(`*** pushSessionData: user is "${user}"`);
   }
   // const session = await readPropValue(`${DB_LINKS}/${clientLink}/`, "session");
-  pushGuideData(DB_SESSIONS, session);
+  await pushGuideData(DB_SESSIONS, session);
 };
 
 export const sessionFromStorage = () => {

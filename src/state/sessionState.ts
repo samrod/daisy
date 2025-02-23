@@ -38,18 +38,18 @@ const sessionStates: SessionStateTypes = {
 };
 
 const sessionStateActions = (set, get) => ({
-  setSessionStatus: (status) => {
-    update(set, (state) => {
+  setSessionStatus: async (status) => {
+    await update(set, (state) => {
       state.sessionStatus = status;
       state.trigger = "setSessionStatus";
     })
   },
-  setSession: (sessionId = uuid()) => update(set, (state) => {
+  setSession: async (sessionId = uuid()) => await update(set, (state) => {
     const newSession = !isNull(sessionId) || state.session === sessionId ? sessionId : null;
     state.session = newSession;
     state.trigger = "setSession";
   }),
-  setUpdatedAt: (reset = false) => update(set, (state) => {
+  setUpdatedAt: async (reset = false) => await update(set, (state) => {
     clearTimeout(state.timer as number);
     if (reset === true) {
       state.updatedAt = null;
@@ -62,7 +62,7 @@ const sessionStateActions = (set, get) => ({
     }
     state.trigger = "setUpdatedAt";
   }),
-  setLocalSession: (local: boolean) => update(set, (state) => {
+  setLocalSession: async (local: boolean) => await update(set, (state) => {
     state.localSession = local;
     state.trigger = "setLocalSession";
   }),

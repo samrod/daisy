@@ -29,7 +29,7 @@ const Client = () => {
   useFullscreenHandler(clientStatus === "active");
 
   const findGuide = useCallback(async () => {
-    subscribeAllSettings();
+    await subscribeAllSettings();
     if (clientStatus === "unavailable") {
       setStatus(1);
     }

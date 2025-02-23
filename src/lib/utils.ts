@@ -96,9 +96,15 @@ type UpdateTypes = {
   [key: string]: boolean | string | {} | [] | SettingsTypes | User;
 }
 
-export const update = (set, func: (state: UpdateTypes) => void) => set(produce(func));
-
-let AudioCtx = undefined;
+export const update = async (
+  set: (fn: (state: UpdateTypes) => void) => void,
+  func: (state: UpdateTypes) => void
+): Promise<void> => new Promise(resolve => {
+  set(produce((state: UpdateTypes) => {
+    func(state);
+    setTimeout(resolve);
+  }));
+})
 
 export const generateSound = ({ panX = 0, pitch, gain, duration }) => {
   if (!AudioCtx) {

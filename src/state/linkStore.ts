@@ -92,9 +92,6 @@ export const currentLinkExists = async (): Promise<{ preset?: string; clientLink
   }
 };
 
-export function uniqueClientLink(value: string, checkOnly: true): Promise<boolean>;
-export function uniqueClientLink(value: string, checkOnly?: false): Promise<string>;
-
 export async function uniqueClientLink(value: string, checkOnly = false): Promise<boolean | string> {
   const exists = await propExists(DB_LINKS, value);
   if (checkOnly) {
@@ -108,17 +105,17 @@ const updateSettingFromFirebase = (key: string) => (val) => {
    setSetting(key, val);
 };
 
-const bindSettingToValue = (activePreset: string, key: string) => {
-  getLinkData(`settings/${key}`, updateSettingFromFirebase(key));
+const bindSettingToValue = async (activePreset: string, key: string) => {
+  await getLinkData(`settings/${key}`, updateSettingFromFirebase(key));
 };
 
-export const subscribeAllSettings = () => {
+export const subscribeAllSettings = async () => {
   const { activePreset } = useGuideState.getState();
   const { settings } = useLinkState.getState();
   if (!settings) {
     return;
   }
-  getLinkData("activePreset", updateSettingFromPreset)
+  await getLinkData("activePreset", updateSettingFromPreset)
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
 
