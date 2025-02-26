@@ -107,8 +107,8 @@ export const update = async (
 })
 
 export const generateSound = ({ panX = 0, pitch, gain, duration }) => {
-  if (!AudioCtx) {
-    AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (typeof window["AudioCtx"] === "undefined") {
+    var AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
   const source = AudioCtx.createOscillator();
   const volume = AudioCtx.createGain();
