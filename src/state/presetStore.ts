@@ -91,6 +91,7 @@ function isDefaultType(response: any = {}): response is SettingsTypes {
     'speed' in response &&
     'angle' in response &&
     'pitch' in response &&
+    'reverb' in response &&
     'duration' in response &&
     'volume' in response &&
     'wave' in response &&

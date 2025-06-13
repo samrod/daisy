@@ -92,12 +92,12 @@ export const currentLinkExists = async (): Promise<{ preset?: string; clientLink
   }
 };
 
-export async function uniqueClientLink(value: string, checkOnly = false): Promise<boolean | string> {
+export const uniqueClientLink: {
+  (value: string, checkOnly: true): Promise<boolean>;
+  (value: string, checkOnly?: false): Promise<string>;
+} = async (value, checkOnly = false) => {
   const exists = await propExists(DB_LINKS, value);
-  if (checkOnly) {
-    return exists as boolean;
-  }
-  return exists ? `${value}-${uuid().substring(0, 3)}` : value as string;
+  return checkOnly ? exists : exists ? `${value}-${uuid().substring(0, 3)}` : value;
 };
 
 const updateSettingFromFirebase = (key: string) => (val) => {

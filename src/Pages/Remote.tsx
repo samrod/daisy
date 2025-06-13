@@ -14,7 +14,7 @@ const Remote = () => {
   const { setClientStatus, userMode, setUserMode } = useGuideState(state => state);
   const { clientLink, setSetting } = useLinkState(state => state);
   const settingsRef = useRef(useLinkState.getState().settings);
-  const { size, speed, angle, length, background, opacity, playing, volume, pitch, lightbar, steps, wave, duration } = settingsRef.current;
+  const { size, speed, angle, length, background, opacity, playing, volume, pitch, reverb, lightbar, steps, wave, duration } = settingsRef.current;
   const [speedSliderValue, setSpeedSliderValue] = useState(speed);
   const localState = {
     speed: setSpeedSliderValue,
@@ -187,6 +187,7 @@ const Remote = () => {
                 <>
                   <Slider name="pitch" value={pitch} onChange={setValue} />
                   <Slider name="duration" value={duration} onChange={setValue} />
+                  <Slider name="reverb" value={reverb} onChange={setValue} />
                 </>
               }
             </Row>

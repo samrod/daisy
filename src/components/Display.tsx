@@ -17,11 +17,11 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
   const settings = useMemo(() => _settings, [_settings]);
   useEventBinder(preview ? [] : [{ event: 'keydown', element: document.body, handler: setKeys }]);
   const { motionBarActive, activeSetting } = useLinkState(state => state);
-  let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, gain, duration;
+  let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, reverb, gain, duration;
   settingsRef = useRef(settings);
   
   try {
-    ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, volume: gain, duration } = settingsRef.current);
+    ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, reverb, volume: gain, duration } = settingsRef.current);
   } catch (e) {
     validSettings = false;
   }
@@ -141,7 +141,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
     const { audioPanRange } = limits;
     const twoStepReverse = steps !== 2 ? 1 : -1;
     const panX = (odd ? audioPanRange : -audioPanRange) * twoStepReverse;
-    generateSound({ panX, pitch, gain, duration });
+    generateSound({ panX, pitch, gain, duration, reverb });
   };
 
   const updateClassesAndStyles = () => {
