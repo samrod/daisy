@@ -1,9 +1,9 @@
 import { useState, useCallback, FormEvent, useEffect, useRef } from "react"
 import { isEmpty } from "lodash";
 
-import { getAuth, updateEmail, updatePassword, createUpdateEmail as updateEmailFB } from "state";
-import { Alert, Button, TextGroup, Col } from "components";
-import { useAuth } from "context/AuthContext";
+import { getAuth, updateEmail, updatePassword, createUpdateEmail as updateEmailFB } from "@/state";
+import { Alert, Button, TextGroup, Col } from "@/components";
+import { useAuth } from "@/context/AuthContext";
 import Styles from "./UserPanel.module.scss";
 
 export const Account = () => {

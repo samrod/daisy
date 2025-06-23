@@ -3,8 +3,8 @@ import { Timestamp } from "firebase/firestore";
 import { differenceInHours, differenceInMinutes, differenceInSeconds, format } from "date-fns";
 import { findIndex } from "lodash";
 
-import { readGuideProp } from "state";
-import { DB_PRESETS, DB_SESSIONS, parseDate, readPropValue } from "lib";
+import { readGuideProp } from "@/state";
+import { DB_PRESETS, DB_SESSIONS, parseDate, readPropValue } from "@/lib";
 import Styles from "./sessions.module.scss";
 
 interface SessionDataType {

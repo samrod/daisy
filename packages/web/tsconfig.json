@@ -4,11 +4,7 @@
     "baseUrl": "./src",         // Base URL for the web app's paths
     "jsx": "react-jsx",         // Preserve React settings
     "paths": {                  // Restore the custom paths for the web app
-      "@lib/*": ["lib/*"],
-      "@state/*": ["state/*"],
-      "@assets/*": ["assets/*"],
-      "@context/*": ["context/*"],
-      "@components/*": ["components/*"]
+      "@/*": ["*"],
     },
     "target": "es5",            // Keep ES5 for maximum browser compatibility
     "module": "esnext",         // Modern ES modules for the web

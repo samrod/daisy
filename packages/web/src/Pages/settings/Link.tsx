@@ -1,9 +1,9 @@
 import { useState, useCallback, FormEvent, useEffect, useRef } from "react"
 import { isEmpty } from "lodash";
 
-import { updateClientLink, getGuideData, uniqueClientLink } from "state";
-import { Alert, Button, Col, TextGroup } from "components";
-import { LINK_PLACEHOLDER } from "lib";
+import { updateClientLink, getGuideData, uniqueClientLink } from "@/state";
+import { Alert, Button, Col, TextGroup } from "@/components";
+import { LINK_PLACEHOLDER } from "@/lib";
 
 export const Link = () => {
   const [clientLink, setClientLink] = useState("");

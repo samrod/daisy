@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-import { Button as CloseButton, Tabs } from "components";
-import { getAuth, useGuideState } from "state";
+import { Button as CloseButton, Tabs } from "@/components";
+import { getAuth, useGuideState } from "@/state";
 import * as SettingComponents from "./";
 import Styles from "./UserPanel.module.scss";
-import { sendMessage } from "lib";
+import { sendMessage } from "@/lib";
 
 const panels = [ "Account", "Link", "Presets", "Sessions", "Logout"];
 

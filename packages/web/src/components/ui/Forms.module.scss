@@ -1,5 +1,3 @@
-@import "lib/variables.scss";
-
 .formScalers {
   @apply my-2 overflow-hidden;
 
@@ -12,10 +10,10 @@
 @mixin buttonColors($color) {  
   background-color: $color;
   &:hover {
-    background-color: scale-color($color, $lightness: 5%);
+    background-color: color.scale($color, $lightness: 5%);
   }
   &:focus {
-    outline: 3px solid scale-color($color, $alpha: -75%);
+    outline: 3px solid color.scale($color, $alpha: -75%);
   }
 }
 
@@ -107,9 +105,9 @@
 }
 
 @mixin alertColors($color) {  
-  color: scale-color($color, $lightness: -20%, $saturation: -20%);
-  border-color: scale-color($color, $saturation: -65%);
-  background-color: scale-color($color, $alpha: -10%);
+  color: color.scale($color, $lightness: -20%, $saturation: -20%);
+  border-color: color.scale($color, $saturation: -65%);
+  background-color: color.scale($color, $alpha: -10%);
 }
 
 .alert {

@@ -67,7 +67,7 @@ export const consoleLog = (
     pre?: boolean,
     post?: boolean,
   ) => {
-    if (process.env.NODE_ENV === "production") {
+    if (import.meta.env.NODE_ENV === "production") {
       return;
     }
     const preGap = pre ? "\n" : "";

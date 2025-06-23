@@ -1,8 +1,8 @@
-import { createPreset, uniqueClientLink, updateClientLink, useGuideState, useLinkState } from "state";
+import { createPreset, uniqueClientLink, updateClientLink, useGuideState, useLinkState } from "@/state";
 import {
   DataType, User, getData, pushData, readPropValue, updateData,
   DB_GUIDES, DB_SESSIONS, deletePropValue, DEFAULT_PRESET_NAME,
-} from "lib";
+} from "@/lib";
 // moving the next line above the previous throws an error
 export { getAuth, updateEmail, updatePassword } from "firebase/auth";
 

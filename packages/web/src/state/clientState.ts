@@ -1,12 +1,12 @@
-import { isEmpty } from 'lodash';
-import { create, StateCreator } from 'zustand';
+import { isEmpty } from "lodash";
+import { create, StateCreator } from "zustand";
 import { persist, createJSONStorage, devtools } from "zustand/middleware";
 
-import { currentLinkExists, updateLinkData, clientLinkFromPath } from './';
+import { currentLinkExists, updateLinkData, clientLinkFromPath } from "./";
 import {
   update, readPropValue, consoleLog, objDiff, DB_LINKS,
   uuid, serverStamp,
-} from "lib";
+} from "@/lib";
 
 type ClientStateTypes = {
   status: number;
@@ -56,7 +56,7 @@ const clientStateActions = (set, get): ClientStateActions => ({
       return;
     }
     const persistedStatus = await readPropValue(`${DB_LINKS}/${validLink.clientLink}`, "status");
-    update(set, (state) => {
+    await update(set, (state) => {
       const noChange = Number(persistedStatus) === status && state.status === status;
       if (noChange) {
         return;
@@ -73,11 +73,11 @@ const clientStateActions = (set, get): ClientStateActions => ({
       state.trigger = "setStatus";
     });
   },
-  setPreset: (preset: string) => update(set, (state) => {
+  setPreset: async (preset: string) => await update(set, (state) => {
     state.preset = preset;
     state.trigger = "setPreset";
   }),
-  setGuide: (id) => update(set, (state) => {
+  setGuide: async (id) => await update(set, (state) => {
     state.guide = id;
     state.trigger = "setGuide";
   }),
@@ -96,8 +96,8 @@ const clientStateActions = (set, get): ClientStateActions => ({
       State.trigger = "setClientLink";
     });
   },
-  setUsername: (name, persist = true) => {
-    update(set, (State) => {
+  setUsername: async (name, persist = true) => {
+    await update(set, (State) => {
       State.username = name;
       State.trigger = "setUsername";
       if (persist) {
@@ -105,19 +105,19 @@ const clientStateActions = (set, get): ClientStateActions => ({
       }
     })
   },
-  setCreatedAt: () => update(set, (state) => {
+  setCreatedAt: async () => await update(set, (state) => {
     state.createdAt = serverStamp();
     state.trigger = "setCreatedAt";
   }),
-  setLocalPriority: (enabled) => update(set, (state) => {
+  setLocalPriority: async (enabled) => await update(set, (state) => {
     state.localPriority = enabled;
     state.trigger = "setLocalPriority";
   }),
-  setUid: (uid = uuid()) => update(set, (state) => {
+  setUid: async (uid = uuid()) => await update(set, (state) => {
     state.uid ??= uid;
     state.trigger = "setUid";
   }),
-  setSupressCallback: (enabled) => update(set, (state) => {
+  setSupressCallback: async (enabled) => await update(set, (state) => {
     state.suppressCallback = enabled;
     state.trigger = "setSupressCallback";
   }),

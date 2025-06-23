@@ -1,6 +1,6 @@
 import { isEmpty } from "lodash";
 import { matchPath } from "react-router";
-import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue, propExists, uuid, DataType } from "lib";
+import { getData, updateData, DB_LINKS, deletePropValue, DB_GUIDES, readPropValue, propExists, uuid, DataType } from "@/lib";
 import { useClientState, useGuideState, guidePropExists, updateGuideData, selectPreset, useLinkState, getSettingsFromPreset } from ".";
 
 const getState = (key: string) => {
@@ -92,15 +92,12 @@ export const currentLinkExists = async (): Promise<{ preset?: string; clientLink
   }
 };
 
-export function uniqueClientLink(value: string, checkOnly: true): Promise<boolean>;
-export function uniqueClientLink(value: string, checkOnly?: false): Promise<string>;
-
-export async function uniqueClientLink(value: string, checkOnly = false): Promise<boolean | string> {
+export const uniqueClientLink: {
+  (value: string, checkOnly: true): Promise<boolean>;
+  (value: string, checkOnly?: false): Promise<string>;
+} = async (value, checkOnly = false) => {
   const exists = await propExists(DB_LINKS, value);
-  if (checkOnly) {
-    return exists as boolean;
-  }
-  return exists ? `${value}-${uuid().substring(0, 3)}` : value as string;
+  return checkOnly ? exists : exists ? `${value}-${uuid().substring(0, 3)}` : value;
 };
 
 const updateSettingFromFirebase = (key: string) => (val) => {
@@ -108,17 +105,17 @@ const updateSettingFromFirebase = (key: string) => (val) => {
    setSetting(key, val);
 };
 
-const bindSettingToValue = (activePreset: string, key: string) => {
-  getLinkData(`settings/${key}`, updateSettingFromFirebase(key));
+const bindSettingToValue = async (activePreset: string, key: string) => {
+  await getLinkData(`settings/${key}`, updateSettingFromFirebase(key));
 };
 
-export const subscribeAllSettings = () => {
+export const subscribeAllSettings = async () => {
   const { activePreset } = useGuideState.getState();
   const { settings } = useLinkState.getState();
   if (!settings) {
     return;
   }
-  getLinkData("activePreset", updateSettingFromPreset)
+  await getLinkData("activePreset", updateSettingFromPreset)
   Object.keys(settings).forEach(bindSettingToValue.bind(null, activePreset));
 };
 

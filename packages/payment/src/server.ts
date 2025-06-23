@@ -1,7 +1,7 @@
 import 'dotenv-flow/config';
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import Stripe from 'stripe';
+import express, { Request, Response } from "express";
+import cors from "cors";
+import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -26,7 +26,7 @@ app.post('/api/charge', async (req: Request, res: Response) => {
   }
 });
 
-const PORT = process.env.API_PORT || 5001;
+const PORT = import.meta.env.API_PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Payment server running on port ${PORT}`);
 });

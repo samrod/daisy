@@ -1,5 +1,3 @@
-@import '../lib/variables.scss';
-
 .remote {
   @apply overflow-hidden w-screen h-screen;
   max-height: $remoteHeight;

@@ -1,4 +1,4 @@
-@import "lib/variables";
+@use "@/lib/variables";
 
 :global(.user-panel) {
   @apply
@@ -49,9 +49,9 @@
 }
 
 [data-option=logout] {
-  background-color: scale-color($palette-success, $lightness: -5%);
+  background-color: color.scale($palette-success, $lightness: -5%);
   &:hover {
-    background-color: scale-color($palette-success, $lightness: -2.5%);
+    background-color: color.scale($palette-success, $lightness: -2.5%);
   }
 }
 

@@ -1,0 +1,40 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
+import path from "path";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    svgr({
+      include: "**/*.svg",
+      svgrOptions: {
+        exportType: "named",
+      },
+    }),
+  ],
+  root: './',
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `
+          @use "@/lib/variables.scss" as *;
+          @use "sass:color";
+        `,
+        api: "modern-compiler",
+      },
+    },
+  },
+  server: {
+    port: 3000,
+  },
+  build: {
+    outDir: "build",
+    sourcemap: true,
+  },
+});

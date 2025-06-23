@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { isEmpty } from 'lodash';
-import { User } from 'firebase/auth';
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { isEmpty } from "lodash";
+import { User } from "firebase/auth";
 
-import { useGuideState, subscribeAllSettings, useLinkState, subscribeGuideData } from 'state';
-import { FormHandlerProps, FormEventHandlers, useAuthHandlers, auth } from 'lib';
+import { useGuideState, subscribeAllSettings, useLinkState, subscribeGuideData } from "@/state";
+import { FormHandlerProps, FormEventHandlers, useAuthHandlers, auth } from "@/lib";
 
 interface AuthContextType {
   currentUser: User | null;

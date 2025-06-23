@@ -2,14 +2,14 @@ import { differenceInSeconds } from "date-fns/differenceInSeconds";
 import {
   getData, updateData, DB_SESSIONS, serverStamp, readPropValue,
   DB_LINKS, EXPIRE_SESSION_SECONDS, deletePropValue, parseDate,
-} from "lib";
+} from "@/lib";
 import {
   useClientState, pushClientData, useGuideState, pushGuideData,
   updateLinkData, useSessionState, clientLinkFromPath, useLinkState,
-} from '.';
+} from ".";
 
-export const getSessionData = (key: string, callback: (params: unknown) => void) => {
-  getData({ path: `${DB_SESSIONS}/`, key, callback});
+export const getSessionData = async (key: string, callback: (params: unknown) => void) => {
+  await getData({ path: `${DB_SESSIONS}/`, key, callback});
 };
 
 export const updateSessionData = async (key: string, value: string | number | {}) => {
@@ -37,7 +37,7 @@ export const pushSessionData = async (session) => {
     console.warn(`*** pushSessionData: user is "${user}"`);
   }
   // const session = await readPropValue(`${DB_LINKS}/${clientLink}/`, "session");
-  pushGuideData(DB_SESSIONS, session);
+  await pushGuideData(DB_SESSIONS, session);
 };
 
 export const sessionFromStorage = () => {

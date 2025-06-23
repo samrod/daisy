@@ -1,24 +1,24 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import * as serviceWorker from "./serviceWorker";
+import * as serviceWorker from "@/serviceWorker";
 import * as Sentry from "@sentry/react";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
 
-import PrivateRoute from "./Pages/auth/PrivateRoute";
-import Signup from "./Pages/auth/Signup";
-import Login from "./Pages/auth/Login";
-import ForgotPassword from "./Pages/auth/ForgotPassword";
-import ResetPassword from "./Pages/auth/ResetPassword";
-import Client from "./Pages/Client";
-import Guide from "./Pages/Guide";
-import Remote from "./Pages/Remote";
-import { CheckoutForm, Return } from "./Pages/Membership";
-import { Display } from "components/Display";
-import "components/global.scss"
+import PrivateRoute from "@/Pages/auth/PrivateRoute";
+import Signup from "@/Pages/auth/Signup";
+import Login from "@/Pages/auth/Login";
+import ForgotPassword from "@/Pages/auth/ForgotPassword";
+import ResetPassword from "@/Pages/auth/ResetPassword";
+import Client from "@/Pages/Client";
+import Guide from "@/Pages/Guide";
+import Remote from "@/Pages/Remote";
+import { CheckoutForm, Return } from "@/Pages/Membership";
+import { Display } from "@/components/Display";
+import "@/components/global.scss"
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
+  dsn: import.meta.env.VITE_SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),

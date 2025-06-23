@@ -1,4 +1,4 @@
-import { Display } from "components";
+import { Display } from "@/components";
 import Styles from "./Presets.module.scss";
 
 interface ThumbnailProps {

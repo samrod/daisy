@@ -25,6 +25,7 @@ export const CLIENT_STATE_DISPLAYS = (clientLink: string, clientName: string, se
 });
 
 export const DEFAULT_PRESET_NAME = "Basic Settings";
+export const NEW_PRESET_NAME = "New Preset";
 export const LINK_PLACEHOLDER = "custom link";
 export const EXPIRE_SESSION_SECONDS = 7200;
 
@@ -39,6 +40,7 @@ export const defaults = {
   speed: 2500,
   angle: 0,
   pitch: 250,
+  reverb: 0,
   duration: 70,
   volume: 0,
   wave: 0,
@@ -57,8 +59,9 @@ export const limits = {
   angle: { min: -45, max: 45 },
   length: { min: 10, max: 50 },
   speed: { min: 250, max: 3000, nudge: 10 },
-  volume: { min: 0, max: 5000, nudge: 100 },
+  volume: { min: 0, max: 1, step: 0.01, nudge: 0.05 },
   pitch: { min: 50, max: 2000 },
+  reverb: { mind: 0, max: 1, step: 0.01 },
   duration: { min: 10, max: 250 },
   steps: { min: 1, max: 8 },
   lightbar: { min: 0, max: 0.5, step: 0.01 },

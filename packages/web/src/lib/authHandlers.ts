@@ -9,8 +9,8 @@ import {
   updatePassword
 } from "firebase/auth";
 
-import { auth } from "./firebase";
-import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "state";
+import { auth } from "@/lib";
+import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "@/state";
 
 export interface FormHandlerProps {
   setEmail?: Dispatch<React.SetStateAction<string>>;

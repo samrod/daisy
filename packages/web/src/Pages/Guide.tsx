@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { debounce, isEmpty } from "lodash";
 import cn from "classnames";
 
-import { limits, receiveMessage, setKeys, useEventBinder } from "lib";
-import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset, updatePresetFromClientLink } from "state";
-import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateType } from "components";
+import { limits, receiveMessage, setKeys, useEventBinder } from "@/lib";
+import { useGuideState, useClientState, getLinkData, useLinkState, deletePreset, updatePresetFromClientLink } from "@/state";
+import { defaultModalState, Display, Modal, modalActionsCallback, ModalStateType } from "@/components";
 import Styles from "./Guide.module.scss";
-import { useAuth } from "context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface ModalActions {
   [key: string]: (...args: any[]) => void

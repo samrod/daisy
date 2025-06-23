@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { isEmpty } from 'lodash';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { isEmpty } from "lodash";
 
-import { useUnloadHandler, CLIENT_STATES } from "lib";
-import { useClientState, endSession } from '../state';
+import { useUnloadHandler, CLIENT_STATES } from "@/lib";
+import { useClientState, endSession } from "../state";
 import { Alert, Button, Row, Textfield } from "../components";
 
 const UNAVAILABLE_STATES = {

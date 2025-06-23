@@ -1,10 +1,10 @@
-import { DependencyList, useCallback, useEffect, useRef } from 'react';
-import { debounce, isEmpty, noop } from 'lodash';
-import { DB_LINKS, bindEvent, consoleLog, readPropValue, unbindEvent } from '.';
+import { DependencyList, useCallback, useEffect, useRef } from "react";
+import { debounce, isEmpty, noop } from "lodash";
+import { DB_LINKS, bindEvent, consoleLog, readPropValue, unbindEvent } from ".";
 import {
   useClientState, updateLinkData, useSessionState, sessionExpired,
   endSession, clientLinkFromStore, PersistedLinkType
-} from "state";
+} from "@/state";
 
 export const useRehydrate = () => {
   const { rehydrate, hasHydrated } = useClientState.persist;
@@ -71,7 +71,7 @@ export const useSessionCheck = () => {
 
 export const useFullscreenHandler = (authorized) => {
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.NODE_ENV === "development") {
       return;
     }
     if (authorized) {

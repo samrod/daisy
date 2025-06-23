@@ -1,4 +1,4 @@
-@import "lib/variables";
+@use "@/lib/variables";
 
 .thumb {
   @apply h-[80px] w-full rounded-lg overflow-hidden;
@@ -42,10 +42,10 @@
       @apply cursor-pointer;
       transition: background-color 0.125s ease-in;
       &:hover {
-        background-color: scale-color($palette-yellow, $alpha: -95%);
+        background-color: color.scale($palette-yellow, $alpha: -95%);
       }
       &.active {
-        background-color: scale-color($palette-blue, $alpha: -90%);
+        background-color: color.scale($palette-blue, $alpha: -90%);
       }
     }
     @apply overflow-y-auto;
@@ -56,7 +56,7 @@
   }
   td, th {
     @apply text-center;
-    border-bottom: 0.5px solid scale-color($palette-white, $alpha: -50%);
+    border-bottom: 0.5px solid color.scale($palette-white, $alpha: -50%);
     // border: 0.5px solid red;
     width: calc( 100% / 17 );
     min-width: 40px;

@@ -1,5 +1,5 @@
 import { MouseEventHandler } from 'react'
-import cn from 'classnames';
+import cn from "classnames";
 
 import Styles from "./Tabs.module.scss";
 

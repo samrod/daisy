@@ -3,8 +3,8 @@ import { noop } from "lodash";
 
 import { ReactElement, useCallback, useEffect, useState } from "react";
 import { Button, Row } from "../";
-import { useEventBinder } from "lib";
-import { useGuideState } from "state";
+import { useEventBinder } from "@/lib";
+import { useGuideState } from "@/state";
 import Styles from "./Modal.module.scss";
 
 interface ModalProps {

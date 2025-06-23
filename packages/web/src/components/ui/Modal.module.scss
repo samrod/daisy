@@ -1,12 +1,10 @@
-@import "../../lib/variables.scss";
-
 .modal {
   @apply flex flex-col absolute border-black rounded-md backdrop-blur-md opacity-0 z-10;
-  background-color: scale-color($palette-grey-light, $alpha: 12.5%);
+  background-color: color.scale($palette-grey-light, $alpha: 12.5%);
   box-shadow:
-    0 0 2rem scale-color(black, $alpha: -50%),
-    -1px -1px 0 scale-color(white, $alpha: -75%),
-    1px 1px 0 scale-color(white, $alpha: -25%);
+    0 0 2rem color.scale(black, $alpha: -50%),
+    -1px -1px 0 color.scale(white, $alpha: -75%),
+    1px 1px 0 color.scale(white, $alpha: -25%);
   
   transform: scale(0);
   transition: 
@@ -26,7 +24,7 @@
 
 .head {
   @apply m-0 px-6 py-3 overflow-hidden border-b-white text-white font-bold;
-  background-color: scale-color($palette-black, $alpha: -80%);
+  background-color: color.scale($palette-black, $alpha: -80%);
 }
 
 .body {
@@ -35,5 +33,5 @@
 
 .foot {
   @apply flex m-0 px-4 py-1 overflow-hidden border-t-white;
-  background-color: scale-color($palette-black, $alpha: -90%);
+  background-color: color.scale($palette-black, $alpha: -90%);
 }
