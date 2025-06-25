@@ -47,35 +47,30 @@ const applyEnvelope = (
 const createDryWetRouting = (
   ctx: AudioContext,
   stereoPanner: StereoPannerNode,
-  reverb = 0,
-  panCenter = false
-): {
-  dryVolume: GainNode,
-  wetVolume: GainNode,
-} => {
-  const dryVolume = ctx.createGain();
-  const wetVolume = ctx.createGain();
+  gain: number,
+  duration: number,
+  reverb: number,
+  panCenter: boolean,
+  now: number
+): { dryGain?: GainNode; wetGain?: GainNode } => {
+  let dryGain: GainNode | undefined;
+  let wetGain: GainNode | undefined;
+
+  dryGain = ctx.createGain();
+  stereoPanner.connect(dryGain);
+  applyEnvelope(dryGain, now, gain, duration);
 
   if (reverb > 0) {
     const convolver = ctx.createConvolver();
     convolver.buffer = impulseResponse(ctx, reverb, panCenter);
 
-    const dry = ctx.createGain();
-    const wet = ctx.createGain();
-    dry.gain.value = 1 - reverb;
-    wet.gain.value = reverb;
+    wetGain = ctx.createGain();
+    wetGain.gain.value = gain;
 
-    stereoPanner.connect(dry);
     stereoPanner.connect(convolver);
-    convolver.connect(wet);
-
-    dry.connect(dryVolume);
-    wet.connect(wetVolume);
-  } else {
-    stereoPanner.connect(dryVolume);
+    convolver.connect(wetGain);
   }
-
-  return { dryVolume, wetVolume };
+  return { dryGain, wetGain };
 };
 
 export const generateSound = async ({
@@ -90,34 +85,46 @@ export const generateSound = async ({
 
   const now = ctx.currentTime;
   const { source, stereoPanner } = createOscillator(ctx, pitch, panX);
-  const { dryVolume, wetVolume } = createDryWetRouting(ctx, stereoPanner, reverb, panX === 0);
+  const { dryGain, wetGain } = createDryWetRouting(
+    ctx,
+    stereoPanner,
+    gain,
+    duration,
+    reverb,
+    panX === 0,
+    now
+  );
 
-  applyEnvelope(dryVolume, now, gain, duration);
-  dryVolume.connect(ctx.destination);
-  if (reverb > 0) wetVolume.connect(ctx.destination);
+  if (dryGain) dryGain.connect(ctx.destination);
+  if (wetGain) wetGain.connect(ctx.destination);
 
-  source.start();
-  source.stop(now + duration / 1000 + 0.01);
+  source.start(now);
+  source.stop(now + duration / 1000);
 };
 
 const impulseCache: Record<string, AudioBuffer> = {};
-const impulseResponse = (ctx: AudioContext, duration = 0.5, reverse = false) => {
+const impulseResponse = (ctx: AudioContext, duration = 0.5, reverse = false): AudioBuffer => {
   const key = `${duration.toFixed(3)}:${reverse ? 1 : 0}`;
   if (impulseCache[key]) return impulseCache[key];
 
-  const decay = -Math.log(0.01) / duration;
   const sampleRate = ctx.sampleRate;
-  const length = Math.floor(sampleRate * duration);
+  const paddedDuration = Math.max(duration, 0.5); // minimum tail buffer
+  const length = Math.floor(sampleRate * paddedDuration);
+
   const impulse = ctx.createBuffer(2, length, sampleRate);
   const l = impulse.getChannelData(0);
   const r = impulse.getChannelData(1);
 
+  const decay = Math.max(1, -Math.log(0.0001) / duration); // use real duration to decay fast or slow
+
   for (let i = 0; i < length; i++) {
     const n = reverse ? length - i : i;
-    const envelope = Math.pow(1 - n / length, decay);
-    const noise = (Math.random() * 2 - 1) * envelope;
+    const env = Math.pow(1 - n / length, decay);
+    const shaped = Math.sqrt(env);
+    const noise = (Math.random() * 2 - 1) * shaped;
+
     l[i] = noise;
-    r[i] = noise * 0.9 + (Math.random() * 0.2 - 0.1);
+    r[i] = noise;
   }
 
   impulseCache[key] = impulse;

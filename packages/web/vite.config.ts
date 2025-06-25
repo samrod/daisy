@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import svgr from "vite-plugin-svgr";
 import path from "path";
 
@@ -36,5 +37,17 @@ export default defineConfig({
   build: {
     outDir: "build",
     sourcemap: true,
-  },
+    rollupOptions: {
+      plugins: [visualizer()],
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          lodash: ["lodash"],
+          firebase: ["@/lib/firebase"],
+          state: ["@/lib/state"],
+          forms: ["@/components/ui/Forms"],
+        }
+      }
+    }
+  }
 });
