@@ -1,3 +1,4 @@
+import { round } from "lodash"
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { defaults, limits, update, consoleLog, objDiff } from "@/lib";
@@ -52,22 +53,22 @@ const linkActions = (set): LinkActionsTypes => ({
   }),
   volumeDown: async () => await update(set, ({ settings }) => { 
     if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
-      settings.volume = Math.max(settings.volume - volume.nudge, volume.min);
+      settings.volume = round( Math.max(settings.volume - volume.nudge, volume.min), 2);
     }
   }),
   volumeUp: async () => await update(set, ({ settings }) => {
     if (typeof settings === 'object' && settings !== null && 'volume' in settings) {
-      settings.volume = Math.min(settings.volume + volume.nudge, volume.max);
+      settings.volume = round( Math.min(settings.volume + volume.nudge, volume.max), 2);
     }
   }),
   speedUp: async () => await update(set, ({ settings }) => { 
     if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
-      settings.speed = Math.min(settings.speed + speed.nudge, speed.max);
+      settings.speed = round( Math.min(settings.speed + speed.nudge, speed.max), 2);
     }
   }),
   speedDown: async () => await update(set, ({ settings }) => {
     if (typeof settings === 'object' && settings !== null && 'speed' in settings) {
-      settings.speed = Math.max(settings.speed - speed.nudge, speed.min);
+      settings.speed = round( Math.max(settings.speed - speed.nudge, speed.min), 2);
     }
   }),
   setClientLink: async (link) => await update(set, (state) => {

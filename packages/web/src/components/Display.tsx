@@ -167,6 +167,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
       transform: `rotateZ(${angle}deg)`,
       animationDuration: `${velocity / limits.wave.amplitude}ms`,
       borderRadius: `${size/2}vw`,
+      animationName: 'wave',
     };
   
     let levelClass = "";
@@ -239,7 +240,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
   return (
     <div className={`${Styles.display} display`} style={displayStyle.current}>
       <div
-        className={cn(Styles.container, containerClass)}
+        className={cn(Styles.container, containerClass, playing ? "playing" : "pause")}
         style={containerStyle}
       >
         <div className={cn(Styles.lightbar, targetClass)}>

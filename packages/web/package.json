@@ -83,10 +83,13 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "vite build && yarn && sentry:sourcemaps",
     "preview": "vite preview",
-    "deploy": "deploy build ec2-user@samrod.com/var/www/daisyemdr.com/beta",
-    "export": "irm build && yarn build && yarn deploy",
+    "build": "NODE_ENV=development irm build && vite build && yarn sentry:sourcemaps",
+    "deploy": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com/beta",
+    "export": "yarn build && yarn deploy",
+    "build:prod": "NODE_ENV=prod irm build && vite build && yarn sentry:sourcemaps",
+    "deploy:prod": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com",
+    "export:prod": "yarn build:prod && yarn deploy:prod",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject ./build && sentry-cli sourcemaps upload --org samrod-studio --project daisy ./build"
   },
   "enableInlineHunks": true,

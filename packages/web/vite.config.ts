@@ -3,6 +3,9 @@ import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import svgr from "vite-plugin-svgr";
 import path from "path";
+import { config } from 'dotenv-flow';
+
+config({ path: '../../' });
 
 export default defineConfig({
   plugins: [
