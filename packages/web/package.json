@@ -10,6 +10,7 @@
     "@stripe/stripe-js": "^4.8.0",
     "classnames": "^2.2.6",
     "date-fns": "^3.6.0",
+    "dotenv-flow": "^4.1.0",
     "firebase": "^11.9.1",
     "immer": "^10.0.4",
     "lodash": "^4.17.15",
@@ -82,9 +83,9 @@
     "postcss": "^8.4.38"
   },
   "scripts": {
-    "start": "vite",
+    "start": "vite --host",
     "preview": "vite preview",
-    "build": "NODE_ENV=development irm build && vite build && yarn sentry:sourcemaps",
+    "build": "NODE_ENV=development irm build & vite build && yarn sentry:sourcemaps",
     "deploy": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com/beta",
     "export": "yarn build && yarn deploy",
     "build:prod": "NODE_ENV=prod irm build && vite build && yarn sentry:sourcemaps",

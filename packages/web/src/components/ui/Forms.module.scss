@@ -105,9 +105,9 @@
 }
 
 @mixin alertColors($color) {  
-  color: color.scale($color, $lightness: -20%, $saturation: -20%);
-  border-color: color.scale($color, $saturation: -65%);
-  background-color: color.scale($color, $alpha: -10%);
+  color: color.scale($color, $lightness: -40%, $saturation: -20%);
+  border-color: color.scale($color, $saturation: -55%);
+  background-color: color.scale($color, $alpha: -70%);
 }
 
 .alert {
