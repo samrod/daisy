@@ -19,6 +19,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
   const { motionBarActive, activeSetting } = useLinkState(state => state);
   let validSettings = true, settingsRef, size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, reverb, gain, duration;
   settingsRef = useRef(settings);
+  const targetRef = useRef<HTMLDivElement>();
   
   try {
     ({ size, speed, steps, lightbar, angle, length, background, opacity, color, shape, playing, wave, pitch, reverb, volume: gain, duration } = settingsRef.current);
@@ -191,6 +192,21 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
     };
   };
 
+  // useEffect(() => {
+  //   if (!targetRef.current) return;
+
+  //   const el = targetRef.current;
+  //   const velocity = speed ? limits.speed.max - speed + limits.speed.min : 1000000;
+
+  //   const currentTransform = getComputedStyle(el).transform;
+  //   el.style.animation = 'none';
+  //   const xPos = currentTransform.split(', ')[4];
+  //   el.style.transform = `translate3d(${xPos}px, 0px, 0px)`;
+  //   void el.offsetWidth;
+  //   console.log("xPos: ", xPos);
+  //   el.style.animation = `bounce ${velocity}ms ease-in-out infinite ${odd ? 'alternate' : 'alternate-reverse'}`;
+  // }, [speed]);
+
   useEffect(() => {
     if (!initialized.current || !validSettings || preview) {
       return;
@@ -247,6 +263,7 @@ const _Display = ({ settings: _settings, preview, children }: DisplayProps) => {
           {lights()}
         </div>
         <div
+          ref={targetRef}
           className={cn(Styles.target, targetClass, playing ? "playing" : "pause")}
           style={targetStyle}
           onAnimationIteration={onAnimationIteration}

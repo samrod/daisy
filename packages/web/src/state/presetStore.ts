@@ -6,15 +6,19 @@ import {
 } from "@/lib";
 import { getGuideData, guidePropExists, updateGuideData, updateLinkData, useGuideState } from ".";
 
+const sanitize = (response: any = {}): SettingsTypes => {
+  return Object.keys(defaults).reduce((acc, key) => {
+    acc[key] = response[key] ?? defaults[key];
+    return acc;
+  }, {});
+};
+
 export const getSettingsFromPreset = async (key: string): Promise<SettingsTypes> => {
   if (!key) {
     return;
   }
   const response = await readPropValue(`${DB_PRESETS}/`, key);
-  if (isDefaultType(response)) {
-    return response as SettingsTypes;
-  }
-  return;
+  return sanitize(response) as SettingsTypes;
 };
 
 export const selectPreset = async (preset: string) => {
@@ -84,24 +88,3 @@ export const deletePreset = async (id: string) => {
   await deleteDataAtIndex(`${DB_GUIDES}/${user.uid}/${DB_PRESETS}/`, index);
   await deletePropValue(DB_PRESETS, id);
 };
-
-function isDefaultType(response: any = {}): response is SettingsTypes {
-  return (
-    'size' in response &&
-    'speed' in response &&
-    'angle' in response &&
-    'pitch' in response &&
-    'reverb' in response &&
-    'duration' in response &&
-    'volume' in response &&
-    'wave' in response &&
-    'length' in response &&
-    'background' in response &&
-    'opacity' in response &&
-    'lightbar' in response &&
-    'steps' in response &&
-    'color' in response &&
-    'shape' in response &&
-    'playing' in response
-  );
-}

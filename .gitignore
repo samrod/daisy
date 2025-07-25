@@ -14,6 +14,7 @@
 # misc
 .DS_Store
 .env*
+**/stats.html
 
 npm-debug.log*
 yarn-debug.log*

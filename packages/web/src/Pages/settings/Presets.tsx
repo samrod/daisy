@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { createPreset, getGuideData, getSettingsFromPreset, useGuideState } from "@/state";
+import { createPreset, getSettingsFromPreset, useGuideState } from "@/state";
 import { Button, Col, PresetData, PresetRow } from "@/components";
-import { DB_PRESETS } from "@/lib";
 import Styles from "@/components/Presets.module.scss";
 
-import { IconAngle, IconFrequency, IconDuration, IconLength,
+import { IconAngle, IconFrequency, IconDuration, IconReverb, IconLength,
   IconSpeed, IconSteps, IconVolume, IconWave,
 } from "@/assets";
 
 export const Presets = () => {
   const [settings, setSettings] = useState<PresetData[]>([]);
-  const { presets, setPresets } = useGuideState(state => state);
+  const { presets } = useGuideState(state => state);
 
   const fetchPresets = useCallback(async () => {
     const fetchedPresets = await Promise.all(
@@ -34,10 +33,7 @@ export const Presets = () => {
     fetchPresets();
   }, [presets, fetchPresets])
   
-  useEffect(() => {
-    getGuideData(DB_PRESETS, setPresets);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+  console.log("*** Presets: ", presets[1].name);
 
   return (
     <Col items="start">
@@ -54,6 +50,7 @@ export const Presets = () => {
             <th><IconVolume title="Volume" /></th>
             <th><IconFrequency title="Frequency" /></th>
             <th><IconDuration title="Duration" /></th>
+            <th><IconReverb title="Reverb" /></th>
             <th className={Styles.actions} />
           </tr>
         </thead>
