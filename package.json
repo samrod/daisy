@@ -33,7 +33,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "deploy": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com",
+    "export": "yarn build && yarn deploy"
   },
   "eslintConfig": {
     "extends": "react-app"
