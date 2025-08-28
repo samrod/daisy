@@ -24,10 +24,7 @@ export const PresetRow = (props: PresetData) => {
 
   try {
     ({ speed, angle, pitch, reverb, duration, volume, wave, length, steps } = settings);
-  } catch (e) {
-    console.warn("*** PresetRow missing data: ", id, index, name, e)
-    setValidSettings(false);
-  }
+  } catch (e) {}
 
   const onDelete = useCallback(() => {
     sendMessage({ action: "showModal", params: showDeletePresetModal(props) });
@@ -51,6 +48,14 @@ export const PresetRow = (props: PresetData) => {
   useEffect(() => {
     getPresetData(id, setSettings);
   }, [id]);
+
+  useEffect(() => {
+    if (!settings) {
+      console.warn("*** PresetRow missing data: ", id, index, name);
+      setValidSettings(false);
+    }
+  }, [settings, id, index, name]);
+
 
   if (!validSettings) {
     return null;

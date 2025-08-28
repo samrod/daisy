@@ -33,8 +33,6 @@ export const Presets = () => {
     fetchPresets();
   }, [presets, fetchPresets])
   
-  console.log("*** Presets: ", presets[1].name);
-
   return (
     <Col items="start">
       <table className={Styles.settingsTable}>
