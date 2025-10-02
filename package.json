@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "start": "concurrently \"yarn workspace daisy-web start\" \"yarn workspace daisy-payment dev\""
+    "start": "concurrently \"yarn workspace daisy-web start\" \"yarn workspace daisy-api dev\""
   },
   "devDependencies": {
     "@types/cors": "^2",
