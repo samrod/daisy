@@ -1,21 +1,19 @@
 import path from 'path';
 import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
 
 const envFile = `.env${process.env.NODE_ENV ? `.${process.env.NODE_ENV}` : ''}`;
 dotenv.config({ path: path.resolve(__dirname, '../../../', envFile) });
-import express from 'express';
-import cors from 'cors';
+
+import firebaseRoutes from './firebaseRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-
-
-import firebaseRoutes from './firebaseRoutes';
-// Mount generic Firebase CRUD routes (except links/:id/settings)
-app.use('/api/firebase', firebaseRoutes);
+app.use('/api', firebaseRoutes);
 
 app.get('/', (req, res) => {
   res.send('Daisy API is running');

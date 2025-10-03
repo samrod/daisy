@@ -1,7 +1,6 @@
 import { Request, Response, Router } from 'express';
 import admin from 'firebase-admin';
 
-// Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
@@ -12,12 +11,13 @@ if (!admin.apps.length) {
 const db = admin.database();
 const router = Router();
 
-router.post('/:collection', async (req: Request, res: Response) => {
-  const { collection } = req.params;
-  const data = req.body;
+router.post('/*', async (req: Request, res: Response) => {
+  const path = req.params[0];
+  const { data } = req.body;
   try {
-    const ref = db.ref(collection);
+    const ref = db.ref(path);
     await ref.set(data);
+    // console.log('*** POST request to:', req.params[0], 'with body:', req.body);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });

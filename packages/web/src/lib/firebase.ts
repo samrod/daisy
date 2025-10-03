@@ -118,12 +118,13 @@ export const apiPost = async (collection: string, data: DataType) => {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({data}),
     });
     if (!res.ok) {
-      consoleLog("apiPost", `failed: ${res.status}` , "error");
+      consoleLog(`apiPost ${res.status}`, `path: ${collection}, data: ${data}`, "error");
       return undefined;
     }
+    consoleLog(`apiPost ${res.status}`, `${collection} ${JSON.stringify(data)}`, "info");
     return await res.json();
   } catch (e) {
     consoleLog("apiPost", e, "error");
@@ -157,7 +158,7 @@ const firebaseConfig: FirebaseOptions = {
   storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: env.VITE_FIREBASE_APP_ID,
-  databaseURL: env.VITE_FIREBASE_DB_URL,
+  databaseURL: env.VITE_FIREBASE_DATABASE_URL,
 };
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
