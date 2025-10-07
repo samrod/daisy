@@ -60,6 +60,7 @@
     "clean-css": "^5.3.3",
     "csso": "^5.0.5",
     "csstype": "^3.1.3",
+    "dotenv-cli": "^10.0.0",
     "esbuild": "^0.24.0",
     "metro-react-native-babel-preset": "^0.58.0",
     "node-notifier": "^10.0.1",
@@ -68,6 +69,7 @@
     "rework-visit": "^1.0.0",
     "rollup-plugin-visualizer": "^6.0.3",
     "sass": "^1.89.2",
+    "sentry-cli": "^0.0.0",
     "sockjs-client": "^1.6.1",
     "type-fest": "^4.26.1",
     "typescript": "^5.6.3",
@@ -85,13 +87,14 @@
   "scripts": {
     "start": "vite --host",
     "preview": "vite preview",
-    "build": "NODE_ENV=development irm build & vite build && yarn sentry:sourcemaps",
-    "deploy": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com/beta",
+    "build": "NODE_ENV=development irm build & vite build && yarn sentry",
+    "deploy": "deploy build ec2-user@samrod.com:1173/var/www/beta.daisyemdr.com/web",
     "export": "yarn build && yarn deploy",
-    "build:prod": "NODE_ENV=prod irm build && vite build && yarn sentry:sourcemaps",
-    "deploy:prod": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com",
+    "sentry": "dotenv -e ../../.env.development -- sentry-cli sourcemaps inject ./build && dotenv -e .env.development -- sentry-cli sourcemaps upload --org samrod-studio --project daisy ./build",
+    "build:prod": "NODE_ENV=prod irm build && vite build && yarn sentry:prod",
+    "deploy:prod": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com/web",
     "export:prod": "yarn build:prod && yarn deploy:prod",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject ./build && sentry-cli sourcemaps upload --org samrod-studio --project daisy ./build"
+    "sentry:prod": "dotenv -e .env.production -- sentry-cli sourcemaps inject ./build && dotenv -e .env.production -- sentry-cli sourcemaps upload --org samrod-studio --project daisy ./build"
   },
   "enableInlineHunks": true,
   "eslintConfig": {

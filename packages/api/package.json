@@ -3,8 +3,13 @@
   "packageManager": "yarn@4.5.0",
   "scripts": {
     "dev": "NODE_ENV=development PORT=5001 ts-node-dev --inspect-brk --respawn --transpile-only src/server.ts",
-    "start": "NODE_ENV=PRODUCTION node dist/server.js",
-    "build": "tsc --project tsconfig.json"
+    "start": "node dist/server.js",
+    "build": "tsc --project tsconfig.json && mkdir -p .deploy && cp -R ../../yarn.lock .yarnrc.yml ../../.env.beta daisy-api.json package.json init.sh .tool-versions dist .deploy",
+    "deploy": "deploy .deploy ec2-user@samrod.com:1173/var/www/beta.daisyemdr.com/api && rm -rf .deploy",
+    "export": "yarn build && yarn deploy",
+    "start:prod": "NODE_ENV=production node dist/server.js",
+    "deploy:prod": "deploy dist ec2-user@samrod.com:1173/var/www/daisyemdr.com/api",
+    "export:prod": "yarn build && yarn deploy:prod"
   },
   "dependencies": {
     "cors": "^2.8.5",

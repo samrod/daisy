@@ -121,10 +121,10 @@ export const apiPost = async (collection: string, data: DataType) => {
       body: JSON.stringify({data}),
     });
     if (!res.ok) {
-      consoleLog(`apiPost ${res.status}`, `path: ${collection}, data: ${data}`, "error");
+      consoleLog(`apiPost ${res.status}`, `path: ${url}, data: ${data}`, "error");
       return undefined;
     }
-    consoleLog(`apiPost ${res.status}`, `${collection} ${JSON.stringify(data)}`, "info");
+    consoleLog(`apiPost ${res.status}`, `${url} ${JSON.stringify(data)}`, "info");
     return await res.json();
   } catch (e) {
     consoleLog("apiPost", e, "error");

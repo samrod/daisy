@@ -11,9 +11,15 @@ if (!admin.apps.length) {
 const db = admin.database();
 const router = Router();
 
+router.get('/*', (req: Request, res: Response) => {
+  res.status(200).send('<h1>This endpoint is for POST/DELETE only.</h1>');
+});
+
+
 router.post('/*', async (req: Request, res: Response) => {
   const path = req.params[0];
   const { data } = req.body;
+
   try {
     const ref = db.ref(path);
     await ref.set(data);
