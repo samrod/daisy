@@ -86,7 +86,7 @@
     "start": "vite --host",
     "preview": "vite preview",
     "build": "NODE_ENV=development irm build & vite build && yarn sentry:sourcemaps",
-    "deploy": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com/beta",
+    "deploy": "deploy build ec2-user@samrod.com:1173/var/www/beta.daisyemdr.com/web",
     "export": "yarn build && yarn deploy",
     "build:prod": "NODE_ENV=prod irm build && vite build && yarn sentry:sourcemaps",
     "deploy:prod": "deploy build ec2-user@samrod.com:1173/var/www/daisyemdr.com",
