@@ -114,10 +114,17 @@ const API_BASE = env.VITE_API_BASE;
 
 export const apiPost = async (collection: string, data: DataType) => {
   const url = `${API_BASE}/${collection}`;
+  let idToken = null;
+  if (auth.currentUser) {
+    idToken = await auth.currentUser.getIdToken();
+  }
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken && { "Authorization": `Bearer ${idToken}` })
+      },
       body: JSON.stringify({data}),
     });
     if (!res.ok) {
@@ -138,8 +145,17 @@ export const apiDelete = async (collection: string, id: string) => {
     return undefined;
   }
   const url = `${API_BASE}/${collection}/${id}`;
+  let idToken = null;
+  if (auth.currentUser) {
+    idToken = await auth.currentUser.getIdToken();
+  }
   try {
-    const res = await fetch(url, { method: "DELETE" });
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        ...(idToken && { "Authorization": `Bearer ${idToken}` })
+      }
+    });
     if (!res.ok) {
       consoleLog("apiDelete", `failed: ${res.status}`, "error");
       return undefined;
@@ -162,6 +178,6 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+export const db = getDatabase(app);
 export const auth = getAuth(app);
 export const analytics = getAnalytics(app);

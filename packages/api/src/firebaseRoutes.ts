@@ -1,44 +1,44 @@
-import { Request, Response, Router } from 'express';
-import admin from 'firebase-admin';
+import { Router, Request, Response } from "express";
+import { Method, handlers, authenticatedCollections, initAdmin } from "./utils";
+import { authGuide } from "./middleware/authGuide";
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-  });
-}
+initAdmin()
 
-const db = admin.database();
 const router = Router();
+
+const createRoutes = (path: string, method: Method) => {
+  router[method](path, async (req: Request, res: Response) => {
+    await handlers[method](req, res);
+  });
+
+  router[method](`${path}/*`, async (req: Request, res: Response) => {
+    await handlers[method](req, res);
+  });
+};
+
+const createAuthRoutes = (path: string, method: Method) => {
+  router[method](path, async (req: Request, res: Response, next) => {
+    const { collection } = req.params;
+    if (authenticatedCollections.includes(collection)) {
+      return authGuide(req, res, () => handlers[method](req, res));
+    }
+  });
+
+  router[method](`${path}/*`, async (req: Request, res: Response, next) => {
+    const { collection } = req.params;
+    if (authenticatedCollections.includes(collection)) {
+      return authGuide(req, res, () => handlers[method](req, res));
+    }
+  });
+};
+
+createRoutes('/clients/:id', 'post');
+createRoutes('/clients/:id', 'delete');
+createAuthRoutes('/:collection/:id', 'post');
+createAuthRoutes('/:collection/:id', 'delete');
 
 router.get('/*', (req: Request, res: Response) => {
   res.status(200).send('<h1>This endpoint is for POST/DELETE only.</h1>');
-});
-
-
-router.post('/*', async (req: Request, res: Response) => {
-  const path = req.params[0];
-  const { data } = req.body;
-
-  try {
-    const ref = db.ref(path);
-    await ref.set(data);
-    // console.log('*** POST request to:', req.params[0], 'with body:', req.body);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
-  }
-});
-
-router.delete('/:collection/:id', async (req: Request, res: Response) => {
-  const { collection, id } = req.params;
-  try {
-    const ref = db.ref(`${collection}/${id}`);
-    await ref.remove();
-    res.json({ success: true });
-  } catch (err) {
-  res.status(500).json({ error: (err as Error).message });
-  }
 });
 
 export default router;

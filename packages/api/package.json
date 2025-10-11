@@ -2,7 +2,7 @@
   "name": "daisy-api",
   "packageManager": "yarn@4.5.0",
   "scripts": {
-    "dev": "NODE_ENV=development PORT=5001 ts-node-dev --inspect-brk --respawn --transpile-only src/server.ts",
+    "dev": "NODE_ENV=development PORT=5001 ts-node-dev --respawn --transpile-only src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc --project tsconfig.json && mkdir -p .deploy && cp -R ../../yarn.lock .yarnrc.yml ../../.env.beta daisy-api.json package.json init.sh .tool-versions dist .deploy",
     "deploy": "deploy .deploy ec2-user@samrod.com:1173/var/www/beta.daisyemdr.com/api && rm -rf .deploy",
