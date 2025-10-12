@@ -16,4 +16,10 @@ declare global {
   type UpdateTypes = {
     [key: string]: boolean | string | {} | [] | SettingsTypes | User;
   }
+  interface ImportMetaEnv {
+    [key: string]: string | boolean | undefined;
+  }
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
 }
