@@ -7,7 +7,10 @@ const envFile = `.env${process.env.NODE_ENV ? `.${process.env.NODE_ENV}` : ''}`;
 dotenv.config({ path: path.resolve(__dirname, '../../../', envFile) });
 dotenv.config({ path: path.resolve(__dirname, '../', envFile) });
 
+import { initAdmin } from './utils';
 import firebaseRoutes from './firebaseRoutes';
+
+initAdmin();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

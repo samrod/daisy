@@ -1,0 +1,1 @@
+jest.mock('firebase-admin');
