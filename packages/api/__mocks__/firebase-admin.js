@@ -1,3 +1,11 @@
+function auth() {
+  return {
+    verifyIdToken: jest.fn(token => {
+      if (token === 'valid') return Promise.resolve({ uid: 'user123' });
+      return Promise.reject(new Error('Invalid token'));
+    })
+  };
+}
 module.exports = {
   database: () => ({
     ref: jest.fn(() => ({
@@ -9,6 +17,7 @@ module.exports = {
       once: jest.fn()
     }))
   }),
+  auth,
   credential: { applicationDefault: jest.fn() },
   get apps() { return []; },
   initializeApp: jest.fn()
