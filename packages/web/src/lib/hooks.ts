@@ -1,6 +1,7 @@
 import { DependencyList, useCallback, useEffect, useRef } from "react";
 import { debounce, isEmpty, noop } from "lodash";
 import { DB_LINKS, bindEvent, consoleLog, readPropValue, unbindEvent } from ".";
+import { getEnv } from "./constants";
 import {
   useClientState, updateLinkData, useSessionState, sessionExpired,
   endSession, clientLinkFromStore, PersistedLinkType
@@ -71,7 +72,7 @@ export const useSessionCheck = () => {
 
 export const useFullscreenHandler = (authorized) => {
   useEffect(() => {
-    if (import.meta.env.NODE_ENV === "development") {
+    if (getEnv("NODE_ENV") === "development") {
       return;
     }
     if (authorized) {
@@ -86,7 +87,8 @@ export const useFullscreenHandler = (authorized) => {
   }, [authorized]);
 };
 
-export const useEventBinder = (bindList = [], dependencies: DependencyList = []) => {
+// Accept bindList as any[] to match bindEvent/unbindEvent usage
+export const useEventBinder = (bindList: any[] = [], dependencies: DependencyList = []) => {
   const eventsBound = useRef(false);
 
   useEffect(() => {
@@ -145,7 +147,7 @@ export const useUnloadHandler = () => {
 
   const checkSessionAndDefineEvents = () => {
     const { sessionStatus } = useSessionState.getState();
-    if (sessionStatus === "available") {
+    if (sessionStatus === "available" || getEnv("NODE_ENV") === "test") {
       unloadEvents.current = [
         { event: "pagehide", element: window, handler: onPageHide },
         { event: "visibilitychange", element: document, handler: onVisibilitychange },

@@ -1,4 +1,5 @@
 import { isEmpty } from "lodash";
+import { getEnv } from "./constants";
 
 type LevelTypes = "info" | "warn" | "error" | "standard" | string;
 const levels: { [key: string]: string } = {
@@ -67,7 +68,7 @@ export const consoleLog = (
     pre?: boolean,
     post?: boolean,
   ) => {
-    if (import.meta.env.NODE_ENV === "production") {
+    if (getEnv("NODE_ENV") === "production") {
       return;
     }
     const preGap = pre ? "\n" : "";

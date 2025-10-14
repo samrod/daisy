@@ -4,7 +4,8 @@ import { getAnalytics } from "firebase/analytics";
 import { type FirebaseApp, type FirebaseOptions, initializeApp } from "firebase/app";
 import { Timestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { consoleLog } from ".";
+import { consoleLog } from "@/lib";
+import { getEnv } from "./constants";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
@@ -108,22 +109,6 @@ export const deleteDataAtIndex = async (path, index, useClient = false) => {
 
 export const serverStamp = () => Timestamp.now();
 export const parseDate = ({ seconds, nanoseconds }: { seconds: number, nanoseconds: number }): Date => new Timestamp(seconds, nanoseconds).toDate();
-
-// getEnv: never reference import.meta in Node/Jest
-const getEnv = (key: string): string => {
-  // Node/Jest
-  if (typeof process !== 'undefined' && process.env && process.env[key] !== undefined) {
-    return String(process.env[key]);
-  }
-  // Browser/Vite (ESM only)
-  // Use a dynamic function to avoid static reference to import.meta
-  try {
-    // eslint-disable-next-line no-new-func
-    return Function('key', 'return import.meta.env[key] !== undefined ? String(import.meta.env[key]) : "";')(key);
-  } catch {
-    return '';
-  }
-};
 
 const API_BASE = getEnv('VITE_API_BASE');
 
