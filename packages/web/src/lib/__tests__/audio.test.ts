@@ -8,7 +8,6 @@ describe('generateSound', () => {
     const mocks = createMockAudioContext();
     mockCtx = mocks.mockCtx;
     mockSource = mocks.mockSource;
-  // mockStereoPanner is not used in tests, so skip assignment
     mockGain = mocks.mockGain;
     mockConvolver = mocks.mockConvolver;
     window.AudioContext = jest.fn(() => mockCtx);

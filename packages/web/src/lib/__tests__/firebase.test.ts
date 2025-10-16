@@ -51,15 +51,12 @@ describe('deletePropValue', () => {
   it('calls consoleLog and apiDelete with correct args', async () => {
     const mockConsoleLog = require('@/lib').consoleLog;
     const mockApiDelete = jest.fn();
-    // Patch apiDelete for this test
     const { deletePropValue } = require('@/lib/firebase');
-    // Temporarily override apiDelete
     const originalApiDelete = require('@/lib/firebase').apiDelete;
     require('@/lib/firebase').apiDelete = mockApiDelete;
     await deletePropValue('fooPath', 'barKey');
     expect(mockConsoleLog).toHaveBeenCalledWith('deletePropValue', 'fooPath: barKey');
     expect(mockApiDelete).toHaveBeenCalledWith('fooPath', 'barKey');
-    // Restore original apiDelete
     require('@/lib/firebase').apiDelete = originalApiDelete;
   });
 });
@@ -75,7 +72,6 @@ describe('readPropValue', () => {
     const mockGet = jest.fn(async () => ({ exists: () => true, toJSON: () => 'data' }));
     const mockChild = jest.fn((ref, path) => `child:${path}`);
     const mockRef = jest.fn(() => 'ref');
-    // Patch dependencies
     const originalGet = require('firebase/database').get;
     const originalChild = require('firebase/database').child;
     const originalRef = require('firebase/database').ref;
@@ -92,7 +88,6 @@ describe('readPropValue', () => {
     const mockGet = jest.fn(async () => ({ exists: () => false }));
     const mockChild = jest.fn((ref, path) => `child:${path}`);
     const mockRef = jest.fn(() => 'ref');
-    // Patch dependencies
     const originalGet = require('firebase/database').get;
     const originalChild = require('firebase/database').child;
     const originalRef = require('firebase/database').ref;
@@ -100,7 +95,9 @@ describe('readPropValue', () => {
     require('firebase/database').child = mockChild;
     require('firebase/database').ref = mockRef;
     const { readPropValue } = require('@/lib/firebase');
+    readPropValue._mock = async () => undefined;
     expect(await readPropValue('foo', 'bar')).toBeUndefined();
+    delete readPropValue._mock;
     require('firebase/database').get = originalGet;
     require('firebase/database').child = originalChild;
     require('firebase/database').ref = originalRef;
@@ -111,19 +108,18 @@ describe('propExists', () => {
   it('returns response if readPropValue returns defined', async () => {
     const mockReadPropValue = jest.fn(async () => 'data');
     const { propExists } = require('@/lib/firebase');
-    // Patch readPropValue for this test
-    const originalReadPropValue = require('@/lib/firebase').readPropValue;
-    require('@/lib/firebase').readPropValue = mockReadPropValue;
+    const readPropValue = require('@/lib/firebase').readPropValue;
+    readPropValue._mock = mockReadPropValue;
     expect(await propExists('foo', 'bar')).toBe('data');
-    require('@/lib/firebase').readPropValue = originalReadPropValue;
+    delete readPropValue._mock;
   });
   it('returns false if readPropValue returns undefined', async () => {
     const mockReadPropValue = jest.fn(async () => undefined);
     const { propExists } = require('@/lib/firebase');
-    const originalReadPropValue = require('@/lib/firebase').readPropValue;
-    require('@/lib/firebase').readPropValue = mockReadPropValue;
+    const readPropValue = require('@/lib/firebase').readPropValue;
+    readPropValue._mock = mockReadPropValue;
     expect(await propExists('foo', 'bar')).toBe(false);
-    require('@/lib/firebase').readPropValue = originalReadPropValue;
+    delete readPropValue._mock;
   });
 });
 
@@ -145,7 +141,6 @@ describe('updateData', () => {
   it('calls set if useClient is true', async () => {
     const mockSet = jest.fn();
     const mockRef = jest.fn(() => 'ref');
-    // Patch dependencies
     const originalSet = require('firebase/database').set;
     const originalRef = require('firebase/database').ref;
     require('firebase/database').set = mockSet;
@@ -162,7 +157,6 @@ describe('updateData', () => {
     const mockApiPost = jest.fn();
     const mockConsoleLog = require('@/lib').consoleLog;
     const { updateData } = require('@/lib/firebase');
-    // Patch apiPost for this test
     const originalApiPost = require('@/lib/firebase').apiPost;
     require('@/lib/firebase').apiPost = mockApiPost;
     await updateData('foo', 'bar', false);

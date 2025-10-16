@@ -63,7 +63,6 @@ describe('setKeys', () => {
     }));
     const { setKeys } = require('../dom');
     setKeys({ key: 'ArrowDown' });
-    // No error means function executed
   });
 
   it('calls togglePlay for spacebar', () => {
