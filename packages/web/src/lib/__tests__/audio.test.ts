@@ -1,33 +1,19 @@
-import {
-  generateSound,
-  // getAudioContext,
-  // createOscillator,
-  // applyEnvelope,
-  // createDryWetRouting,
-} from '../audio';
+
+import { generateSound } from '../audio';
+import { createMockAudioContext } from '../testUtils.helper';
 
 describe('generateSound', () => {
-  let mockCtx, mockSource, mockStereoPanner, mockGain, mockConvolver;
+  let mockCtx, mockSource, mockGain, mockConvolver;
   beforeEach(() => {
-    mockSource = { start: jest.fn(), stop: jest.fn(), connect: jest.fn(), frequency: { value: 0 }, type: '' };
-    mockStereoPanner = { pan: { value: 0 }, connect: jest.fn() };
-    mockGain = { connect: jest.fn(), gain: { setValueAtTime: jest.fn(), linearRampToValueAtTime: jest.fn(), value: 0 } };
-    mockConvolver = { connect: jest.fn(), buffer: null };
-    mockCtx = {
-      state: 'running',
-      resume: jest.fn(),
-      currentTime: 0,
-      createOscillator: jest.fn(() => mockSource),
-      createStereoPanner: jest.fn(() => mockStereoPanner),
-      createGain: jest.fn(() => mockGain),
-      createConvolver: jest.fn(() => mockConvolver),
-      createBuffer: jest.fn(() => ({ getChannelData: jest.fn(() => new Float32Array(10)) })),
-      sampleRate: 44100,
-      destination: {},
-    };
+    const mocks = createMockAudioContext();
+    mockCtx = mocks.mockCtx;
+    mockSource = mocks.mockSource;
+  // mockStereoPanner is not used in tests, so skip assignment
+    mockGain = mocks.mockGain;
+    mockConvolver = mocks.mockConvolver;
     window.AudioContext = jest.fn(() => mockCtx);
     window.webkitAudioContext = undefined;
-    window.AudioCtx = undefined;
+    (window as any).AudioCtx = undefined;
   });
 
   it('should generate sound and connect nodes', async () => {

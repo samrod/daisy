@@ -1,3 +1,9 @@
+
+import { useAuthHandlers } from '../authHandlers';
+import { signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateEmail, sendPasswordResetEmail, updatePassword } from 'firebase/auth';
+import { auth } from '@/lib';
+import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from '@/state';
+
 jest.mock('firebase/auth', () => ({
   signOut: jest.fn(),
   signInWithEmailAndPassword: jest.fn(),
@@ -6,20 +12,14 @@ jest.mock('firebase/auth', () => ({
   sendPasswordResetEmail: jest.fn(),
   updatePassword: jest.fn(),
 }));
-
 jest.mock('@/lib', () => ({
   auth: {},
 }));
-
 jest.mock('@/state', () => ({
   captureLogin: jest.fn(),
   createGuide: jest.fn(),
   createUpdateEmail: jest.fn(),
 }));
-import { useAuthHandlers } from '../authHandlers';
-import { signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateEmail, sendPasswordResetEmail, updatePassword } from 'firebase/auth';
-import { auth } from '@/lib';
-import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from '@/state';
 
 describe('useAuthHandlers', () => {
   const mockUser = {

@@ -7,8 +7,9 @@ describe('receiveMessage', () => {
       testAction: jest.fn(),
       warn: jest.fn(),
     };
+    
+    global.window.name = 'test';
     global.console.warn = jest.fn();
-    global.window = { self: { location: { pathname: '/test' } }, name: 'test' };
   });
 
   it('calls the correct action if present', () => {
@@ -41,7 +42,9 @@ describe('sendMessage', () => {
   let mockWindow;
   beforeEach(() => {
     mockWindow = { postMessage: jest.fn(), self: { location: { pathname: '/test' } } };
-    global.window = { opener: mockWindow, parent: mockWindow, location: { href: 'http://test' } };
+    global.window.opener = mockWindow;
+    global.window.parent = mockWindow;
+    
     global.console.warn = jest.fn();
   });
 
