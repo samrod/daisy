@@ -18,7 +18,7 @@ import { Display } from "@/components/Display";
 import "@/components/global.scss"
 
 Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
+  dsn: (import.meta as any).env.VITE_SENTRY_DSN,
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),

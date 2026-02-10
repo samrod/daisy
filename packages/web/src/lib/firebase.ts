@@ -1,5 +1,5 @@
 import { isEmpty, isEqual } from "lodash";
-import { child, get, getDatabase, onValue, ref, remove, set } from "firebase/database";
+import { child, get, getDatabase, onValue, ref, set } from "firebase/database";
 import { getAnalytics } from "firebase/analytics";
 import { type FirebaseApp, type FirebaseOptions, initializeApp } from "firebase/app";
 import { Timestamp } from "firebase/firestore";
@@ -35,10 +35,9 @@ export const getData = async (params: GetData) => {
   return onValue(keyRef, executeCallback(params));
 };
 
-export const deletePropValue = async (path: string, key: string ) => {
-  const dataRef = child(ref(db), `${path}/${key}`);
+export const deletePropValue = async (path: string, key: string) => {
   consoleLog("deletePropValue", `${path}: ${key}`);
-  return await remove(dataRef);
+  return await apiDelete(path, key);
 };
 
 export const readPropValue = async (key: string, value: string) => {
@@ -58,24 +57,29 @@ export const propExists = async (key: string, value: string) => {
   return typeof response !== "undefined" ? response : false;
 };
 
-export const updateData = async (path: string, value:  DataType) => {
+export const updateData = async (path: string, value: DataType, useClient = false, context = "updateData") => {
   if (isEmpty(path)) {
-    consoleLog("updateData", `missing path`, "error");
+    consoleLog(context, `missing path`, "error");
     return;
   }
   if (typeof value === "undefined" || value === null) {
-    consoleLog("updateData", `"${path}: value missing"`, "error");
+    consoleLog(context, `"${path}: value missing"`, "error");
     return;
   }
   try {
-    consoleLog("updateData", `${path}: ${value}`);
+    if (useClient) {
+      consoleLog(context, `[client] ${path}: ${value}`);
       await set(ref(db, path), value);
+    } else {
+      consoleLog(context, `[api] ${path}: ${value}`);
+      await apiPost(path, value);
+    }
   } catch(e) {
-    consoleLog(`updateData: ${path}/${value}`, e, "error");
+    consoleLog(`${context}: ${path}/${value}`, e, "error");
   }
 };
 
-export const pushData = async (path: string, value: DataType, index?: number) => {
+export const pushData = async (path: string, value: DataType, index?: number, useClient = false) => {
   const data = (await readPropValue(path, "/")) || [];
   const array = Object.values(data);
   const valueAlreadyExists = array.some((item) => {
@@ -85,48 +89,95 @@ export const pushData = async (path: string, value: DataType, index?: number) =>
   });
   if (typeof index === "number") {
     array[index] = value;
-    try {
-      consoleLog("pushData", `${path}[${index}]: ${value}`);
-          await set(ref(db, path), array);
-    } catch(e) {
-      consoleLog(`pushData: ${path}`, e, "error");
-    }
+    await updateData(path, array, useClient, "pushData");
   } else {
     if (valueAlreadyExists) {
       console.warn(`*** pushData: ${JSON.stringify(value)} already exists in ${path}.`);
       return;
     }
     array.push(value);
-    try {
-      consoleLog("pushData", `${path}: ${value}`);
-          await set(ref(db, path), array);
-    } catch(e) {
-      consoleLog(`pushData: ${path}`, e, "error");
-    }
+    await updateData(path, array, useClient, "pushData");
   }
 };
 
-export const deleteDataAtIndex = async (path, index) => {
+export const deleteDataAtIndex = async (path, index, useClient = false) => {
   const arrayData = (await readPropValue(path, '/')) || [];
   const newArray = Object.values(arrayData).filter((_, i) => i !== index);
-  await updateData(path, newArray);
+  await updateData(path, newArray, useClient, "deleteDataAtIndex");
 };
 
 export const serverStamp = () => Timestamp.now();
 export const parseDate = ({ seconds, nanoseconds }) => new Timestamp(seconds, nanoseconds).toDate();
 
+const env = (import.meta as any).env;
+const API_BASE = env.VITE_API_BASE;
+
+export const apiPost = async (collection: string, data: DataType) => {
+  const url = `${API_BASE}/${collection}`;
+  let idToken = null;
+  if (auth.currentUser) {
+    idToken = await auth.currentUser.getIdToken();
+  }
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken && { "Authorization": `Bearer ${idToken}` })
+      },
+      body: JSON.stringify({data}),
+    });
+    if (!res.ok) {
+      consoleLog(`apiPost ${res.status}`, `path: ${url}, data: ${data}`, "error");
+      return undefined;
+    }
+    consoleLog(`apiPost ${res.status}`, `${url} ${JSON.stringify(data)}`, "info");
+    return await res.json();
+  } catch (e) {
+    consoleLog("apiPost", e, "error");
+    return undefined;
+  }
+};
+
+export const apiDelete = async (collection: string, id: string) => {
+  if (!id) {
+    consoleLog("apiDelete", "requires an id", "error");
+    return undefined;
+  }
+  const url = `${API_BASE}/${collection}/${id}`;
+  let idToken = null;
+  if (auth.currentUser) {
+    idToken = await auth.currentUser.getIdToken();
+  }
+  try {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        ...(idToken && { "Authorization": `Bearer ${idToken}` })
+      }
+    });
+    if (!res.ok) {
+      consoleLog("apiDelete", `failed: ${res.status}`, "error");
+      return undefined;
+    }
+    return await res.json();
+  } catch (e) {
+    consoleLog("apiDelete", e, "error");
+    return undefined;
+  }
+};
+
 const firebaseConfig: FirebaseOptions = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  databaseURL: import.meta.env.VITE_FIREBASE_DB_URL,
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID,
+  databaseURL: env.VITE_FIREBASE_DATABASE_URL,
 };
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
+export const db = getDatabase(app);
 export const auth = getAuth(app);
 export const analytics = getAnalytics(app);

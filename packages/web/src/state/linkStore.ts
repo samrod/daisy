@@ -22,10 +22,10 @@ export const getLinkData = (key: string, callback: (params: unknown) => void) =>
   }
 };
 
-export const updateLinkData = async (key: string, value) => {
+export const updateLinkData = async (key: string, value, useClient = false) => {
   const clientLink = getState("clientLink");
   if (clientLink) {
-    await updateData(`${DB_LINKS}/${clientLink}/${key}`, value);
+    await updateData(`${DB_LINKS}/${clientLink}/${key}`, value, useClient);
   }
 };
 
@@ -34,7 +34,7 @@ export const updateSetting = async (setting: string, value: DataType) => {
   if (!activePreset) {
     return;
   }
-  await updateLinkData(`settings/${setting}`, value);
+  await updateLinkData(`settings/${setting}`, value, true);
 };
 
 export const updateSettingFromPreset = async (preset: string) => {

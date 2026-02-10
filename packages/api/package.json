@@ -1,0 +1,29 @@
+{
+  "name": "daisy-api",
+  "packageManager": "yarn@4.5.0",
+  "scripts": {
+    "dev": "NODE_ENV=development PORT=5001 ts-node-dev --respawn --transpile-only src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc --project tsconfig.json && mkdir -p .deploy && cp -R ../../yarn.lock .yarnrc.yml ../../.env.beta daisy-api.json package.json init.sh .tool-versions dist .deploy",
+    "deploy": "deploy .deploy ec2-user@samrod.com:1173/var/www/beta.daisyemdr.com/api && rm -rf .deploy",
+    "export": "yarn build && yarn deploy",
+    "start:prod": "NODE_ENV=production node dist/server.js",
+    "deploy:prod": "deploy dist ec2-user@samrod.com:1173/var/www/daisyemdr.com/api",
+    "export:prod": "yarn build && yarn deploy:prod"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.11.1",
+    "stripe": "^14.23.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.30",
+    "@types/stripe": "^8.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}

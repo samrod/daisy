@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "name": "daisy-api",
+      "script": "dist/server.js",
+      "env": {
+        "NODE_ENV": "beta",
+        "PORT": "3000"
+      }
+    }
+  ]
+}
