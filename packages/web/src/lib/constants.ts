@@ -11,6 +11,13 @@ export const CLIENT_STATES = [
   "hidden",      // 9
 ];
 
+export const getEnv = (key: string): string => {
+  if (typeof process !== 'undefined' && process.env && process.env[key] !== undefined) {
+    return String(process.env[key]);
+  }
+  return '';
+};
+
 export const CLIENT_STATE_DISPLAYS = (clientLink: string, clientName: string, session: string) => ({
   unavailable: session ? `${clientName || "client"} is not connected` : "waiting for client",
   present: `someone's at ${clientLink}`,

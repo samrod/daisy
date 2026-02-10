@@ -1,8 +1,6 @@
 import { Router, Request, Response } from "express";
-import { Method, handlers, authenticatedCollections, initAdmin } from "./utils";
+import { Method, handlers, authenticatedCollections } from "./utils";
 import { authGuide } from "./middleware/authGuide";
-
-initAdmin()
 
 const router = Router();
 

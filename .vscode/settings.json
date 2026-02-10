@@ -28,6 +28,9 @@
     "**/.yarn": true,
     "**/.pnp.*": true
   },
+  "terminal.integrated.allowWorkspaceShell": true,
+  "terminal.integrated.experimentalBufferImpl": "legacy", 
+  "terminal.integrated.shellIntegration.enabled": false,
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true
 }

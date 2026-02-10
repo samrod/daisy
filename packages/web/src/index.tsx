@@ -15,6 +15,7 @@ import Guide from "@/Pages/Guide";
 import Remote from "@/Pages/Remote";
 import { CheckoutForm, Return } from "@/Pages/Membership";
 import { Display } from "@/components/Display";
+import { defaults } from "@/lib/constants";
 import "@/components/global.scss"
 
 Sentry.init({
@@ -43,7 +44,7 @@ root.render(
         <Route path="/return" element={<Return />} />
 
         <Route path="/" element={<PrivateRoute><Guide /></PrivateRoute>} />
-        <Route path="/thumb" element={<PrivateRoute><Display /></PrivateRoute>} />
+        <Route path="/thumb" element={<PrivateRoute><Display settings={defaults} /></PrivateRoute>} />
         <Route path="/remote" element={<PrivateRoute><Remote /></PrivateRoute>} />
         <Route path={`/:clientLink`} element={<Client />} />
       </Routes>

@@ -4,7 +4,8 @@ import { getAnalytics } from "firebase/analytics";
 import { type FirebaseApp, type FirebaseOptions, initializeApp } from "firebase/app";
 import { Timestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { consoleLog } from ".";
+import { consoleLog } from "@/lib";
+import { getEnv } from "./constants";
 
 export type { User } from "firebase/auth";
 export type Object = string | number | boolean;
@@ -107,10 +108,9 @@ export const deleteDataAtIndex = async (path, index, useClient = false) => {
 };
 
 export const serverStamp = () => Timestamp.now();
-export const parseDate = ({ seconds, nanoseconds }) => new Timestamp(seconds, nanoseconds).toDate();
+export const parseDate = ({ seconds, nanoseconds }: { seconds: number, nanoseconds: number }): Date => new Timestamp(seconds, nanoseconds).toDate();
 
-const env = (import.meta as any).env;
-const API_BASE = env.VITE_API_BASE;
+const API_BASE = getEnv('VITE_API_BASE');
 
 export const apiPost = async (collection: string, data: DataType) => {
   const url = `${API_BASE}/${collection}`;
@@ -168,13 +168,13 @@ export const apiDelete = async (collection: string, id: string) => {
 };
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: env.VITE_FIREBASE_API_KEY,
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: env.VITE_FIREBASE_APP_ID,
-  databaseURL: env.VITE_FIREBASE_DATABASE_URL,
+  apiKey: getEnv('VITE_FIREBASE_API_KEY'),
+  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN'),
+  projectId: getEnv('VITE_FIREBASE_PROJECT_ID'),
+  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+  appId: getEnv('VITE_FIREBASE_APP_ID'),
+  databaseURL: getEnv('VITE_FIREBASE_DATABASE_URL'),
 };
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
