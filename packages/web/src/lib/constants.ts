@@ -12,6 +12,10 @@ export const CLIENT_STATES = [
 ];
 
 export const getEnv = (key: string): string => {
+  const env = (import.meta as any).env;
+  if (env && env[key] !== undefined) {
+    return String(env[key]);
+  }
   if (typeof process !== 'undefined' && process.env && process.env[key] !== undefined) {
     return String(process.env[key]);
   }

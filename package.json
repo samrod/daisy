@@ -2,7 +2,6 @@
   "name": "daisy",
   "private": true,
   "enableInlineHunks": true,
-  "packageManager": "yarn@4.5.0",
   "workspaces": [
     "packages/*"
   ],
@@ -41,5 +40,6 @@
     "react-scripts": "^5.0.1",
     "sass": "^1.79.4",
     "stripe": "^18.5.0"
-  }
+  },
+  "packageManager": "yarn@4.12.0"
 }
