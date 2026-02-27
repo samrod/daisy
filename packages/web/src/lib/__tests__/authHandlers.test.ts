@@ -14,6 +14,8 @@ jest.mock('firebase/auth', () => ({
 }));
 jest.mock('@/lib', () => ({
   auth: {},
+  readPropValue: jest.fn(),
+  DB_GUIDES: 'guides',
 }));
 jest.mock('@/state', () => ({
   captureLogin: jest.fn(),
@@ -54,12 +56,25 @@ describe('useAuthHandlers', () => {
   });
 
   it('calls signInWithEmailAndPassword and captureLogin on login', async () => {
-    (signInWithEmailAndPassword as jest.Mock).mockResolvedValueOnce('user');
+    const credential = { user: mockUser } as any;
+    (signInWithEmailAndPassword as jest.Mock).mockResolvedValueOnce(credential);
     (captureLogin as jest.Mock).mockImplementation(() => {});
+    (require('@/lib').readPropValue as jest.Mock).mockResolvedValueOnce(true);
     const handlers = useAuthHandlers(mockUser);
     await handlers.login('email', 'pass');
     expect(signInWithEmailAndPassword).toHaveBeenCalledWith(auth, 'email', 'pass');
-    expect(captureLogin).toHaveBeenCalledWith('user');
+    expect(captureLogin).toHaveBeenCalledWith(credential);
+  });
+
+  it('creates guide when guide does not exist and does not double-capture login', async () => {
+    const credential = { user: mockUser } as any;
+    (signInWithEmailAndPassword as jest.Mock).mockResolvedValueOnce(credential);
+    (require('@/lib').readPropValue as jest.Mock).mockResolvedValueOnce(undefined);
+    (createGuide as jest.Mock).mockImplementation(() => {});
+    const handlers = useAuthHandlers(mockUser);
+    await handlers.login('email', 'pass');
+    expect(createGuide).toHaveBeenCalledWith(mockUser);
+    expect(captureLogin).not.toHaveBeenCalled();
   });
 
   it('calls createUserWithEmailAndPassword and createGuide on signup', async () => {

@@ -8,7 +8,9 @@
       "terminal.ansiBlue": "#0044FF",
       "terminal.ansiGreen": "#00A600",
       "terminal.ansiBlack": "#000"
-    }
+    },
+    "statusBar.noFolderBackground": "#053610",
+    "statusBar.noFolderForeground": "#EEFDF1"
   },
   "tailwindCSS.experimental.configFile": null,
   "tailwindCSS.includeLanguages": {

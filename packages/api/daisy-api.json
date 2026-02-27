@@ -5,7 +5,8 @@
       "script": "dist/server.js",
       "env": {
         "NODE_ENV": "beta",
-        "PORT": "3000"
+        "PORT": "3000",
+        "API_PATH": "/"
       }
     }
   ]

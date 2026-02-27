@@ -9,7 +9,7 @@ import {
   updatePassword
 } from "firebase/auth";
 
-import { auth } from "@/lib";
+import { auth, DB_GUIDES, readPropValue } from "@/lib";
 import { captureLogin, createGuide, createUpdateEmail as updateEmailFBRT } from "@/state";
 
 export interface FormHandlerProps {
@@ -28,8 +28,17 @@ export const useAuthHandlers = (currentUser: User | null) => ({
   currentUser,
   logout: () => signOut(auth),
   login: async (email: string, password: string) => {
-    const user = await signInWithEmailAndPassword(auth, email, password);
-    captureLogin(user);
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    try {
+      const guideExists = await readPropValue(DB_GUIDES, credential.user.uid);
+      if (!guideExists) {
+        await createGuide(credential.user);
+      } else {
+        await captureLogin(credential);
+      }
+    } catch (e) {
+      await createGuide(credential.user);
+    }
   },
   signup: async (email: string, password: string) => {
     const newUser = await createUserWithEmailAndPassword(auth, email, password);
