@@ -40,15 +40,11 @@ export const createGuide = async (user: User) => {
   const initialClientLink = await uniqueClientLink(user.email.split("@")[0]);
   const { setUser } = useGuideState.getState();
   setUser(user);
-  await updateGuideData("ready", false);
-
   await createUpdateEmail(user);
   await captureLogin({ user });
   await updateGuideData(DB_SESSIONS, []);
   await updateClientLink(initialClientLink);
   await createPreset({ name: DEFAULT_PRESET_NAME });
-
-  await updateGuideData("ready", true);
 };
 
 export const createUpdateEmail = async (user: User, newEmail?: string) => {
@@ -78,12 +74,7 @@ export const deleteGuideData = async (key) => {
   await deletePropValue(`${DB_GUIDES}/${user.uid}`, key);
 };
 
-export const subscribeGuideData = async () => {
-  const ready = (await readGuideProp("ready")) as unknown as boolean;
-
-  if (ready !== true) {
-    return;
-  }
+export const subscribeGuideData = () => {
   const { setActivePreset, setUserMode, setPresets } = useGuideState.getState();
   const { setClientLink } = useLinkState.getState();
 

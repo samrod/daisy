@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { isEmpty } from "lodash";
 import { User } from "firebase/auth";
 
-import { useGuideState, subscribeAllSettings, useLinkState, subscribeGuideData, readGuideProp } from "@/state";
+import { useGuideState, subscribeAllSettings, useLinkState, subscribeGuideData } from "@/state";
 import { FormHandlerProps, FormEventHandlers, useAuthHandlers, auth } from "@/lib";
 
 interface AuthContextType {
@@ -45,18 +45,8 @@ export const AuthProvider = ({ children }) => {
     if (!currentUser?.uid || presetsBoundToStore.current) {
       return;
     }
-
-    const initSubscriptions = async () => {
-    const ready = (await readGuideProp("ready")) as unknown as boolean;
-    if (ready !== true) {
-      return;
-    }
-
-    await subscribeGuideData();
+    subscribeGuideData();
     presetsBoundToStore.current = true;
-  };
-
-  void initSubscriptions();
   }, [activePreset, currentUser, presets, setActivePreset, setPresets, setUserMode, setClientLink]);
 
   useEffect(() => {
