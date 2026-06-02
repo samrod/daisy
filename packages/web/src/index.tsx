@@ -31,10 +31,14 @@ Sentry.init({
 });
 
 const root = createRoot(document.getElementById("root"));
+const reactRouterConfig = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+}
 
 root.render(
   <AuthProvider>
-    <BrowserRouter>
+    <BrowserRouter future={reactRouterConfig}>
       <Routes>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
